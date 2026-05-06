@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  ALL MODULES - Runs all modules SEQUENTIALLY (one after another).
+  
+  Run with:
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
+  
+  Modules execute in this order:
+    1. Registration
+    2. Login
+    3. Youth Profile
+    4. CV Builder
+    5. Organisation Creation
+    6. Join Organisation
+-->
+<suite name="MYBharat All Modules" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Module 1: Youth Registration -->
+    <test name="Module - Youth Registration">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+        </classes>
+    </test>
+
+    <!-- Module 2: Login (TODO - create LoginTest.java) -->
+    <!--
+    <test name="Module - Login">
+        <classes>
+            <class name="com.mybharat.tests.login.LoginTest"/>
+        </classes>
+    </test>
+    -->
+
+    <!-- Module 3: Youth Profile (TODO) -->
+    <!--
+    <test name="Module - Youth Profile">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthProfileTest"/>
+        </classes>
+    </test>
+    -->
+
+    <!-- Module 4: CV Builder (TODO) -->
+    <!--
+    <test name="Module - CV Builder">
+        <classes>
+            <class name="com.mybharat.tests.cvbuilder.CVBuilderTest"/>
+        </classes>
+    </test>
+    -->
+
+    <!-- Module 5: Organisation Creation (TODO) -->
+    <!--
+    <test name="Module - Organisation Creation">
+        <classes>
+            <class name="com.mybharat.tests.organisation.OrgCreationTest"/>
+        </classes>
+    </test>
+    -->
+
+    <!-- Module 6: Join Organisation (TODO) -->
+    <!--
+    <test name="Module - Join Organisation">
+        <classes>
+            <class name="com.mybharat.tests.organisation.JoinOrgTest"/>
+        </classes>
+    </test>
+    -->
+
+</suite>

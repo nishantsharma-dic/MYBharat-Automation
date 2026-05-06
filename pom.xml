@@ -23,9 +23,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <!-- Runtime defaults (override on CLI: -Dbrowser=chrome -Denv=qa) -->
+        <!-- Runtime defaults (override on CLI: -Dbrowser=chrome -Denv=beta) -->
         <browser>firefox</browser>
-        <env>qa</env>
+        <env>beta</env>
 
         <!-- Dependency versions – single place to update -->
         <selenium.version>4.12.1</selenium.version>
@@ -240,18 +240,12 @@
     <!-- ================================================================== -->
     <profiles>
         <profile>
-            <id>qa</id>
+            <id>beta</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <env>qa</env>
-            </properties>
-        </profile>
-        <profile>
-            <id>uat</id>
-            <properties>
-                <env>uat</env>
+                <env>beta</env>
             </properties>
         </profile>
         <profile>

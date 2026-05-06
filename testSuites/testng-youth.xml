@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Youth Module Suite - runs all youth tests sequentially.
+  
+  Run with:
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
+    mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
+-->
+<suite name="Youth Module" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="Youth Registration Flow">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+        </classes>
+    </test>
+
+</suite>

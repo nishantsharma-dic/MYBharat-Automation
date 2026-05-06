@@ -2,26 +2,26 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  Default TestNG suite – runs the smoke tests.
-  Use testSuites/testng-suite_Youth.xml for the full Youth regression suite.
-
-  Override browser and environment at runtime:
-    mvn test -Dbrowser=chrome -Denv=qa
+  Default suite - Smoke tests only.
+  
+  Run: mvn test -Denv=beta -Dbrowser=chrome
+  
+  For all modules: mvn test -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
 -->
 <suite name="MYBharat Smoke Suite" parallel="false" verbose="1">
 
     <listeners>
-        <listener class-name="MYBharat.Test.TestComponents.Listeners"/>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <test name="Youth Smoke Tests">
+    <test name="Smoke Tests">
         <groups>
             <run>
                 <include name="smoke"/>
             </run>
         </groups>
         <classes>
-            <class name="MYBharat.Test.tests.youth.YouthTest"/>
+            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
         </classes>
     </test>
 
