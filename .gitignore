@@ -1,0 +1,46 @@
+# ========================
+# OS Files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# IDE Files (Eclipse/IntelliJ/VS Code)
+# ========================
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+.vscode/
+
+# ========================
+# Maven Build Output
+# ========================
+target/
+
+# ========================
+# TestNG Output
+# ========================
+test-output/
+
+# ========================
+# Reports (generated, not source code)
+# ========================
+reports/
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+
+# ========================
+# Screenshots (generated during test runs)
+# ========================
+screenshots/
+
+# ========================
+# Environment secrets (NEVER push these)
+# ========================
+*.env
