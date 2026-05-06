@@ -14,22 +14,16 @@ import com.mybharat.base.BaseTest;
 import com.mybharat.listeners.Retry;
 import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.LandingPage;
-import com.mybharat.pages.youth.PlayQuizPage;
-import com.mybharat.pages.youth.PublicProfilePage;
 import com.mybharat.pages.youth.RegistrationPage;
 import com.mybharat.utils.RedashClient;
 
 /**
- * YouthRegistrationTest - End-to-end test for Youth module.
+ * YouthRegistrationTest - Registers a new Indian youth user.
  * 
- * Execution order (sequential):
- *   1. Register Indian user
- *   2. Verify user in DB via Redash
- *   3. Fill public profile & download certificate
- *   4. Play quiz
+ * Flow: Open app → Register → Verify OTP → Fill form → Submit → Verify in DB
  * 
  * Run:
- *   mvn test -Denv=beta -Dbrowser=chrome -DsuiteXmlFile=testSuites/testng-youth.xml
+ *   mvn test -Denv=prod -Dbrowser=firefox
  */
 @Listeners(TestListeners.class)
 public class YouthRegistrationTest extends BaseTest {
@@ -38,19 +32,15 @@ public class YouthRegistrationTest extends BaseTest {
 
     private LandingPage landingPage;
     private RegistrationPage registrationPage;
-    private String registeredEmail;
+
+    /** Shared across tests in this class AND accessible by next class via static */
+    public static String registeredEmail;
 
     @BeforeClass(alwaysRun = true)
-    @Override
-    public void setUp() {
-        super.setUp();
+    public void initPages() {
         landingPage = new LandingPage(driver);
         registrationPage = new RegistrationPage(driver);
     }
-
-    // -------------------------------------------------------------------------
-    // Test 1: Register Indian Youth
-    // -------------------------------------------------------------------------
 
     @Test(priority = 1, groups = {"smoke", "registration"}, retryAnalyzer = Retry.class)
     public void registerIndianYouth() throws Exception {
@@ -64,15 +54,11 @@ public class YouthRegistrationTest extends BaseTest {
         registrationPage.fetchAndVerifyOTP();
         registrationPage.fillRegistrationForm();
         registrationPage.submitForm();
+        registrationPage.clickAdditionalDetailsPopup();
 
-        // Save email for DB verification
         registeredEmail = registrationPage.getEmail();
         log.info("Registration completed for: {}", registeredEmail);
     }
-
-    // -------------------------------------------------------------------------
-    // Test 2: Verify user exists in DB via Redash
-    // -------------------------------------------------------------------------
 
     @Test(priority = 2, groups = {"smoke", "registration"},
           dependsOnMethods = "registerIndianYouth")
@@ -85,7 +71,6 @@ public class YouthRegistrationTest extends BaseTest {
 
         if (baseUrl == null || queryId == null || apiKey == null) {
             log.warn("Redash credentials not provided. Skipping DB verification.");
-            log.warn("To enable: -DredashBaseUrl=... -DredashQueryId=... -DredashApiKey=...");
             return;
         }
 
@@ -94,37 +79,5 @@ public class YouthRegistrationTest extends BaseTest {
 
         Assert.assertTrue(found, "User " + registeredEmail + " should exist in database after registration");
         log.info("✅ User verified in database: {}", registeredEmail);
-    }
-
-    // -------------------------------------------------------------------------
-    // Test 3: Fill Public Profile & Download Certificate
-    // -------------------------------------------------------------------------
-
-    @Test(priority = 3, groups = {"regression"},
-          dependsOnMethods = "registerIndianYouth", enabled = false)
-    public void fillPublicProfileAndDownloadCertificate() throws Exception {
-        log.info("Starting: Fill Public Profile");
-
-        PublicProfilePage profilePage = new PublicProfilePage(driver);
-        boolean downloaded = profilePage.downloadCertificate();
-
-        Assert.assertTrue(downloaded, "Certificate should be downloaded successfully");
-        log.info("✅ Certificate downloaded");
-    }
-
-    // -------------------------------------------------------------------------
-    // Test 4: Play Quiz
-    // -------------------------------------------------------------------------
-
-    @Test(priority = 4, groups = {"regression"},
-          dependsOnMethods = "fillPublicProfileAndDownloadCertificate", enabled = false)
-    public void playQuiz() throws Exception {
-        log.info("Starting: Play Quiz");
-
-        PlayQuizPage quizPage = new PlayQuizPage(driver, "English");
-        quizPage.startQuiz();
-        quizPage.attemptAllQuestionsAndSubmit();
-
-        log.info("✅ Quiz completed");
     }
 }

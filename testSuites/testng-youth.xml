@@ -2,11 +2,11 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  Youth Module Suite - runs all youth tests sequentially.
+  Youth Module Suite - runs Registration then Profile sequentially on SAME browser.
   
   Run with:
-    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
     mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
 -->
 <suite name="Youth Module" parallel="false" verbose="1">
 
@@ -14,9 +14,24 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <test name="Youth Registration Flow">
+    <!-- Step 1: Registration (opens browser, registers user) -->
+    <test name="Youth Registration">
         <classes>
             <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Certificate Verification (same browser, verifies + downloads certificate) -->
+    <test name="Registration Certificate Verification">
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Quiz Attempt (same browser, attempts competitive quiz) -->
+    <test name="Quiz Attempt">
+        <classes>
+            <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
         </classes>
     </test>
 

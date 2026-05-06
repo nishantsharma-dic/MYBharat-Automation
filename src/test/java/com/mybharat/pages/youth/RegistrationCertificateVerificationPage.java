@@ -12,7 +12,7 @@ import com.mybharat.pages.BasePage;
 /**
  * PublicProfilePage - Handles Youth public profile and certificate download.
  */
-public class PublicProfilePage extends BasePage {
+public class RegistrationCertificateVerificationPage extends BasePage {
 
     @FindBy(xpath = "//img[contains(@src, 'Recreated-Certificate.jpg')]")
     private WebElement certificateImage;
@@ -23,7 +23,7 @@ public class PublicProfilePage extends BasePage {
     @FindBy(xpath = "//i[@class='fa fa-times']")
     private WebElement closeBtn;
 
-    public PublicProfilePage(WebDriver driver) {
+    public RegistrationCertificateVerificationPage(WebDriver driver) {
         super(driver);
     }
 
@@ -33,6 +33,14 @@ public class PublicProfilePage extends BasePage {
      * @return true if certificate file was downloaded successfully
      */
     public boolean downloadCertificate() throws InterruptedException {
+        // Dismiss any leftover alert from previous step
+        try {
+            driver.switchTo().alert().accept();
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            // No alert — continue
+        }
+
         String downloadDir = System.getProperty("downloadDir",
                 System.getProperty("user.home") + File.separator + "Downloads");
 
@@ -40,7 +48,11 @@ public class PublicProfilePage extends BasePage {
         cleanFolder(downloadDir);
 
         // Wait for loader to disappear
-        waitForInvisible(By.xpath("//div[@class='loader']"));
+        try {
+            waitForInvisible(By.xpath("//div[@class='loader']"));
+        } catch (Exception e) {
+            // Loader might not be present — continue
+        }
 
         // Click certificate and download
         try {

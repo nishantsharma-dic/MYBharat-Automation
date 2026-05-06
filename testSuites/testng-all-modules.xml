@@ -2,18 +2,19 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  ALL MODULES - Runs all modules SEQUENTIALLY (one after another).
+  ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
   
   Run with:
     mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
+    mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
   
-  Modules execute in this order:
-    1. Registration
-    2. Login
-    3. Youth Profile
-    4. CV Builder
-    5. Organisation Creation
-    6. Join Organisation
+  Execution order:
+    1. Youth Registration
+    2. Youth Profile + Quiz
+    3. Login (TODO)
+    4. CV Builder (TODO)
+    5. Organisation Creation (TODO)
+    6. Join Organisation (TODO)
 -->
 <suite name="MYBharat All Modules" parallel="false" verbose="1">
 
@@ -22,33 +23,38 @@
     </listeners>
 
     <!-- Module 1: Youth Registration -->
-    <test name="Module - Youth Registration">
+    <test name="Youth Registration">
         <classes>
             <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
         </classes>
     </test>
 
-    <!-- Module 2: Login (TODO - create LoginTest.java) -->
+    <!-- Module 2: Registration Certificate Verification -->
+    <test name="Registration Certificate Verification">
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
+        </classes>
+    </test>
+
+    <!-- Module 3: Quiz Attempt -->
+    <test name="Quiz Attempt">
+        <classes>
+            <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
+        </classes>
+    </test>
+
+    <!-- Module 3: Login (TODO - create LoginTest.java) -->
     <!--
-    <test name="Module - Login">
+    <test name="Login">
         <classes>
             <class name="com.mybharat.tests.login.LoginTest"/>
         </classes>
     </test>
     -->
 
-    <!-- Module 3: Youth Profile (TODO) -->
-    <!--
-    <test name="Module - Youth Profile">
-        <classes>
-            <class name="com.mybharat.tests.youth.YouthProfileTest"/>
-        </classes>
-    </test>
-    -->
-
     <!-- Module 4: CV Builder (TODO) -->
     <!--
-    <test name="Module - CV Builder">
+    <test name="CV Builder">
         <classes>
             <class name="com.mybharat.tests.cvbuilder.CVBuilderTest"/>
         </classes>
@@ -57,7 +63,7 @@
 
     <!-- Module 5: Organisation Creation (TODO) -->
     <!--
-    <test name="Module - Organisation Creation">
+    <test name="Organisation Creation">
         <classes>
             <class name="com.mybharat.tests.organisation.OrgCreationTest"/>
         </classes>
@@ -66,7 +72,7 @@
 
     <!-- Module 6: Join Organisation (TODO) -->
     <!--
-    <test name="Module - Join Organisation">
+    <test name="Join Organisation">
         <classes>
             <class name="com.mybharat.tests.organisation.JoinOrgTest"/>
         </classes>

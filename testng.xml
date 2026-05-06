@@ -2,9 +2,9 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  Default suite - Smoke tests only.
+  Default suite - runs Registration + Profile sequentially on same browser.
   
-  Run: mvn test -Denv=beta -Dbrowser=chrome
+  Run: mvn test -Denv=prod -Dbrowser=firefox
   
   For all modules: mvn test -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
 -->
@@ -14,14 +14,21 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <test name="Smoke Tests">
-        <groups>
-            <run>
-                <include name="smoke"/>
-            </run>
-        </groups>
+    <test name="Youth Registration">
         <classes>
             <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+        </classes>
+    </test>
+
+    <test name="Registration Certificate Verification">
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
+        </classes>
+    </test>
+
+    <test name="Quiz Attempt">
+        <classes>
+            <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
         </classes>
     </test>
 

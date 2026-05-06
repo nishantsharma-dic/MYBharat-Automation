@@ -76,6 +76,9 @@ public class RegistrationPage extends BasePage {
     @FindBy(xpath = "//select[@id='gender']")
     private WebElement genderDropdown;
 
+    @FindBy(xpath = "//select[contains(.,'Select Category')]")
+    private WebElement categoryDropdown;
+
     @FindBy(xpath = "//select[@id='state']")
     private WebElement stateDropdown;
 
@@ -145,11 +148,17 @@ public class RegistrationPage extends BasePage {
     @FindBy(xpath = "//input[@id='khel_participate']")
     private WebElement participateCheckbox;
 
-    @FindBy(xpath = "(//input[@id='defaultCheck1'])[1]")
-    private WebElement consentCheckbox;
+    @FindBy(css = "#defaultCheck1")
+    private WebElement consentTermsCheckbox;
+
+    @FindBy(xpath = "//input[@id='ncs_consent']")
+    private WebElement consentNCSCheckbox;
 
     @FindBy(xpath = "//button[@id='registrationButton']")
     private WebElement submitBtn;
+
+    @FindBy(xpath = "//button[@id='btnAdditionalDetails']")
+    private WebElement additionalDetailsPopupBtn;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -243,6 +252,11 @@ public class RegistrationPage extends BasePage {
         Select gender = selectDropdown(genderDropdown);
         gender.selectByVisibleText(faker.options().option("Male", "Female", "Others"));
 
+        // Category (random index 2-4)
+        scrollToElement(categoryDropdown);
+        Select category = selectDropdown(categoryDropdown);
+        category.selectByIndex(faker.number().numberBetween(2, 5)); // index 2,3,4
+
         // State & District
         Select state = selectDropdown(stateDropdown);
         state.selectByIndex(faker.number().numberBetween(1, 15));
@@ -291,16 +305,52 @@ public class RegistrationPage extends BasePage {
         sportInput.sendKeys("B");
         sportInput.sendKeys(Keys.ENTER);
 
-        // Participation & Consent
-        safeClick(participateCheckbox);
-        safeClick(consentCheckbox);
+        // Participation (skip if element not present on page)
+        try {
+            if (participateCheckbox.isDisplayed()) {
+                safeClick(participateCheckbox);
+            }
+        } catch (Exception e) {
+            // Element not on this version of the form — skip
+        }
+
+        // Click "I consent to terms of use" (#defaultCheck1)
+        waitForClickable(consentTermsCheckbox);
+        scrollToElement(consentTermsCheckbox);
+        jsClick(consentTermsCheckbox);
+
+        // Click "I consent to provide my data to NCS" (#ncs_consent)
+        jsClick(consentNCSCheckbox);
     }
 
     /**
      * Click the Submit button.
      */
     public void submitForm() {
+        scrollToElement(submitBtn);
         safeClick(submitBtn);
+    }
+
+    /**
+     * Click the "Additional Details" button on the popup that appears after registration.
+     * Handles any browser alert that may appear after clicking.
+     */
+    public void clickAdditionalDetailsPopup() throws InterruptedException {
+        Thread.sleep(5000); // Wait for popup to fully load after registration
+        waitForVisible(additionalDetailsPopupBtn);
+        waitForClickable(additionalDetailsPopupBtn);
+        scrollToElement(additionalDetailsPopupBtn);
+        Thread.sleep(500);
+        jsClick(additionalDetailsPopupBtn);
+
+        // Handle any browser alert that appears
+        Thread.sleep(2000);
+        try {
+            driver.switchTo().alert().accept();
+        } catch (Exception e) {
+            // No alert present — continue
+        }
+        Thread.sleep(1000);
     }
 
     // -------------------------------------------------------------------------

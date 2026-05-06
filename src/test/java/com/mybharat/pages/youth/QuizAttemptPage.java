@@ -13,12 +13,12 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.mybharat.pages.BasePage;
+import com.mybharat.utils.ConfigReader;import com.mybharat.pages.BasePage;
 
 /**
  * PlayQuizPage - Handles quiz registration and answering all questions.
  */
-public class PlayQuizPage extends BasePage {
+public class QuizAttemptPage extends BasePage {
 
     private final String language;
     private final Random random = new Random();
@@ -32,12 +32,12 @@ public class PlayQuizPage extends BasePage {
     @FindBy(xpath = "//select[@id='quizLanguage']")
     private WebElement languageDropdown;
 
-    public PlayQuizPage(WebDriver driver, String language) {
+    public QuizAttemptPage(WebDriver driver, String language) {
         super(driver);
         this.language = (language != null) ? language : "English";
     }
 
-    public PlayQuizPage(WebDriver driver) {
+    public QuizAttemptPage(WebDriver driver) {
         this(driver, "English");
     }
 
@@ -47,9 +47,11 @@ public class PlayQuizPage extends BasePage {
     public void startQuiz() throws Exception {
         WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
-        // Go to home and open Quiz tab
-        safeClick(logoIcon);
+        // Navigate to home page using config URL
+        ConfigReader config = new ConfigReader();
+        driver.get(config.getUrl());
         waitForPageLoad();
+        Thread.sleep(2000);
 
         // Close popup if present
         try {
@@ -57,15 +59,36 @@ public class PlayQuizPage extends BasePage {
             if (popup.isDisplayed()) popup.click();
         } catch (Exception e) { /* no popup */ }
 
+        // Click Quiz & Essay tab
+        waitForClickable(quizAndEssayTab);
         safeClick(quizAndEssayTab);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         scrollPage(1000);
+        Thread.sleep(1000);
 
-        // Click Start Quiz
-        WebElement startQuiz = longWait.until(
-                ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='start_quiz']")));
+        // Click Start Quiz — try multiple locators
+        WebElement startQuiz = null;
+        try {
+            startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("(//button[@type='button'][normalize-space()='Start Quiz'])[1]")));
+        } catch (Exception e) {
+            startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='start_quiz']")));
+        }
         scrollToElement(startQuiz);
+        Thread.sleep(500);
         jsClick(startQuiz);
+
+        // Click second "START QUIZ" button (if present)
+        try {
+            WebElement startQuiz2 = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='START QUIZ']")));
+            scrollToElement(startQuiz2);
+            Thread.sleep(500);
+            jsClick(startQuiz2);
+        } catch (Exception e) {
+            // Second start quiz button not present — continue
+        }
 
         // Select "No" for disability
         WebElement disability = longWait.until(
@@ -178,5 +201,18 @@ public class PlayQuizPage extends BasePage {
                 ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='submit_quiz']")));
         js.executeScript("arguments[0].click();", confirm);
         System.out.println("Quiz submitted successfully");
+
+        // Rate the quiz (click 4th star)
+        Thread.sleep(2000);
+        WebElement ratingStar = qWait.until(
+                ExpectedConditions.elementToBeClickable(By.xpath("//i[4]")));
+        js.executeScript("arguments[0].click();", ratingStar);
+        Thread.sleep(500);
+
+        // Click feedback submit button
+        WebElement feedbackSubmit = qWait.until(
+                ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='submit_button']")));
+        js.executeScript("arguments[0].click();", feedbackSubmit);
+        System.out.println("Feedback submitted successfully");
     }
 }

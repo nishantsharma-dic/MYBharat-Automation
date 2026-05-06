@@ -14,8 +14,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 
 import com.mybharat.utils.ConfigReader;
 
@@ -23,7 +23,9 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 
 /**
  * BaseTest - All test classes extend this.
- * Handles browser setup and teardown.
+ * 
+ * Browser starts ONCE at suite level and is shared across all test classes.
+ * This allows sequential test classes to run on the SAME browser session.
  * 
  * Usage:
  *   mvn test -Denv=beta -Dbrowser=chrome
@@ -33,13 +35,14 @@ public class BaseTest {
 
     private static final Logger log = LogManager.getLogger(BaseTest.class);
 
-    protected WebDriver driver;
-    protected ConfigReader config;
+    /** Shared driver across all test classes in the suite */
+    protected static WebDriver driver;
+    protected static ConfigReader config;
 
     /** Thread-local driver so Listeners can access it for screenshots */
     public static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeSuite(alwaysRun = true)
     public void setUp() {
         config = new ConfigReader();
         String browserName = System.getProperty("browser", config.getProperty("browser"));
@@ -51,12 +54,16 @@ public class BaseTest {
         driverThreadLocal.set(driver);
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterSuite(alwaysRun = true)
     public void tearDown() {
-        if (driver != null) {
+        boolean closeBrowser = Boolean.parseBoolean(System.getProperty("closeBrowser", "true"));
+        if (driver != null && closeBrowser) {
             log.info("Closing browser");
             driver.quit();
+            driver = null;
             driverThreadLocal.remove();
+        } else {
+            log.info("Browser left open (closeBrowser=false)");
         }
     }
 
