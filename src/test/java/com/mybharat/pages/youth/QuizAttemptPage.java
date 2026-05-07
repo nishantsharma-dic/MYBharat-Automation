@@ -114,33 +114,51 @@ public class QuizAttemptPage extends BasePage {
      * Attempt all 20 questions with random answers and submit.
      */
     public void attemptAllQuestionsAndSubmit() throws Exception {
-        WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(30));
         JavascriptExecutor js = (JavascriptExecutor) driver;
         int totalQuestions = 20;
 
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         waitForPageLoad();
 
         for (int q = 1; q <= totalQuestions; q++) {
             System.out.println("Answering question " + q);
+            Thread.sleep(1000); // Wait for question to fully load
+            waitForPageLoad();
 
-            // Find answer options
-            List<WebElement> options = findAnswerOptions(qWait);
-            if (options.isEmpty()) {
+            // Find answer options (fresh lookup every time to avoid stale elements)
+            List<WebElement> options = null;
+            for (int attempt = 0; attempt < 3; attempt++) {
+                try {
+                    options = findAnswerOptions(qWait);
+                    if (!options.isEmpty()) break;
+                } catch (Exception e) {
+                    Thread.sleep(1000);
+                }
+            }
+            if (options == null || options.isEmpty()) {
                 throw new Exception("No answer options found for question " + q);
             }
 
-            // Select random answer
-            WebElement selected = options.get(random.nextInt(options.size()));
-            scrollToElement(selected);
-            Thread.sleep(300);
-            jsClick(selected);
+            // Select random answer — re-find to avoid stale reference
+            try {
+                WebElement selected = options.get(random.nextInt(options.size()));
+                scrollToElement(selected);
+                Thread.sleep(500);
+                jsClick(selected);
+            } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                // Element went stale — re-find and click
+                Thread.sleep(1000);
+                options = findAnswerOptions(qWait);
+                WebElement selected = options.get(random.nextInt(options.size()));
+                jsClick(selected);
+            }
 
             // Click Next (except for last question)
             if (q < totalQuestions) {
                 clickNextButton(qWait, js);
+                Thread.sleep(1500); // Wait for next question to load
             }
-            Thread.sleep(800);
         }
 
         // Submit quiz
