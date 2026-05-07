@@ -114,33 +114,39 @@ public class QuizAttemptPage extends BasePage {
      * Attempt all 20 questions with random answers and submit.
      */
     public void attemptAllQuestionsAndSubmit() throws Exception {
-        WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(30));
         JavascriptExecutor js = (JavascriptExecutor) driver;
         int totalQuestions = 20;
 
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         waitForPageLoad();
 
         for (int q = 1; q <= totalQuestions; q++) {
             System.out.println("Answering question " + q);
+            Thread.sleep(1000); // Wait for question to fully load
 
             // Find answer options
             List<WebElement> options = findAnswerOptions(qWait);
             if (options.isEmpty()) {
-                throw new Exception("No answer options found for question " + q);
+                // Retry once after waiting
+                Thread.sleep(2000);
+                options = findAnswerOptions(qWait);
+                if (options.isEmpty()) {
+                    throw new Exception("No answer options found for question " + q);
+                }
             }
 
             // Select random answer
             WebElement selected = options.get(random.nextInt(options.size()));
             scrollToElement(selected);
-            Thread.sleep(300);
+            Thread.sleep(500);
             jsClick(selected);
 
             // Click Next (except for last question)
             if (q < totalQuestions) {
                 clickNextButton(qWait, js);
             }
-            Thread.sleep(800);
+            Thread.sleep(1000);
         }
 
         // Submit quiz

@@ -29,7 +29,7 @@ public class QuizAttemptTest extends BaseTest {
         quizPage = new QuizAttemptPage(driver, "English");
     }
 
-    @Test(priority = 1, groups = {"regression", "quiz"}, retryAnalyzer = Retry.class)
+    @Test(priority = 1, groups = {"regression", "quiz"})
     public void attemptCompetitiveQuiz() throws Exception {
         log.info("Starting: Quiz Attempt");
 
