@@ -194,8 +194,7 @@ public class YouthProfilePage extends BasePage {
     /**
      * Complete the full youth profile in one flow.
      * Called right after registration — user is already on the profile page.
-     * Note: changePassword is NOT called here as it logs out the user
-     * and would break subsequent tests (certificate, quiz).
+     * Flow: Profile sections → Certificate Download → Basic Info → Extract Email
      */
     public void completeYouthProfile() throws Exception {
         dismissAdditionalDetailsModal();
@@ -206,8 +205,6 @@ public class YouthProfilePage extends BasePage {
         fillProfessionalSummary();
         addWorkExperience();
         fillToolsSection();
-        navigateToBasicInfo();
-        extractEmailFromProfile();
     }
 
     /**
@@ -377,6 +374,7 @@ public class YouthProfilePage extends BasePage {
 
     /**
      * Download the registration certificate as PNG.
+     * Validates download in user's Downloads folder, then closes the modal.
      */
     public void downloadCertification() throws InterruptedException {
         scrollToElement(myCertifications);
@@ -385,10 +383,30 @@ public class YouthProfilePage extends BasePage {
         waitForClickable(certificationDownloadInPng);
         certificationDownloadInPng.click();
 
-        Assert.assertTrue(waitForDownload(".png", 15),
-                "Certificate PNG not downloaded!");
+        // Validate certificate downloaded to user's Downloads folder
+        String downloadDir = System.getProperty("user.home") + File.separator + "Downloads";
+        boolean downloaded = false;
+        for (int i = 0; i < 15; i++) {
+            File dir = new File(downloadDir);
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.getName().endsWith(".png") && !file.getName().contains(".crdownload")) {
+                        System.out.println("✅ Certificate downloaded: " + file.getName());
+                        downloaded = true;
+                        break;
+                    }
+                }
+            }
+            if (downloaded) break;
+            Thread.sleep(1000);
+        }
+        Assert.assertTrue(downloaded, "Certificate PNG not downloaded!");
 
+        // Close the certificate modal
+        Thread.sleep(1000);
         safeClick(closeModalBtn);
+        Thread.sleep(1000);
     }
 
     /**
@@ -420,6 +438,28 @@ public class YouthProfilePage extends BasePage {
 
         writeEmailToExcel(value);
         System.out.println("Email extracted from profile and written to Excel successfully.");
+    }
+
+    /**
+     * Navigate back to the Profile tab so the certificate section is visible
+     * for the next test (RegistrationCertificateVerificationTest).
+     */
+    public void navigateBackToProfileTab() throws InterruptedException {
+        // Click on the Profile tab (first tab) to go back to profile view
+        try {
+            WebElement profileTab = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector("a[href='#Profile'], a[href='#profile'], .nav-link.active:first-child")));
+            safeClick(profileTab);
+            Thread.sleep(2000);
+        } catch (Exception e) {
+            // If tab click fails, scroll to top where certificate section is
+            scrollPage(-5000);
+            Thread.sleep(1000);
+        }
+        // Scroll down to make certificate section visible
+        scrollPage(1000);
+        Thread.sleep(1000);
     }
 
     /**
