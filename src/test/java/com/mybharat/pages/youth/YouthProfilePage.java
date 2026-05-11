@@ -336,8 +336,12 @@ public class YouthProfilePage extends BasePage {
         profSummaryInput.sendKeys("Automated professional summary.");
 
         safeClick(profSkillLabel);
+        // Wait for dropdown options to appear
+        try { Thread.sleep(1000); } catch (Exception ignored) {}
         int index = random.nextInt(profSkillOptions.size());
-        profSkillOptions.get(index).click();
+        WebElement option = profSkillOptions.get(index);
+        scrollToElement(option);
+        jsClick(option);
 
         safeClick(profSaveBtn);
     }
@@ -364,7 +368,16 @@ public class YouthProfilePage extends BasePage {
         clearAndType(toolsInput, "Selenium, Playwright, Maven, TestNG, Java, Git, Jenkins");
         clearAndType(introVideo, "https://www.youtube.com/watch?v=QZSlDNgi-eQ");
 
-        new Select(socialTypeDropdown).selectByIndex(3);
+        // Cross-browser safe dropdown selection
+        scrollToElement(socialTypeDropdown);
+        try {
+            new Select(socialTypeDropdown).selectByIndex(3);
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].selectedIndex = 3; arguments[0].dispatchEvent(new Event('change'));",
+                    socialTypeDropdown);
+        }
+
         clearAndType(socialUrl, "https://x.com/MkumarManoj1");
 
         waitForClickable(saveToolsBtn);
@@ -411,16 +424,18 @@ public class YouthProfilePage extends BasePage {
 
     /**
      * Navigate to Basic Info tab.
+     * Uses element-based scrolling for all screen sizes.
      */
     public void navigateToBasicInfo() throws InterruptedException {
-        scrollToElement(basicInfoTab);
-        scrollPage(-4000);
-        Thread.sleep(500);
+        // Scroll to top first (works on all resolutions)
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0);");
+        Thread.sleep(1000);
 
         WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
         longWait.until(ExpectedConditions.elementToBeClickable(basicInfoTab));
         scrollToElement(basicInfoTab);
         safeClick(basicInfoTab);
+        Thread.sleep(1000);
     }
 
     /**
@@ -513,12 +528,22 @@ public class YouthProfilePage extends BasePage {
 
     /**
      * Select a random option from a dropdown (skipping the first placeholder).
+     * Scrolls to element first and uses JS fallback for cross-browser compatibility.
      */
     private void selectRandomOption(WebElement element) {
+        scrollToElement(element);
         Select select = new Select(element);
         List<WebElement> options = select.getOptions();
         if (options.size() > 1) {
-            select.selectByIndex(random.nextInt(options.size() - 1) + 1);
+            int index = random.nextInt(options.size() - 1) + 1;
+            try {
+                select.selectByIndex(index);
+            } catch (Exception e) {
+                // Fallback: use JavaScript to set the selected index (works on all browsers)
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].selectedIndex = arguments[1]; arguments[0].dispatchEvent(new Event('change'));",
+                        element, index);
+            }
         }
     }
 
