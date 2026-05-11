@@ -43,7 +43,14 @@
         </classes>
     </test>
 
-    <!-- Module 3: Login (TODO - create LoginTest.java) -->
+    <!-- Module 4: Youth Profile Completion -->
+    <test name="Youth Profile Completion">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthProfileTest"/>
+        </classes>
+    </test>
+
+    <!-- Module 5: Login (TODO - create LoginTest.java) -->
     <!--
     <test name="Login">
         <classes>
