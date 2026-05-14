@@ -48,14 +48,14 @@ public class TestListeners implements ITestListener {
         extentTest.get().fail(result.getThrowable());
         log.error("❌ Test failed: {}", result.getMethod().getMethodName());
 
-        // Capture screenshot
+        // Capture screenshot — safely handle invalid/dead sessions
         WebDriver driver = BaseTest.driverThreadLocal.get();
         if (driver != null) {
             try {
                 String path = captureScreenshot(driver, result.getMethod().getMethodName());
                 extentTest.get().addScreenCaptureFromPath(path);
-            } catch (IOException e) {
-                log.error("Failed to capture screenshot: {}", e.getMessage());
+            } catch (Exception e) {
+                log.warn("Could not capture screenshot (session may be invalid): {}", e.getMessage());
             }
         }
     }

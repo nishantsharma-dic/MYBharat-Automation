@@ -90,9 +90,34 @@ public class QuizAttemptPage extends BasePage {
             // Second start quiz button not present — continue
         }
 
-        // Select "No" for disability
-        WebElement disability = longWait.until(
-                ExpectedConditions.elementToBeClickable(By.xpath("(//input[@id='check_detail_whether_disability'])[2]")));
+        // Wait for page to stabilize after quiz start
+        Thread.sleep(3000);
+        waitForPageLoad();
+
+        // Select "No" for disability — try multiple locators
+        WebElement disability = null;
+        String[] disabilityLocators = {
+            "(//input[@id='check_detail_whether_disability'])[2]",
+            "//input[@name='whether_disability' and @value='No']",
+            "//input[@name='whether_disability'][2]",
+            "//label[contains(text(),'No')]/preceding-sibling::input[@type='radio']",
+            "(//input[@type='radio'][@name='whether_disability'])[2]"
+        };
+        for (String locator : disabilityLocators) {
+            try {
+                disability = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                        ExpectedConditions.presenceOfElementLocated(By.xpath(locator)));
+                if (disability != null) break;
+            } catch (Exception e) { /* try next */ }
+        }
+        if (disability == null) {
+            // Last resort — try to find any "No" radio button on the page
+            disability = longWait.until(
+                    ExpectedConditions.presenceOfElementLocated(
+                            By.xpath("(//input[@id='check_detail_whether_disability'])[2]")));
+        }
+        scrollToElement(disability);
+        Thread.sleep(500);
         jsClick(disability);
 
         // Click Proceed

@@ -2,11 +2,11 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  Default suite - runs Registration + Profile sequentially on same browser.
+  MYBharat Smoke Suite
   
-  Run: mvn test -Denv=prod -Dbrowser=firefox
+  Flow: Registration (+ save email + logout) → Login → Profile → Basic Info → Quiz
   
-  For all modules: mvn test -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
+  Run: mvn test -Denv=prod -Dbrowser=chrome
 -->
 <suite name="MYBharat Smoke Suite" parallel="false" verbose="1">
 
@@ -14,18 +14,35 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
+    <!-- Step 1: Registration → Submit popup → Save email to Excel → Logout -->
     <test name="Youth Registration">
         <classes>
             <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
         </classes>
     </test>
 
-    <test name="Registration Certificate Verification">
+    <!-- Step 2: Login with email from Excel (password: 25@March) -->
+    <test name="Youth Login">
         <classes>
-            <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
+            <class name="com.mybharat.tests.youth.LoginTest"/>
         </classes>
     </test>
 
+    <!-- Step 3: Complete Youth Profile -->
+    <test name="Youth Profile Completion">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthProfileTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 4: Basic Info + Extract Email -->
+    <test name="Youth Basic Info">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthBasicInfoTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 5: Attempt Quiz -->
     <test name="Quiz Attempt">
         <classes>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
