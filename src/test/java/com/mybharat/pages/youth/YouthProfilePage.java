@@ -408,7 +408,7 @@ public class YouthProfilePage extends BasePage {
             log.warn("Professional Summary textarea not found");
         }
 
-        // Select a skill from react-select
+        // Select a skill from react-select — just click first option from dropdown
         try {
             List<WebElement> reactSelects = driver.findElements(
                     By.cssSelector("[class*='css-'][class*='control']"));
@@ -416,11 +416,13 @@ public class YouthProfilePage extends BasePage {
                 WebElement lastSelect = reactSelects.get(reactSelects.size() - 1);
                 scrollToElement(lastSelect);
                 lastSelect.click();
-                safeSleep(300);
-                WebElement input = driver.findElement(By.cssSelector("[class*='css-'] input[aria-autocomplete]"));
-                input.sendKeys("Java");
                 safeSleep(500);
-                input.sendKeys(Keys.ENTER);
+                // Click the first option directly from the menu
+                WebElement firstOption = new WebDriverWait(driver, Duration.ofSeconds(3)).until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.cssSelector("[class*='css-'][class*='option']")));
+                firstOption.click();
+                safeSleep(200);
             }
         } catch (Exception e) {
             log.info("Skills react-select not found, skipping");
