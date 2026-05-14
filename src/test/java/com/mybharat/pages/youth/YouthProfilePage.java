@@ -367,18 +367,16 @@ public class YouthProfilePage extends BasePage {
 
         // Click edit icon for Professional Summary
         clickEditIconInSection("Professional Summary");
-        safeSleep(800); // Need time for React to render the form
+        safeSleep(2000); // React needs time: state update + re-render + API calls for languages/skills
 
         // Find ANY visible textarea on the page (Professional Summary's textarea)
         WebElement textarea = null;
         try {
-            // Wait briefly for textarea to appear after edit mode activates
-            textarea = new WebDriverWait(driver, Duration.ofSeconds(3)).until(driver -> {
+            textarea = new WebDriverWait(driver, Duration.ofSeconds(5)).until(driver -> {
                 List<WebElement> textareas = driver.findElements(By.tagName("textarea"));
                 for (WebElement ta : textareas) {
                     try {
                         String placeholder = ta.getAttribute("placeholder");
-                        // Skip the About textarea
                         if (placeholder != null && placeholder.contains("Tell us about")) continue;
                         if (ta.isDisplayed()) return ta;
                     } catch (Exception e) { /* stale */ }
@@ -402,10 +400,10 @@ public class YouthProfilePage extends BasePage {
                 WebElement lastSelect = reactSelects.get(reactSelects.size() - 1);
                 scrollToElement(lastSelect);
                 lastSelect.click();
-                safeSleep(200);
+                safeSleep(300);
                 WebElement input = driver.findElement(By.cssSelector("[class*='css-'] input[aria-autocomplete]"));
                 input.sendKeys("Java");
-                safeSleep(200);
+                safeSleep(500);
                 input.sendKeys(Keys.ENTER);
             }
         } catch (Exception e) {
@@ -652,7 +650,7 @@ public class YouthProfilePage extends BasePage {
 
         if (toolsInput == null) {
             clickEditIconInSection("Tools");
-            safeSleep(200);
+            safeSleep(2000); // React needs time to render the edit form
         }
 
         try {
@@ -672,7 +670,18 @@ public class YouthProfilePage extends BasePage {
             typeInReactInput(videoInput, "https://www.youtube.com/watch?v=QZSlDNgi-eQ");
         } catch (Exception e) { /* skip */ }
 
-        clickSaveOrUpdateInSection("Tools");
+        // Click Save/Update
+        try {
+            List<WebElement> buttons = driver.findElements(By.xpath(
+                    "//button[normalize-space()='Save' or normalize-space()='Update']"));
+            for (WebElement btn : buttons) {
+                if (btn.isDisplayed() && btn.isEnabled()) {
+                    scrollToElement(btn);
+                    safeClick(btn);
+                    break;
+                }
+            }
+        } catch (Exception e) { /* skip */ }
         waitForToastOrTimeout();
         log.info("✅ Tools section saved");
     }
