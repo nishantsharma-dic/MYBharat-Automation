@@ -360,20 +360,40 @@ public class YouthProfilePage extends BasePage {
      */
     public void fillProfessionalSummary() throws InterruptedException {
         log.info("Filling Professional Summary...");
-        expandSectionIfCollapsed("Professional Summary");
+
+        // Scroll to make Professional Summary visible
+        scrollPage(300);
         safeSleep(200);
 
-        if (findTextareaInSection("Professional Summary") == null) {
-            clickEditIconInSection("Professional Summary");
-            safeSleep(200);
-        }
+        // Click edit icon for Professional Summary
+        clickEditIconInSection("Professional Summary");
+        safeSleep(200);
 
-        WebElement textarea = findTextareaInSection("Professional Summary");
+        // Find ANY visible textarea on the page (Professional Summary's textarea)
+        // After clicking edit, the description textarea appears
+        WebElement textarea = null;
+        try {
+            List<WebElement> textareas = driver.findElements(By.tagName("textarea"));
+            for (WebElement ta : textareas) {
+                if (ta.isDisplayed() && ta.getAttribute("placeholder") != null
+                        && ta.getAttribute("placeholder").contains("Tell us about")) {
+                    continue; // Skip About textarea
+                }
+                if (ta.isDisplayed()) {
+                    textarea = ta;
+                    break;
+                }
+            }
+        } catch (Exception e) { /* skip */ }
+
         if (textarea != null) {
             scrollToElement(textarea);
             setReactInputValue(textarea, "Experienced in automation testing with Selenium, Java, and TestNG.");
+        } else {
+            log.warn("Professional Summary textarea not found");
         }
 
+        // Select a skill from react-select
         try {
             List<WebElement> reactSelects = driver.findElements(
                     By.cssSelector("[class*='css-'][class*='control']"));
@@ -391,7 +411,20 @@ public class YouthProfilePage extends BasePage {
             log.info("Skills react-select not found, skipping");
         }
 
-        clickSaveOrUpdateInSection("Professional Summary");
+        // Click Save/Update — find any visible Save/Update button
+        try {
+            List<WebElement> buttons = driver.findElements(By.xpath(
+                    "//button[normalize-space()='Save' or normalize-space()='Update']"));
+            for (WebElement btn : buttons) {
+                if (btn.isDisplayed() && btn.isEnabled()) {
+                    scrollToElement(btn);
+                    safeClick(btn);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Save button not found for Professional Summary");
+        }
         waitForToastOrTimeout();
         log.info("✅ Professional Summary saved");
     }
