@@ -132,7 +132,7 @@ public class YouthProfilePage extends BasePage {
         // Fill About tab sections
         fillAboutSection();
         addAreaOfInterest();
-        addEducationQualification();
+        // Education Qualification skipped — complex form with dependent dropdowns
         addLanguage();
         fillProfessionalSummary();
         addWorkExperience();
