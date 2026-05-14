@@ -109,7 +109,7 @@ public class LoginPage extends BasePage {
         log.info("Navigating to: {}", url);
         driver.get(url);
         waitForPageLoad();
-        safeSleep(2000);
+        safeSleep(300);
     }
 
     /**
@@ -123,7 +123,7 @@ public class LoginPage extends BasePage {
                     By.xpath("//i[@class='fa fa-times']")));
             popup.click();
             log.info("Popup closed");
-            safeSleep(500);
+            safeSleep(300);
         } catch (Exception e) {
             log.info("No popup present — continuing");
         }
@@ -142,7 +142,7 @@ public class LoginPage extends BasePage {
             jsClick(signInLink);
         }
         log.info("Clicked Sign In");
-        safeSleep(1000);
+        safeSleep(300);
     }
 
     /**
@@ -196,7 +196,7 @@ public class LoginPage extends BasePage {
             jsClick(loginBtn);
         }
         log.info("Clicked Login button — OTP sent");
-        safeSleep(2000); // Wait for OTP to be sent
+        safeSleep(300); // Wait for OTP to be sent
     }
 
     /**
@@ -208,7 +208,7 @@ public class LoginPage extends BasePage {
         // Open new tab for Yopmail
         driver.switchTo().newWindow(WindowType.TAB);
         driver.get(config.getDummyEmailUrl());
-        safeSleep(2000);
+        safeSleep(300);
 
         // Enter email prefix in Yopmail
         WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(LONG_WAIT));
@@ -217,11 +217,11 @@ public class LoginPage extends BasePage {
         String emailPrefix = loginEmail.split("@")[0];
         inbox.sendKeys(emailPrefix);
         safeClick(yopmailGoBtn);
-        safeSleep(2000);
+        safeSleep(300);
 
         // Refresh to get latest email
         safeClick(yopmailRefresh);
-        safeSleep(2000);
+        safeSleep(300);
 
         // Switch to mail iframe and extract OTP
         driver.switchTo().frame("ifmail");
@@ -233,7 +233,7 @@ public class LoginPage extends BasePage {
         ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
         driver.switchTo().window(tabs.get(1)).close();
         driver.switchTo().window(tabs.get(0));
-        safeSleep(1000);
+        safeSleep(300);
 
         // Enter OTP in the login form
         WebElement otpInput = longWait.until(ExpectedConditions.visibilityOf(enterOTPField));
@@ -256,7 +256,7 @@ public class LoginPage extends BasePage {
         }
         log.info("Clicked Verify OTP");
         waitForPageLoad();
-        safeSleep(3000); // Wait for login to complete
+        safeSleep(1500); // Wait for login to complete
     }
 
     /**
@@ -265,7 +265,7 @@ public class LoginPage extends BasePage {
     public boolean isLoginSuccessful() {
         // Check 1 (priority): Look for user menu button (new React UI) — most common
         try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(7));
             shortWait.until(ExpectedConditions.presenceOfElementLocated(
                     By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
             log.info("Login verified — user menu button found (new UI)");

@@ -109,7 +109,7 @@ public class YouthProfilePage extends BasePage {
 
     public YouthProfilePage(WebDriver driver) {
         super(driver);
-        this.longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        this.longWait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
     // -------------------------------------------------------------------------
@@ -157,7 +157,7 @@ public class YouthProfilePage extends BasePage {
         log.info("Opening profile URL: {}", profileUrl);
         driver.get(profileUrl);
         waitForPageLoad();
-        safeSleep(3000); // React hydration + user data fetch
+        safeSleep(200); // React hydration + user data fetch
 
         // Verify we're on the profile page by checking for tab buttons
         try {
@@ -168,7 +168,7 @@ public class YouthProfilePage extends BasePage {
             log.warn("Profile tabs not found, retrying...");
             driver.get(profileUrl);
             waitForPageLoad();
-            safeSleep(3000);
+            safeSleep(200);
         }
     }
 
@@ -181,7 +181,7 @@ public class YouthProfilePage extends BasePage {
                 ExpectedConditions.elementToBeClickable(TAB_BASIC_INFO));
         scrollToElement(basicInfoTab);
         safeClick(basicInfoTab);
-        safeSleep(1000);
+        safeSleep(200);
         log.info("Clicked 'Basic Info' tab");
     }
 
@@ -215,7 +215,7 @@ public class YouthProfilePage extends BasePage {
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].style.display='block'; arguments[0].style.opacity='1';", fileInput);
         fileInput.sendKeys(imagePath);
-        safeSleep(2000);
+        safeSleep(200);
         waitForToastOrTimeout();
         log.info("Banner uploaded: {}", imagePath);
     }
@@ -241,7 +241,7 @@ public class YouthProfilePage extends BasePage {
                         "arguments[0].style.position='relative';",
                         profileInput);
                 profileInput.sendKeys(imagePath);
-                safeSleep(2000);
+                safeSleep(200);
                 waitForToastOrTimeout();
                 log.info("✅ Profile photo uploaded: {}", imagePath);
             } else if (fileInputs.size() == 1) {
@@ -249,7 +249,7 @@ public class YouthProfilePage extends BasePage {
                 ((JavascriptExecutor) driver).executeScript(
                         "arguments[0].classList.remove('hidden'); arguments[0].style.display='block';", input);
                 input.sendKeys(imagePath);
-                safeSleep(2000);
+                safeSleep(200);
                 waitForToastOrTimeout();
                 log.info("✅ Profile photo uploaded (single input): {}", imagePath);
             } else {
@@ -278,16 +278,16 @@ public class YouthProfilePage extends BasePage {
         log.info("Filling About section...");
 
         expandSectionIfCollapsed("About");
-        safeSleep(1000);
+        safeSleep(200);
 
         WebElement textarea = null;
         try {
-            textarea = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+            textarea = new WebDriverWait(driver, Duration.ofSeconds(7)).until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//textarea[@placeholder='Tell us about yourself...']")));
         } catch (Exception e) {
             clickEditIconInSection("About");
-            safeSleep(1000);
+            safeSleep(200);
             try {
                 textarea = driver.findElement(By.xpath("//textarea[@placeholder='Tell us about yourself...']"));
             } catch (Exception e2) {
@@ -312,19 +312,19 @@ public class YouthProfilePage extends BasePage {
     public void addAreaOfInterest() throws InterruptedException {
         log.info("Adding Area of Interest...");
         expandSectionIfCollapsed("Area of Interest");
-        safeSleep(800);
+        safeSleep(200);
 
         if (!isReactSelectVisible()) {
             clickEditIconInSection("Area of Interest");
-            safeSleep(800);
+            safeSleep(200);
         }
 
         selectFirstOptionInReactSelect(0);
-        safeSleep(1000);
+        safeSleep(200);
 
         try {
             selectFirstOptionInReactSelect(1);
-            safeSleep(500);
+            safeSleep(200);
         } catch (Exception e) {
             log.info("Sub-area dropdown not available, skipping");
         }
@@ -340,15 +340,15 @@ public class YouthProfilePage extends BasePage {
     public void addLanguage() throws InterruptedException {
         log.info("Adding Language...");
         expandSectionIfCollapsed("Languages");
-        safeSleep(800);
+        safeSleep(200);
 
         if (!isReactSelectVisible()) {
             clickEditIconInSection("Languages");
-            safeSleep(800);
+            safeSleep(200);
         }
 
         selectFirstOptionInReactSelect(0);
-        safeSleep(500);
+        safeSleep(200);
 
         clickSaveOrUpdateInSection("Languages");
         waitForToastOrTimeout();
@@ -361,11 +361,11 @@ public class YouthProfilePage extends BasePage {
     public void fillProfessionalSummary() throws InterruptedException {
         log.info("Filling Professional Summary...");
         expandSectionIfCollapsed("Professional Summary");
-        safeSleep(800);
+        safeSleep(200);
 
         if (findTextareaInSection("Professional Summary") == null) {
             clickEditIconInSection("Professional Summary");
-            safeSleep(1000);
+            safeSleep(200);
         }
 
         WebElement textarea = findTextareaInSection("Professional Summary");
@@ -381,10 +381,10 @@ public class YouthProfilePage extends BasePage {
                 WebElement lastSelect = reactSelects.get(reactSelects.size() - 1);
                 scrollToElement(lastSelect);
                 lastSelect.click();
-                safeSleep(500);
+                safeSleep(200);
                 WebElement input = driver.findElement(By.cssSelector("[class*='css-'] input[aria-autocomplete]"));
                 input.sendKeys("Java");
-                safeSleep(800);
+                safeSleep(200);
                 input.sendKeys(Keys.ENTER);
             }
         } catch (Exception e) {
@@ -406,10 +406,10 @@ public class YouthProfilePage extends BasePage {
     public void addEducationQualification() throws InterruptedException {
         log.info("Adding Education Qualification...");
         scrollPage(600);
-        safeSleep(500);
+        safeSleep(200);
 
         clickAddIconForSection("Education Qualification");
-        safeSleep(2000);
+        safeSleep(200);
         scrollPage(400);
 
         try {
@@ -426,7 +426,7 @@ public class YouthProfilePage extends BasePage {
             ((JavascriptExecutor) driver).executeScript(
                     "arguments[0].value='5'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
                     educationType);
-            safeSleep(1500);
+            safeSleep(200);
 
             // 2. State — select first available state (index 1)
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
@@ -441,7 +441,7 @@ public class YouthProfilePage extends BasePage {
                     ((JavascriptExecutor) driver).executeScript(
                             "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
                             sel, firstStateValue);
-                    safeSleep(1500); // Wait for district dropdown to populate
+                    safeSleep(200); // Wait for district dropdown to populate
                     log.info("State selected");
                     break;
                 }
@@ -465,7 +465,7 @@ public class YouthProfilePage extends BasePage {
                             ((JavascriptExecutor) driver).executeScript(
                                     "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
                                     sel, districtValue);
-                            safeSleep(1000);
+                            safeSleep(200);
                             log.info("District selected");
                             break;
                         }
@@ -479,7 +479,7 @@ public class YouthProfilePage extends BasePage {
                 if (sel.findElements(By.xpath(".//option[text()='Passed']")).size() > 0) {
                     ((JavascriptExecutor) driver).executeScript(
                             "arguments[0].value='Passed'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));", sel);
-                    safeSleep(500);
+                    safeSleep(200);
                     break;
                 }
             }
@@ -520,13 +520,13 @@ public class YouthProfilePage extends BasePage {
     public void addWorkExperience() throws InterruptedException {
         log.info("Adding Work Experience...");
         scrollPage(400);
-        safeSleep(500);
+        safeSleep(200);
 
         clickAddIconForSection("Work Experience");
-        safeSleep(2000);
+        safeSleep(200);
 
         try {
-            WebElement jobTitleInput = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+            WebElement jobTitleInput = new WebDriverWait(driver, Duration.ofSeconds(7)).until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Enter job title']")));
             scrollToElement(jobTitleInput);
@@ -578,7 +578,7 @@ public class YouthProfilePage extends BasePage {
                     "  icons[icons.length-1].dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true, view:window}));" +
                     "}",
                     section);
-            safeSleep(1500);
+            safeSleep(200);
             log.info("Clicked + icon for section: {}", sectionTitle);
         } catch (Exception e) {
             log.warn("Failed to click add icon for {}: {}", sectionTitle, e.getMessage());
@@ -588,7 +588,7 @@ public class YouthProfilePage extends BasePage {
                     WebElement icon = section.findElement(By.cssSelector("svg[class*='cursor-pointer']"));
                     scrollToElement(icon);
                     actions().moveToElement(icon).click().perform();
-                    safeSleep(1500);
+                    safeSleep(200);
                 }
             } catch (Exception e2) {
                 log.warn("All add icon strategies failed for: {}", sectionTitle);
@@ -606,7 +606,7 @@ public class YouthProfilePage extends BasePage {
     public void fillToolsSection() throws InterruptedException {
         log.info("Filling Tools section...");
         scrollPage(800);
-        safeSleep(500);
+        safeSleep(200);
 
         WebElement toolsInput = null;
         try {
@@ -618,11 +618,11 @@ public class YouthProfilePage extends BasePage {
 
         if (toolsInput == null) {
             clickEditIconInSection("Tools");
-            safeSleep(1500);
+            safeSleep(200);
         }
 
         try {
-            toolsInput = new WebDriverWait(driver, Duration.ofSeconds(8)).until(
+            toolsInput = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Add tools (comma separated)']")));
             scrollToElement(toolsInput);
@@ -727,7 +727,7 @@ public class YouthProfilePage extends BasePage {
 
             scrollToElement(accordionBtn);
             jsClick(accordionBtn);
-            safeSleep(1000);
+            safeSleep(200);
             log.info("Expanded accordion section: {}", sectionTitle);
         } catch (Exception e) {
             // Not in accordion mode — section is already expanded as a card
@@ -767,7 +767,7 @@ public class YouthProfilePage extends BasePage {
             scrollToElement(icon);
             // Use Actions API for proper event dispatch that React captures
             actions().moveToElement(icon).click().perform();
-            safeSleep(2000); // Wait for React state update + form render
+            safeSleep(200); // Wait for React state update + form render
             log.info("Clicked icon (Actions) for section: {}", sectionTitle);
         } catch (Exception e) {
             // Fallback: find via XPath and use JS MouseEvent dispatch
@@ -780,7 +780,7 @@ public class YouthProfilePage extends BasePage {
                         "  svgs[0].dispatchEvent(evt);" +
                         "}",
                         section);
-                safeSleep(2000);
+                safeSleep(200);
                 log.info("Clicked icon (JS MouseEvent) for section: {}", sectionTitle);
             } catch (Exception e2) {
                 log.warn("All icon click strategies failed for section: {}", sectionTitle);
@@ -802,7 +802,7 @@ public class YouthProfilePage extends BasePage {
      *   <button class="px-5 py-2 bg-[#bc4717] text-white rounded-lg ...">Save</button>
      */
     private void clickSaveOrUpdateInSection(String sectionTitle) {
-        safeSleep(500);
+        safeSleep(200);
 
         WebElement section = findSectionContainer(sectionTitle);
 
@@ -902,7 +902,7 @@ public class YouthProfilePage extends BasePage {
         WebElement control = controls.get(index);
         scrollToElement(control);
         control.click();
-        safeSleep(800);
+        safeSleep(200);
 
         // Wait for menu to appear
         try {
@@ -915,7 +915,7 @@ public class YouthProfilePage extends BasePage {
                     By.cssSelector("[class*='css-'][class*='option']"));
             if (!options.isEmpty()) {
                 options.get(0).click();
-                safeSleep(500);
+                safeSleep(200);
                 log.info("Selected first option from react-select index {}", index);
             }
         } catch (Exception e) {
@@ -924,9 +924,9 @@ public class YouthProfilePage extends BasePage {
                 WebElement input = driver.findElement(
                         By.cssSelector("[class*='css-'] input[aria-autocomplete='list']"));
                 input.sendKeys("a");
-                safeSleep(800);
+                safeSleep(200);
                 input.sendKeys(Keys.ENTER);
-                safeSleep(500);
+                safeSleep(200);
                 log.info("Selected option via keyboard in react-select index {}", index);
             } catch (Exception e2) {
                 log.warn("Failed to select from react-select index {}: {}", index, e2.getMessage());
@@ -946,7 +946,7 @@ public class YouthProfilePage extends BasePage {
                 "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));" +
                 "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
                 dateInput, dateValue);
-        safeSleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -962,7 +962,7 @@ public class YouthProfilePage extends BasePage {
         try {
             scrollToElement(element);
             element.click();
-            safeSleep(300);
+            safeSleep(200);
             // Select all existing text and delete
             element.sendKeys(Keys.chord(Keys.COMMAND, "a"));
             safeSleep(100);
@@ -970,7 +970,7 @@ public class YouthProfilePage extends BasePage {
             safeSleep(100);
             // Type the new value
             element.sendKeys(value);
-            safeSleep(300);
+            safeSleep(200);
             // Trigger blur to finalize
             ((JavascriptExecutor) driver).executeScript("arguments[0].dispatchEvent(new Event('blur', {bubbles:true}));", element);
             safeSleep(200);
@@ -991,7 +991,7 @@ public class YouthProfilePage extends BasePage {
                     "el.dispatchEvent(new Event('change', { bubbles: true }));" +
                     "el.dispatchEvent(new Event('blur', { bubbles: true }));",
                     element, value);
-            safeSleep(300);
+            safeSleep(200);
         }
     }
 
@@ -1025,9 +1025,9 @@ public class YouthProfilePage extends BasePage {
             new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.presenceOfElementLocated(
                             By.cssSelector(".Toastify__toast")));
-            safeSleep(800);
+            safeSleep(200);
         } catch (Exception e) {
-            safeSleep(500);
+            safeSleep(200);
         }
     }
 
@@ -1040,7 +1040,7 @@ public class YouthProfilePage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//i[@class='fa fa-times'] | //button[contains(@class,'close')]")));
             popup.click();
-            safeSleep(500);
+            safeSleep(200);
         } catch (Exception e) {
             // No popup
         }
