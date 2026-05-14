@@ -205,6 +205,9 @@ public class LoginPage extends BasePage {
     public void fetchOTPFromYopmail() throws InterruptedException {
         log.info("Fetching OTP from Yopmail for: {}", loginEmail);
 
+        // Wait for OTP email to arrive before opening Yopmail
+        safeSleep(5000);
+
         // Open new tab for Yopmail
         driver.switchTo().newWindow(WindowType.TAB);
         driver.get(config.getDummyEmailUrl());
@@ -217,11 +220,11 @@ public class LoginPage extends BasePage {
         String emailPrefix = loginEmail.split("@")[0];
         inbox.sendKeys(emailPrefix);
         safeClick(yopmailGoBtn);
-        safeSleep(300);
+        safeSleep(2000);
 
         // Refresh to get latest email
         safeClick(yopmailRefresh);
-        safeSleep(300);
+        safeSleep(2000);
 
         // Switch to mail iframe and extract OTP
         driver.switchTo().frame("ifmail");
