@@ -369,25 +369,41 @@ public class YouthProfilePage extends BasePage {
         clickEditIconInSection("Professional Summary");
         safeSleep(2000); // React needs time: state update + re-render + API calls for languages/skills
 
-        // Find ANY visible textarea on the page (Professional Summary's textarea)
+        // Find the textarea inside Professional Summary section
+        // The section container has the textarea after edit mode is activated
         WebElement textarea = null;
         try {
-            textarea = new WebDriverWait(driver, Duration.ofSeconds(5)).until(driver -> {
-                List<WebElement> textareas = driver.findElements(By.tagName("textarea"));
-                for (WebElement ta : textareas) {
+            WebElement section = findSectionContainer("Professional Summary");
+            if (section != null) {
+                textarea = new WebDriverWait(driver, Duration.ofSeconds(5)).until(d -> {
                     try {
-                        String placeholder = ta.getAttribute("placeholder");
-                        if (placeholder != null && placeholder.contains("Tell us about")) continue;
-                        if (ta.isDisplayed()) return ta;
+                        List<WebElement> tas = section.findElements(By.tagName("textarea"));
+                        for (WebElement ta : tas) {
+                            if (ta.isDisplayed()) return ta;
+                        }
                     } catch (Exception e) { /* stale */ }
-                }
-                return null;
-            });
+                    return null;
+                });
+            }
         } catch (Exception e) { /* timeout */ }
+
+        // Fallback: find the LAST visible textarea on page (Prof Summary is below About)
+        if (textarea == null) {
+            try {
+                List<WebElement> allTextareas = driver.findElements(By.tagName("textarea"));
+                for (int i = allTextareas.size() - 1; i >= 0; i--) {
+                    if (allTextareas.get(i).isDisplayed()) {
+                        textarea = allTextareas.get(i);
+                        break;
+                    }
+                }
+            } catch (Exception e) { /* skip */ }
+        }
 
         if (textarea != null) {
             scrollToElement(textarea);
             setReactInputValue(textarea, "Experienced in automation testing with Selenium, Java, and TestNG.");
+            log.info("Professional Summary textarea filled");
         } else {
             log.warn("Professional Summary textarea not found");
         }
