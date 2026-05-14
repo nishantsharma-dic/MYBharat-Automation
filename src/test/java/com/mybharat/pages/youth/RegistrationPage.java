@@ -1,5 +1,6 @@
 package com.mybharat.pages.youth;
 
+import java.time.Duration;
 import java.util.ArrayList;
 
 import org.openqa.selenium.By;
@@ -8,7 +9,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.github.javafaker.Faker;
 import com.mybharat.pages.BasePage;
@@ -351,6 +354,136 @@ public class RegistrationPage extends BasePage {
             // No alert present — continue
         }
         Thread.sleep(1000);
+    }
+
+    /**
+     * Click the submit popup button that appears after registration form submission.
+     * Tries CSS selector first, falls back to XPath alternative, then additionalDetails button.
+     */
+    public void clickSubmitPopup() throws InterruptedException {
+        Thread.sleep(5000); // Wait for popup to fully load after registration
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
+
+        try {
+            // Try primary: the submit popup button with specific CSS path
+            WebElement popup = longWait.until(ExpectedConditions.elementToBeClickable(
+                    By.cssSelector("body > div:nth-child(1) > div:nth-child(1) > main:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > main:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > div:nth-child(3) > button:nth-child(1)")));
+            scrollToElement(popup);
+            Thread.sleep(500);
+            jsClick(popup);
+            System.out.println("✅ Clicked submit popup button (CSS locator)");
+        } catch (Exception e1) {
+            try {
+                // Try alternative XPath locator
+                WebElement popupAlt = longWait.until(ExpectedConditions.elementToBeClickable(
+                        By.xpath("(//button[contains(@class,'bg-[#bc4717] hover:bg-orange-700 text-white px-5 py-2 rounded cursor-pointer flex items-center justify-center gap-2')])[1]")));
+                scrollToElement(popupAlt);
+                Thread.sleep(500);
+                jsClick(popupAlt);
+                System.out.println("✅ Clicked submit popup button (XPath locator)");
+            } catch (Exception e2) {
+                // Fallback: try additionalDetailsPopupBtn
+                try {
+                    WebElement fallback = longWait.until(
+                            ExpectedConditions.elementToBeClickable(additionalDetailsPopupBtn));
+                    scrollToElement(fallback);
+                    jsClick(fallback);
+                    System.out.println("✅ Clicked submit popup button (fallback: additionalDetails)");
+                } catch (Exception e3) {
+                    System.out.println("⚠️ No submit popup button found — continuing");
+                }
+            }
+        }
+
+        // Handle any browser alert that appears
+        Thread.sleep(2000);
+        try {
+            driver.switchTo().alert().accept();
+        } catch (Exception e) {
+            // No alert present — continue
+        }
+        Thread.sleep(1000);
+    }
+
+    /**
+     * Open user menu and click logout.
+     */
+    public void logout() throws InterruptedException {
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        Thread.sleep(2000);
+
+        try {
+            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
+            scrollToElement(menu);
+            Thread.sleep(500);
+            jsClick(menu);
+            System.out.println("✅ Opened user menu");
+        } catch (Exception e) {
+            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
+            jsClick(menu);
+            System.out.println("✅ Opened user menu (fallback)");
+        }
+
+        Thread.sleep(1000);
+
+        try {
+            WebElement logout = longWait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[@role='menuitem']")));
+            jsClick(logout);
+            System.out.println("✅ Clicked logout");
+        } catch (Exception e) {
+            WebElement logout = longWait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[@role='menuitem']")));
+            jsClick(logout);
+            System.out.println("✅ Clicked logout (fallback)");
+        }
+
+        waitForPageLoad();
+        Thread.sleep(3000);
+        System.out.println("✅ User logged out successfully");
+    }
+
+    /**
+     * Save the registration email to Excel file (resources/UserDetails.xlsx).
+     */
+    public void saveEmailToExcel() {
+        String path = System.getProperty("user.dir") + java.io.File.separator
+                + "resources" + java.io.File.separator + "UserDetails.xlsx";
+        java.io.File file = new java.io.File(path);
+        file.getParentFile().mkdirs();
+
+        try {
+            org.apache.poi.ss.usermodel.Workbook workbook;
+            if (file.exists() && file.length() > 0) {
+                java.io.FileInputStream fis = new java.io.FileInputStream(file);
+                workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook(fis);
+                fis.close();
+            } else {
+                workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+            }
+
+            org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheet("UserData");
+            if (sheet == null) {
+                sheet = workbook.createSheet("UserData");
+                org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
+                header.createCell(0).setCellValue("Email");
+            }
+
+            int nextRow = sheet.getLastRowNum() + 1;
+            org.apache.poi.ss.usermodel.Row row = sheet.createRow(nextRow);
+            row.createCell(0).setCellValue(email);
+
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
+            workbook.write(fos);
+            fos.close();
+            workbook.close();
+
+            System.out.println("✅ Email saved to Excel: " + email + " (row " + nextRow + ")");
+        } catch (Exception e) {
+            System.err.println("❌ Failed to save email to Excel: " + e.getMessage());
+        }
     }
 
     // -------------------------------------------------------------------------

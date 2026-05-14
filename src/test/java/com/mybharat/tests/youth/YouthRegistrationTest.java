@@ -46,18 +46,30 @@ public class YouthRegistrationTest extends BaseTest {
     public void registerIndianYouth() throws Exception {
         log.info("Starting: Register Indian Youth");
 
+        // Step 1: Open app and navigate to registration
         openApp();
         landingPage.closePopupIfPresent();
         landingPage.clickRegisterForIndian();
 
+        // Step 2: Enter email and verify OTP
         registrationPage.enterEmailAndRequestOTP();
         registrationPage.fetchAndVerifyOTP();
+
+        // Step 3: Fill registration form and submit
         registrationPage.fillRegistrationForm();
         registrationPage.submitForm();
-        registrationPage.clickAdditionalDetailsPopup();
 
+        // Step 4: Click the submit popup button
+        registrationPage.clickSubmitPopup();
+
+        // Step 5: Save the registration email to Excel
         registeredEmail = registrationPage.getEmail();
-        log.info("Registration completed for: {}", registeredEmail);
+        registrationPage.saveEmailToExcel();
+        log.info("Registration email saved to Excel: {}", registeredEmail);
+
+        // Step 6: Logout
+        registrationPage.logout();
+        log.info("✅ Registration completed and user logged out. Email: {}", registeredEmail);
     }
 
     @Test(priority = 2, groups = {"smoke", "registration"},
