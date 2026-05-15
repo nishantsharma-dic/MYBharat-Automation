@@ -42,16 +42,6 @@
         </classes>
     </test>
 
-<<<<<<< Updated upstream
-    <!-- Step 4: Registration Certificate Download -->
-    <test name="Registration Certificate Verification">
-        <classes>
-            <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
-        </classes>
-    </test>
-
-=======
->>>>>>> Stashed changes
     <!-- Step 5: Basic Info + Extract Email -->
     <test name="Youth Basic Info">
         <classes>

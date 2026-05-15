@@ -4,7 +4,7 @@
 <!--
   ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
   
-  Flow: Public Page → Registration → Logout → Login → Youth Profile → Quiz
+  Flow: Public Page → Registration → Login → Youth Profile → Quiz
   
   Run with:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
@@ -15,7 +15,12 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-  
+    <!-- Step 1: Public Page - Header + Organization + Footer -->
+    <test name="Public Page">
+        <classes>
+            <class name="com.mybharat.tests.youth.PublicPageTest"/>
+        </classes>
+    </test>
 
     <!-- Step 2: Registration → Submit popup → Save email to Excel → Logout -->
     <test name="Youth Registration">
@@ -42,13 +47,6 @@
     <test name="Quiz Attempt">
         <classes>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
-        </classes>
-    </test>
-
-      <!-- Step 6: Public Page - Header + Organization + Footer -->
-    <test name="Public Page">
-        <classes>
-            <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
     </test>
 
