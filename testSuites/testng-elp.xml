@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  ELP (Experiential Learning Program) Test Cycle
+  
+  Run with:
+    mvn test -Denv=beta -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-elp.xml -DcloseBrowser=false
+    mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-elp.xml -DcloseBrowser=false
+-->
+<suite name="ELP Test Cycle" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Step 1: Login as ELP Admin (random email from ELP_beta.xlsx) -->
+    <test name="ELP Admin Login">
+        <classes>
+            <class name="com.mybharat.tests.elp.ELPLoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Navigate to profile and click View More -->
+    <test name="ELP Navigate to View More">
+        <classes>
+            <class name="com.mybharat.tests.elp.ELPNavigationTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Create ELP -->
+    <test name="ELP Create">
+        <classes>
+            <class name="com.mybharat.tests.elp.ELPCreateTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 4: ELP operations (TODO - next steps) -->
+
+</suite>
