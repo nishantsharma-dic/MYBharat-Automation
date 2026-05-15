@@ -59,49 +59,9 @@ public class YouthProfilePage extends BasePage {
     // Tabs
     private static final By TAB_ABOUT = By.xpath("//button[normalize-space()='About']");
     private static final By TAB_BASIC_INFO = By.xpath("//button[normalize-space()='Basic Info']");
-    private static final By TAB_REWARD_POINTS = By.xpath("//button[normalize-space()='Reward Points']");
 
-    // Banner & Profile Photo upload (camera buttons)
-    private static final By BANNER_CAMERA_BTN = By.xpath(
-            "//div[contains(@class,'relative w-full')]//button[.//svg]");
-    private static final By BANNER_FILE_INPUT = By.xpath(
-            "//div[contains(@class,'relative w-full')]//input[@type='file']");
-    private static final By PROFILE_PHOTO_CAMERA_BTN = By.xpath(
-            "//div[contains(@class,'relative shrink-0')]//button[contains(@aria-label,'Change profile photo') or .//svg]");
-    private static final By PROFILE_PHOTO_FILE_INPUT = By.xpath(
-            "//div[contains(@class,'relative shrink-0')]//input[@type='file']");
-
-    // Section headers (for expanding accordion or clicking edit)
-    private static final By SECTION_ABOUT = By.xpath(
-            "//span[normalize-space()='About']/ancestor::div[contains(@class,'bg-white border')]");
-    private static final By SECTION_AREA_OF_INTEREST = By.xpath(
-            "//span[normalize-space()='Area of Interest']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_LANGUAGES = By.xpath(
-            "//span[normalize-space()='Languages']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_PROF_SUMMARY = By.xpath(
-            "//span[normalize-space()='Professional Summary']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_WORK_EXP = By.xpath(
-            "//span[normalize-space()='Work Experience']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_TOOLS = By.xpath(
-            "//span[normalize-space()='Tools']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-
-    // Generic buttons
-    private static final By BTN_SAVE = By.xpath(
-            "//button[normalize-space()='Save']");
-    private static final By BTN_UPDATE = By.xpath(
-            "//button[normalize-space()='Update']");
-
-    // Toast notification
-    private static final By TOAST_SUCCESS = By.cssSelector(".Toastify__toast--success");
-    private static final By TOAST_CONTAINER = By.cssSelector(".Toastify");
-
-    // Basic Info form fields (name attributes)
-    private static final By INPUT_FIRST_NAME = By.xpath("//input[@name='first_name']");
+    // Basic Info form fields
     private static final By INPUT_USER_EMAIL = By.xpath("//input[@name='user_email']");
-
-    // Profile page verification
-    private static final By PROFILE_PAGE_INDICATOR = By.xpath(
-            "//button[normalize-space()='About'] | //div[contains(@class,'min-h-screen')]//button[normalize-space()='Basic Info']");
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -203,21 +163,6 @@ public class YouthProfilePage extends BasePage {
         log.info("Extracted Email from React profile: {}", value);
         writeEmailToExcel(value);
         log.info("Email written to Excel successfully");
-    }
-
-    /**
-     * Upload banner image via the camera button on the banner.
-     */
-    public void uploadBanner() throws InterruptedException {
-        String imagePath = getRandomImagePath();
-        WebElement fileInput = driver.findElement(BANNER_FILE_INPUT);
-        // Make input visible for sendKeys
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].style.display='block'; arguments[0].style.opacity='1';", fileInput);
-        fileInput.sendKeys(imagePath);
-        safeSleep(200);
-        waitForToastOrTimeout();
-        log.info("Banner uploaded: {}", imagePath);
     }
 
     /**
@@ -482,16 +427,14 @@ public class YouthProfilePage extends BasePage {
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
             for (WebElement sel : selects) {
                 List<WebElement> opts = sel.findElements(By.tagName("option"));
-                // Find the State dropdown (has "----Select State----" or "----Select----" and many options)
-                boolean isStateDropdown = opts.stream().anyMatch(o -> 
+                boolean isStateDropdown = opts.stream().anyMatch(o ->
                         o.getText().contains("Select") && opts.size() > 10);
                 if (isStateDropdown && opts.size() > 5) {
-                    // Select index 1 (first real state)
                     String firstStateValue = opts.get(1).getAttribute("value");
                     ((JavascriptExecutor) driver).executeScript(
                             "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
                             sel, firstStateValue);
-                    safeSleep(200); // Wait for district dropdown to populate
+                    safeSleep(200);
                     log.info("State selected");
                     break;
                 }
@@ -501,14 +444,12 @@ public class YouthProfilePage extends BasePage {
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
             for (WebElement sel : selects) {
                 List<WebElement> opts = sel.findElements(By.tagName("option"));
-                // District dropdown: has "----Select----" and fewer options than state, loaded after state
                 if (opts.size() >= 2 && opts.size() <= 50) {
                     String firstOptText = opts.get(0).getText();
-                    if (firstOptText.contains("Select") && !firstOptText.contains("State") 
+                    if (firstOptText.contains("Select") && !firstOptText.contains("State")
                             && !firstOptText.contains("Education") && !firstOptText.contains("Institute")
                             && !firstOptText.contains("Status") && !firstOptText.contains("Board")
                             && !firstOptText.contains("Identifier") && !firstOptText.contains("Course")) {
-                        // Check if this is a district-like dropdown (not already selected)
                         String currentVal = sel.getAttribute("value");
                         if (currentVal == null || currentVal.isEmpty()) {
                             String districtValue = opts.get(1).getAttribute("value");

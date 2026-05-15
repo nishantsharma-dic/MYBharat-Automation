@@ -335,28 +335,6 @@ public class RegistrationPage extends BasePage {
     }
 
     /**
-     * Click the "Additional Details" button on the popup that appears after registration.
-     * Handles any browser alert that may appear after clicking.
-     */
-    public void clickAdditionalDetailsPopup() throws InterruptedException {
-        Thread.sleep(5000); // Wait for popup to fully load after registration
-        waitForVisible(additionalDetailsPopupBtn);
-        waitForClickable(additionalDetailsPopupBtn);
-        scrollToElement(additionalDetailsPopupBtn);
-        Thread.sleep(500);
-        jsClick(additionalDetailsPopupBtn);
-
-        // Handle any browser alert that appears
-        Thread.sleep(2000);
-        try {
-            driver.switchTo().alert().accept();
-        } catch (Exception e) {
-            // No alert present — continue
-        }
-        Thread.sleep(1000);
-    }
-
-    /**
      * Click the submit popup button that appears after registration form submission.
      * Tries CSS selector first, falls back to XPath alternative, then additionalDetails button.
      */
