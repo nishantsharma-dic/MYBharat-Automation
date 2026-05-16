@@ -21,9 +21,6 @@ jobs:
         id: test_run
         continue-on-error: true
         run: |
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 &
-          sleep 2
           mvn test \
             -Denv=prod \
             -Dbrowser=headless \
