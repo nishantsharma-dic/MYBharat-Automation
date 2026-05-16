@@ -135,9 +135,34 @@ public class YouthProfilePage extends BasePage {
 
     /**
      * Navigate to Basic Info tab in the React profile.
+     * First ensures we're on the profile page (closes any open modals, navigates if needed).
      */
     public void navigateToBasicInfo() throws InterruptedException {
+        // Close any open modal (e.g., certificate preview)
+        try {
+            WebElement closeBtn = driver.findElement(By.xpath(
+                    "//button[contains(@class,'close') or contains(@aria-label,'Close') or contains(text(),'×')]"));
+            if (closeBtn.isDisplayed()) {
+                jsClick(closeBtn);
+                safeSleep(500);
+                log.info("Closed open modal before navigating to Basic Info");
+            }
+        } catch (Exception e) { /* no modal open */ }
+
+        // Navigate to profile page if not already there
+        String currentUrl = driver.getCurrentUrl();
+        if (!currentUrl.contains("/youth-profile")) {
+            String profileUrl = config.getProperty("profileUrl");
+            if (profileUrl == null || profileUrl.isEmpty()) {
+                profileUrl = config.getUrl() + "/youth-profile";
+            }
+            driver.get(profileUrl);
+            waitForPageLoad();
+            safeSleep(1000);
+        }
+
         scrollToTop();
+        safeSleep(500);
         WebElement basicInfoTab = longWait.until(
                 ExpectedConditions.elementToBeClickable(TAB_BASIC_INFO));
         scrollToElement(basicInfoTab);
