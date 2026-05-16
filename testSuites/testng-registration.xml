@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Registration Only Suite
+  
+  Flow: Register new Indian youth → Save email to Excel → Logout
+  
+  Run with:
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-registration.xml
+    mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-registration.xml
+-->
+<suite name="Registration Suite" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Step 1: Registration → Submit popup → Save email to Excel -->
+    <test name="Youth Registration">
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
+        </classes>
+    </test>
+
+ 
+
+</suite>

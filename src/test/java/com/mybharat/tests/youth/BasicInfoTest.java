@@ -17,9 +17,9 @@ import com.mybharat.pages.youth.YouthProfilePage;
  * Runs after certificate download on the SAME browser session.
  */
 @Listeners(TestListeners.class)
-public class YouthBasicInfoTest extends BaseTest {
+public class BasicInfoTest extends BaseTest {
 
-    private static final Logger log = LogManager.getLogger(YouthBasicInfoTest.class);
+    private static final Logger log = LogManager.getLogger(BasicInfoTest.class);
 
     private YouthProfilePage profilePage;
 

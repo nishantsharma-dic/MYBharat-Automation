@@ -26,9 +26,9 @@ import com.mybharat.utils.RedashClient;
  *   mvn test -Denv=prod -Dbrowser=firefox
  */
 @Listeners(TestListeners.class)
-public class YouthRegistrationTest extends BaseTest {
+public class RegistrationTest extends BaseTest {
 
-    private static final Logger log = LogManager.getLogger(YouthRegistrationTest.class);
+    private static final Logger log = LogManager.getLogger(RegistrationTest.class);
 
     private LandingPage landingPage;
     private RegistrationPage registrationPage;
@@ -65,11 +65,7 @@ public class YouthRegistrationTest extends BaseTest {
         // Step 5: Save the registration email to Excel
         registeredEmail = registrationPage.getEmail();
         registrationPage.saveEmailToExcel();
-        log.info("Registration email saved to Excel: {}", registeredEmail);
-
-        // Step 6: Logout
-        registrationPage.logout();
-        log.info("✅ Registration completed and user logged out. Email: {}", registeredEmail);
+        log.info("✅ Registration completed. Email: {}", registeredEmail);
     }
 
     @Test(priority = 2, groups = {"smoke", "registration"},

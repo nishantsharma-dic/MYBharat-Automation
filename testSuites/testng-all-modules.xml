@@ -4,7 +4,7 @@
 <!--
   ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
   
-  Flow: Registration → Login → Profile → Certificate → Basic Info → Quiz
+  Flow: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz
   
   Run with:
     mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
@@ -27,14 +27,21 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Registration → Submit popup → Save email to Excel → Logout -->
+    <!-- Step 1: Registration → Submit popup → Save email to Excel -->
     <test name="Youth Registration">
         <classes>
-            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
         </classes>
     </test>
 
-    <!-- Step 2: Login with email from Excel (password: 25@March) -->
+    <!-- Step 2: Logout after registration -->
+    <test name="Logout After Registration">
+        <classes>
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Login with email from Excel (password: 25@March) -->
     <test name="Youth Login">
         <classes>
             <class name="com.mybharat.tests.youth.LoginTest"/>
@@ -58,7 +65,7 @@
     <!-- Step 5: Basic Info + Extract Email -->
     <test name="Youth Basic Info">
         <classes>
-            <class name="com.mybharat.tests.youth.YouthBasicInfoTest"/>
+            <class name="com.mybharat.tests.youth.BasicInfoTest"/>
         </classes>
     </test>
 

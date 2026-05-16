@@ -4,7 +4,7 @@
 <!--
   Youth Module Suite - same browser session throughout.
   
-  Flow: Registration (+ save email + logout) → Login (from Excel) → Profile → Quiz
+  Flow: Registration (+ save email) → Logout → Login (from Excel) → Profile → Quiz
   
   Run with:
     mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
@@ -15,14 +15,21 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Registration → Submit popup → Save email to Excel → Logout -->
+    <!-- Step 1: Registration → Submit popup → Save email to Excel -->
     <test name="Youth Registration">
         <classes>
-            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
         </classes>
     </test>
 
-    <!-- Step 2: Login with email from Excel (password: 25@March) -->
+    <!-- Step 2: Logout after registration -->
+    <test name="Logout After Registration">
+        <classes>
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Login with email from Excel (password: 25@March) -->
     <test name="Youth Login">
         <classes>
             <class name="com.mybharat.tests.youth.LoginTest"/>
