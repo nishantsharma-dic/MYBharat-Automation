@@ -1,0 +1,170 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../../../.."
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/megaevent-videos-streaming"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/myb_newsletter_email_worker"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_blog_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_blog_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_cdn"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_common_admin"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_common_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_cv_builder"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_dashboard_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_database_query"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_designforBharat"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_elkapis"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_elp_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_elp_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_essays"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_game_backend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_game_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_integrations"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_megaevent_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_megaevent_org_registration"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_megaevent_worker"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_megaevents_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/MyBharat_MobileApp"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_newsletter_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_newsletter_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_podcast_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_podcast_wp"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_pubilc_profile_worker"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_quiz_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_quiz_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_resources"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_rewards"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_rewards_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_rewards_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/MYBHARAT_RMQ"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_sms_api"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_useridgeneration"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_userprofile_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_userprofile_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_utilities"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_vo"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_vo_APIs"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_vo_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_web"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_web_socket"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/mybharat_winner_frontend"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/PYTHON_MONITORING"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/Sandes"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/yuva_application"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/yuva_backend_job"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/yuva_elk_api"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/yuva_email_worker"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/yuva_s3_api"
+		},
+		{
+			"path": "../../../../../../../../../ProjectM/yuva_sms_worker"
+		}
+	],
+	"settings": {}
+}

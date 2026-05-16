@@ -67,9 +67,15 @@ public class YouthRegistrationTest extends BaseTest {
         registrationPage.saveEmailToExcel();
         log.info("Registration email saved to Excel: {}", registeredEmail);
 
-        // Step 6: Logout
-        registrationPage.logout();
-        log.info("✅ Registration completed and user logged out. Email: {}", registeredEmail);
+        // Step 6: Logout (skip if running with org suite — user needs to stay logged in)
+        String skipLogout = System.getProperty("skipLogout", "false");
+        log.info("skipLogout property: {}", skipLogout);
+        if (!"true".equalsIgnoreCase(skipLogout)) {
+            registrationPage.logout();
+            log.info("✅ Registration completed and user logged out. Email: {}", registeredEmail);
+        } else {
+            log.info("✅ Registration completed. User stays logged in. Email: {}", registeredEmail);
+        }
     }
 
     @Test(priority = 2, groups = {"smoke", "registration"},

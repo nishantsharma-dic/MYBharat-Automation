@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Registration + Create Organisation ONLY (user stays logged in)
+  
+  Run:
+    mvn test -Denv=prod -Dbrowser=chrome -DskipLogout=true "-Dsurefire.suiteXmlFiles=testSuites/testng-org.xml"
+-->
+<suite name="Organisation Module" parallel="none" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <parameter name="skipLogout" value="true"/>
+
+    <test name="Youth Registration">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+        </classes>
+    </test>
+
+    <test name="Create Organisation">
+        <classes>
+            <class name="com.mybharat.tests.organisation.CreateOrganisationTest"/>
+        </classes>
+    </test>
+
+</suite>
