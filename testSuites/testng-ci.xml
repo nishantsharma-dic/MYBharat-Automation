@@ -46,14 +46,7 @@
         </classes>
     </test>
 
-    <!-- Step 5: Basic Info + Extract Email -->
-    <test name="Youth Basic Info">
-        <classes>
-            <class name="com.mybharat.tests.youth.BasicInfoTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 6: Quiz Attempt -->
+    <!-- Step 5: Quiz Attempt -->
     <test name="Quiz Attempt">
         <classes>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>

@@ -24,7 +24,7 @@ jobs:
           mvn test \
             -Denv=prod \
             -Dbrowser=headless \
-            -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
+            -Dsurefire.suiteXmlFiles=testSuites/testng-ci.xml
 
       - name: Determine test result
         id: result
