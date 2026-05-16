@@ -2,37 +2,22 @@ name: Scheduled Test Execution — MY Bharat (Production)
 
 on:
   schedule:
-    # 8:00 AM IST = 2:30 AM UTC
-    - cron: '30 2 * * *'
-    # 4:00 PM IST = 10:30 AM UTC
-    - cron: '30 10 * * *'
+    # 9:40 AM IST = 4:10 AM UTC
+    - cron: '10 4 * * *'
+    # 6:00 PM IST = 12:30 PM UTC
+    - cron: '30 12 * * *'
   workflow_dispatch:  # Allow manual trigger from GitHub UI
 
 jobs:
   run-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: self-hosted
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Set up Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
-
-      - name: Set up ChromeDriver
-        uses: nanasess/setup-chromedriver@v2
-
-      - name: Run CI Test Suite
+      - name: Run Full Test Suite
         id: test_run
         continue-on-error: true
         run: |
@@ -42,9 +27,7 @@ jobs:
           mvn test \
             -Denv=prod \
             -Dbrowser=headless \
-            -Dsurefire.suiteXmlFiles=testSuites/testng-ci.xml \
-            -Dwebdriver.chrome.driver=$(which chromedriver) \
-            -DciMode=true
+            -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
 
       - name: Determine test result
         id: result
