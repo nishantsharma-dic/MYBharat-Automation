@@ -26,9 +26,13 @@ public class BasePage {
 
     private static final int DEFAULT_WAIT = 25;
 
+    /** CI mode uses longer waits for remote runners with higher latency */
+    private static final boolean CI_MODE = Boolean.parseBoolean(System.getProperty("ciMode", "false"));
+
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(DEFAULT_WAIT));
+        int timeout = CI_MODE ? 45 : DEFAULT_WAIT;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
         PageFactory.initElements(driver, this);
     }
 

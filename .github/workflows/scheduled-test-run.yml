@@ -11,7 +11,7 @@ on:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -42,7 +42,7 @@ jobs:
           mvn test \
             -Denv=prod \
             -Dbrowser=headless \
-            -Dsurefire.suiteXmlFiles=testSuites/testng-ci.xml \
+            -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -DciMode=true
 
@@ -125,7 +125,7 @@ jobs:
                   <tr><td style="padding: 8px; font-weight: bold;">Time:</td><td style="padding: 8px;">${{ steps.result.outputs.timestamp }}</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Environment:</td><td style="padding: 8px;">Production (mybharat.gov.in)</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Chrome Headless</td></tr>
-                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Suite:</td><td style="padding: 8px;">CI Suite (Registration + Logout)</td></tr>
+                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Suite:</td><td style="padding: 8px;">All Modules (Full E2E)</td></tr>
                 </table>
                 <h3 style="margin: 15px 0 10px;">Test Results</h3>
                 <table style="width: 100%; border-collapse: collapse; text-align: center;">
