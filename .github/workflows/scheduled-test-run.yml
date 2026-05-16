@@ -47,10 +47,10 @@ jobs:
         run: |
           REPORT_FILE="target/surefire-reports/testng-results.xml"
           if [ -f "$REPORT_FILE" ]; then
-            TOTAL=$(grep -oP 'total="\K[0-9]+' "$REPORT_FILE" | head -1)
-            PASSED=$(grep -oP 'passed="\K[0-9]+' "$REPORT_FILE" | head -1)
-            FAILED=$(grep -oP 'failed="\K[0-9]+' "$REPORT_FILE" | head -1)
-            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' "$REPORT_FILE" | head -1)
+            TOTAL=$(sed -n 's/.*total="\([0-9]*\)".*/\1/p' "$REPORT_FILE" | head -1)
+            PASSED=$(sed -n 's/.*passed="\([0-9]*\)".*/\1/p' "$REPORT_FILE" | head -1)
+            FAILED=$(sed -n 's/.*failed="\([0-9]*\)".*/\1/p' "$REPORT_FILE" | head -1)
+            SKIPPED=$(sed -n 's/.*skipped="\([0-9]*\)".*/\1/p' "$REPORT_FILE" | head -1)
           else
             TOTAL="N/A"
             PASSED="N/A"
