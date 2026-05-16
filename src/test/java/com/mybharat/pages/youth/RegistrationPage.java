@@ -335,28 +335,6 @@ public class RegistrationPage extends BasePage {
     }
 
     /**
-     * Click the "Additional Details" button on the popup that appears after registration.
-     * Handles any browser alert that may appear after clicking.
-     */
-    public void clickAdditionalDetailsPopup() throws InterruptedException {
-        Thread.sleep(5000); // Wait for popup to fully load after registration
-        waitForVisible(additionalDetailsPopupBtn);
-        waitForClickable(additionalDetailsPopupBtn);
-        scrollToElement(additionalDetailsPopupBtn);
-        Thread.sleep(500);
-        jsClick(additionalDetailsPopupBtn);
-
-        // Handle any browser alert that appears
-        Thread.sleep(2000);
-        try {
-            driver.switchTo().alert().accept();
-        } catch (Exception e) {
-            // No alert present — continue
-        }
-        Thread.sleep(1000);
-    }
-
-    /**
      * Click the submit popup button that appears after registration form submission.
      * Tries CSS selector first, falls back to XPath alternative, then additionalDetails button.
      */
@@ -446,11 +424,14 @@ public class RegistrationPage extends BasePage {
     }
 
     /**
-     * Save the registration email to Excel file (resources/UserDetails.xlsx).
+     * Save the registration email to Excel file.
+     * Uses environment-specific file: UserDetails_beta.xlsx or UserDetails_prod.xlsx
+     * Skips if email already exists in the file (prevents duplicates on retry).
      */
     public void saveEmailToExcel() {
+        String env = System.getProperty("env", "beta");
         String path = System.getProperty("user.dir") + java.io.File.separator
-                + "resources" + java.io.File.separator + "UserDetails.xlsx";
+                + "resources" + java.io.File.separator + "UserDetails_" + env + ".xlsx";
         java.io.File file = new java.io.File(path);
         file.getParentFile().mkdirs();
 
@@ -469,6 +450,18 @@ public class RegistrationPage extends BasePage {
                 sheet = workbook.createSheet("UserData");
                 org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
                 header.createCell(0).setCellValue("Email");
+            }
+
+            // Check if email already exists (prevent duplicates on retry)
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                org.apache.poi.ss.usermodel.Row existingRow = sheet.getRow(i);
+                if (existingRow != null && existingRow.getCell(0) != null) {
+                    if (email.equals(existingRow.getCell(0).getStringCellValue())) {
+                        System.out.println("⏭ Email already in Excel, skipping: " + email);
+                        workbook.close();
+                        return;
+                    }
+                }
             }
 
             int nextRow = sheet.getLastRowNum() + 1;

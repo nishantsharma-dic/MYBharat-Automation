@@ -59,49 +59,9 @@ public class YouthProfilePage extends BasePage {
     // Tabs
     private static final By TAB_ABOUT = By.xpath("//button[normalize-space()='About']");
     private static final By TAB_BASIC_INFO = By.xpath("//button[normalize-space()='Basic Info']");
-    private static final By TAB_REWARD_POINTS = By.xpath("//button[normalize-space()='Reward Points']");
 
-    // Banner & Profile Photo upload (camera buttons)
-    private static final By BANNER_CAMERA_BTN = By.xpath(
-            "//div[contains(@class,'relative w-full')]//button[.//svg]");
-    private static final By BANNER_FILE_INPUT = By.xpath(
-            "//div[contains(@class,'relative w-full')]//input[@type='file']");
-    private static final By PROFILE_PHOTO_CAMERA_BTN = By.xpath(
-            "//div[contains(@class,'relative shrink-0')]//button[contains(@aria-label,'Change profile photo') or .//svg]");
-    private static final By PROFILE_PHOTO_FILE_INPUT = By.xpath(
-            "//div[contains(@class,'relative shrink-0')]//input[@type='file']");
-
-    // Section headers (for expanding accordion or clicking edit)
-    private static final By SECTION_ABOUT = By.xpath(
-            "//span[normalize-space()='About']/ancestor::div[contains(@class,'bg-white border')]");
-    private static final By SECTION_AREA_OF_INTEREST = By.xpath(
-            "//span[normalize-space()='Area of Interest']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_LANGUAGES = By.xpath(
-            "//span[normalize-space()='Languages']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_PROF_SUMMARY = By.xpath(
-            "//span[normalize-space()='Professional Summary']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_WORK_EXP = By.xpath(
-            "//span[normalize-space()='Work Experience']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-    private static final By SECTION_TOOLS = By.xpath(
-            "//span[normalize-space()='Tools']/ancestor::div[contains(@class,'bg-white border') or contains(@class,'rounded-xl')]");
-
-    // Generic buttons
-    private static final By BTN_SAVE = By.xpath(
-            "//button[normalize-space()='Save']");
-    private static final By BTN_UPDATE = By.xpath(
-            "//button[normalize-space()='Update']");
-
-    // Toast notification
-    private static final By TOAST_SUCCESS = By.cssSelector(".Toastify__toast--success");
-    private static final By TOAST_CONTAINER = By.cssSelector(".Toastify");
-
-    // Basic Info form fields (name attributes)
-    private static final By INPUT_FIRST_NAME = By.xpath("//input[@name='first_name']");
+    // Basic Info form fields
     private static final By INPUT_USER_EMAIL = By.xpath("//input[@name='user_email']");
-
-    // Profile page verification
-    private static final By PROFILE_PAGE_INDICATOR = By.xpath(
-            "//button[normalize-space()='About'] | //div[contains(@class,'min-h-screen')]//button[normalize-space()='Basic Info']");
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -132,7 +92,7 @@ public class YouthProfilePage extends BasePage {
         // Fill About tab sections
         fillAboutSection();
         addAreaOfInterest();
-        // Education Qualification skipped — complex form with dependent dropdowns
+        addEducationQualification();
         addLanguage();
         fillProfessionalSummary();
         addWorkExperience();
@@ -186,7 +146,7 @@ public class YouthProfilePage extends BasePage {
     }
 
     /**
-     * Extract email from the Basic Info form and write to Excel.
+     * Extract email from the Basic Info form (for verification only, no Excel write).
      */
     public void extractEmailFromProfile() {
         WebElement emailField = longWait.until(
@@ -195,29 +155,11 @@ public class YouthProfilePage extends BasePage {
 
         String value = emailField.getAttribute("value");
         if (value == null || value.isEmpty()) {
-            // Try getting via JS for React controlled inputs
             value = (String) ((JavascriptExecutor) driver).executeScript(
                     "return arguments[0].value;", emailField);
         }
 
         log.info("Extracted Email from React profile: {}", value);
-        writeEmailToExcel(value);
-        log.info("Email written to Excel successfully");
-    }
-
-    /**
-     * Upload banner image via the camera button on the banner.
-     */
-    public void uploadBanner() throws InterruptedException {
-        String imagePath = getRandomImagePath();
-        WebElement fileInput = driver.findElement(BANNER_FILE_INPUT);
-        // Make input visible for sendKeys
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].style.display='block'; arguments[0].style.opacity='1';", fileInput);
-        fileInput.sendKeys(imagePath);
-        safeSleep(200);
-        waitForToastOrTimeout();
-        log.info("Banner uploaded: {}", imagePath);
     }
 
     /**
@@ -459,7 +401,7 @@ public class YouthProfilePage extends BasePage {
         safeSleep(200);
 
         clickAddIconForSection("Education Qualification");
-        safeSleep(200);
+        safeSleep(2000);
         scrollPage(400);
 
         try {
@@ -470,92 +412,141 @@ public class YouthProfilePage extends BasePage {
                 return;
             }
 
-            // 1. Education Type = "12th" (value "5")
+            // 1. Education Type = "Less than 8th" (value "170")
             WebElement educationType = selects.get(0);
             scrollToElement(educationType);
             ((JavascriptExecutor) driver).executeScript(
-                    "arguments[0].value='5'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                    "arguments[0].value='170'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
                     educationType);
-            safeSleep(200);
+            safeSleep(1500);
 
-            // 2. State — select first available state (index 1)
+            // 2. State — select "Chandigarh"
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
             for (WebElement sel : selects) {
                 List<WebElement> opts = sel.findElements(By.tagName("option"));
-                // Find the State dropdown (has "----Select State----" or "----Select----" and many options)
-                boolean isStateDropdown = opts.stream().anyMatch(o -> 
-                        o.getText().contains("Select") && opts.size() > 10);
-                if (isStateDropdown && opts.size() > 5) {
-                    // Select index 1 (first real state)
-                    String firstStateValue = opts.get(1).getAttribute("value");
-                    ((JavascriptExecutor) driver).executeScript(
-                            "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
-                            sel, firstStateValue);
-                    safeSleep(200); // Wait for district dropdown to populate
-                    log.info("State selected");
+                boolean hasChandigarh = opts.stream().anyMatch(o ->
+                        o.getText().toLowerCase().contains("chandigarh"));
+                if (hasChandigarh) {
+                    for (WebElement opt : opts) {
+                        if (opt.getText().toLowerCase().contains("chandigarh")) {
+                            ((JavascriptExecutor) driver).executeScript(
+                                    "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                                    sel, opt.getAttribute("value"));
+                            log.info("State selected: Chandigarh");
+                            break;
+                        }
+                    }
                     break;
                 }
             }
+            safeSleep(1500);
 
-            // 3. District — select first available district
+            // 3. District — select first available
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
             for (WebElement sel : selects) {
                 List<WebElement> opts = sel.findElements(By.tagName("option"));
-                // District dropdown: has "----Select----" and fewer options than state, loaded after state
-                if (opts.size() >= 2 && opts.size() <= 50) {
+                if (opts.size() >= 2 && opts.size() <= 10) {
                     String firstOptText = opts.get(0).getText();
-                    if (firstOptText.contains("Select") && !firstOptText.contains("State") 
-                            && !firstOptText.contains("Education") && !firstOptText.contains("Institute")
-                            && !firstOptText.contains("Status") && !firstOptText.contains("Board")
-                            && !firstOptText.contains("Identifier") && !firstOptText.contains("Course")) {
-                        // Check if this is a district-like dropdown (not already selected)
+                    if (firstOptText.contains("Select") && !firstOptText.contains("Education")
+                            && !firstOptText.contains("Institute") && !firstOptText.contains("Status")
+                            && !firstOptText.contains("Board") && !firstOptText.contains("Identifier")
+                            && !firstOptText.contains("Course") && !firstOptText.contains("State")) {
                         String currentVal = sel.getAttribute("value");
                         if (currentVal == null || currentVal.isEmpty()) {
-                            String districtValue = opts.get(1).getAttribute("value");
                             ((JavascriptExecutor) driver).executeScript(
-                                    "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
-                                    sel, districtValue);
-                            safeSleep(200);
+                                    "arguments[0].selectedIndex=1; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                                    sel);
                             log.info("District selected");
                             break;
                         }
                     }
                 }
             }
+            safeSleep(1000);
 
-            // 4. Education Status = "Passed"
-            selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
-            for (WebElement sel : selects) {
-                if (sel.findElements(By.xpath(".//option[text()='Passed']")).size() > 0) {
-                    ((JavascriptExecutor) driver).executeScript(
-                            "arguments[0].value='Passed'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));", sel);
-                    safeSleep(200);
-                    break;
-                }
+            // 4. School Name — select index 2
+            try {
+                WebElement schoolSelect = driver.findElement(By.xpath("//div[5]//select[1]"));
+                scrollToElement(schoolSelect);
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].selectedIndex=2; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                        schoolSelect);
+                safeSleep(500);
+                log.info("School Name selected");
+            } catch (Exception e) {
+                log.warn("School Name dropdown not found");
             }
 
-            // 5. Student Identifier = "Roll number"
-            selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
-            for (WebElement sel : selects) {
-                if (sel.findElements(By.xpath(".//option[text()='Roll number']")).size() > 0) {
-                    ((JavascriptExecutor) driver).executeScript(
-                            "arguments[0].value='Roll number'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));", sel);
-                    break;
-                }
+            // 5. Education Status = "Passed"
+            try {
+                WebElement statusSelect = driver.findElement(By.xpath(
+                        "//*[contains(text(),'Education Status')]/following::select[1]"));
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].value='Passed'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                        statusSelect);
+                safeSleep(500);
+                log.info("Education Status: Passed");
+            } catch (Exception e) {
+                log.warn("Education Status dropdown not found");
             }
 
-            // 6. Student Identifier Value
+            // 6. Student Identifier = "Roll number"
+            try {
+                WebElement identifierSelect = driver.findElement(By.xpath(
+                        "//*[contains(text(),'Student Unique Identifier')]/following::select[1]"));
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].value='Roll number'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                        identifierSelect);
+                safeSleep(300);
+                log.info("Student Identifier: Roll number");
+            } catch (Exception e) {
+                log.warn("Student Identifier dropdown not found");
+            }
+
+            // 7. Student Identifier Value
             try {
                 WebElement identifierInput = driver.findElement(By.xpath("//input[@placeholder='Enter value']"));
                 scrollToElement(identifierInput);
-                typeInReactInput(identifierInput, "12345678");
+                typeInReactInput(identifierInput, "CHD2020123456");
             } catch (Exception e) { /* skip */ }
 
-            // 7. Save
+            // 8. Year of Passing
+            try {
+                WebElement yearSelect = driver.findElement(By.xpath("//div[9]//select[1]"));
+                scrollToElement(yearSelect);
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].value='2020'; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                        yearSelect);
+                safeSleep(300);
+                log.info("Year of Passing: 2020");
+            } catch (Exception e) {
+                log.warn("Year of Passing dropdown not found");
+            }
+
+            // 9. Division
+            try {
+                WebElement divisionInput = driver.findElement(By.xpath("//input[@placeholder='Enter division']"));
+                scrollToElement(divisionInput);
+                typeInReactInput(divisionInput, "First");
+            } catch (Exception e) { /* skip */ }
+
+            // 10. Percentage
+            try {
+                WebElement percentInput = driver.findElement(By.xpath("//input[@placeholder='Enter percentage']"));
+                scrollToElement(percentInput);
+                typeInReactInput(percentInput, "78");
+            } catch (Exception e) { /* skip */ }
+
+            // 11. Save
             scrollPage(300);
             clickSaveOrUpdateInSection("Education Qualification");
             waitForToastOrTimeout();
+            safeSleep(1000);
             log.info("✅ Education Qualification saved");
+
+            // Scroll back to top so next sections don't get confused
+            scrollToTop();
+            safeSleep(500);
         } catch (Exception e) {
             log.warn("Education qualification fill failed: {}", e.getMessage());
         }
@@ -1171,8 +1162,9 @@ public class YouthProfilePage extends BasePage {
      */
     private void writeEmailToExcel(String email) {
         try {
+            String env = System.getProperty("env", "beta");
             String path = System.getProperty("user.dir") + File.separator
-                    + "resources" + File.separator + "UserDetails.xlsx";
+                    + "resources" + File.separator + "UserDetails_" + env + ".xlsx";
             File file = new File(path);
             file.getParentFile().mkdirs();
 
