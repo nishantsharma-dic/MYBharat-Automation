@@ -42,7 +42,7 @@ jobs:
           mvn test \
             -Denv=prod \
             -Dbrowser=headless \
-            -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml \
+            -Dsurefire.suiteXmlFiles=testSuites/testng-ci.xml \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -DciMode=true
 

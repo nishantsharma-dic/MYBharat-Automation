@@ -2,35 +2,61 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  CI Suite - Designed for GitHub Actions (headless, higher latency).
+  CI Suite - All modules EXCEPT Certificate Download.
   
-  Only includes tests that work reliably on remote runners:
-  - Registration (creates new user, saves email)
-  - Logout (verifies logout works)
+  Certificate download is skipped on CI because headless Chrome
+  cannot handle JS-generated blob downloads.
   
-  Tests that require fast session persistence (Login → Profile → Quiz)
-  are excluded as they timeout on US-based GitHub runners hitting Indian servers.
+  Flow: Registration → Logout → Login → Profile → Basic Info → Quiz
   
   Run with:
-    mvn test -Denv=prod -Dbrowser=headless -Dsurefire.suiteXmlFiles=testSuites/testng-ci.xml
+    mvn test -Denv=prod -Dbrowser=headless -DciMode=true -Dsurefire.suiteXmlFiles=testSuites/testng-ci.xml
 -->
-<suite name="CI Suite — MY Bharat" parallel="false" verbose="1">
+<suite name="MYBharat CI Suite" parallel="false" verbose="1">
 
     <listeners>
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Registration → Save email to Excel -->
+    <!-- Step 1: Registration → Save email to Excel -->
     <test name="Youth Registration">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
         </classes>
     </test>
 
-    <!-- Logout after registration -->
+    <!-- Step 2: Logout after registration -->
     <test name="Logout After Registration">
         <classes>
             <class name="com.mybharat.tests.youth.LogoutTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Login with email from Excel -->
+    <test name="Youth Login">
+        <classes>
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 4: Complete Youth Profile -->
+    <test name="Youth Profile Completion">
+        <classes>
+            <class name="com.mybharat.tests.youth.YouthProfileTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 5: Basic Info + Extract Email -->
+    <test name="Youth Basic Info">
+        <classes>
+            <class name="com.mybharat.tests.youth.BasicInfoTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 6: Quiz Attempt -->
+    <test name="Quiz Attempt">
+        <classes>
+            <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
         </classes>
     </test>
 
