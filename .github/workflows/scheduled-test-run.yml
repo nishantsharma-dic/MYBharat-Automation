@@ -204,14 +204,14 @@ jobs:
                     <td style="padding: 8px; border: 1px solid #eee;">8</td>
                     <td style="padding: 8px; border: 1px solid #eee;">Quiz</td>
                     <td style="padding: 8px; border: 1px solid #eee;">attemptCompetitiveQuiz</td>
-                    <td style="padding: 8px; border: 1px solid #eee;">Play Competitive Quiz (English, 20 questions) + Submit feedback</td>
+                    <td style="padding: 8px; border: 1px solid #eee;">Play Competitive Quiz + Submit feedback</td>
                   </tr>
                 </table>
 
                 <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz (Competitive, English, 20 Qs)
+                  Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz
                 </p>
 
                 <!-- View Report Button -->
