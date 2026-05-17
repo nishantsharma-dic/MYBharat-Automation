@@ -41,6 +41,16 @@ public class QuizAttemptPage extends BasePage {
         this(driver, "English");
     }
 
+    /** Stores the quiz name extracted during the test */
+    private String quizName = "Competitive Quiz";
+
+    /**
+     * Get the quiz name that was played.
+     */
+    public String getQuizName() {
+        return quizName;
+    }
+
     /**
      * Navigate to quiz section and start the quiz.
      */
@@ -97,6 +107,40 @@ public class QuizAttemptPage extends BasePage {
         scrollToElement(startQuiz);
         Thread.sleep(500);
         jsClick(startQuiz);
+
+        // Extract quiz name from the page
+        try {
+            Thread.sleep(1000);
+            // Try common quiz title locators
+            String[] titleLocators = {
+                "//h3[contains(@class,'quiz')]", "//h4[contains(@class,'quiz')]",
+                "//div[contains(@class,'quiz-title')]", "//div[contains(@class,'quiz-name')]",
+                "//h3", "//h2[not(contains(@class,'nav'))]"
+            };
+            for (String loc : titleLocators) {
+                try {
+                    java.util.List<WebElement> titles = driver.findElements(By.xpath(loc));
+                    for (WebElement t : titles) {
+                        String text = t.getText().trim();
+                        if (text.length() > 3 && text.length() < 100 && !text.contains("Start") && !text.contains("MY Bharat")) {
+                            quizName = text;
+                            break;
+                        }
+                    }
+                    if (!quizName.equals("Competitive Quiz")) break;
+                } catch (Exception ignored) {}
+            }
+            System.out.println("Quiz Name: " + quizName);
+        } catch (Exception e) {
+            System.out.println("Could not extract quiz name, using default");
+        }
+
+        // Save quiz name to file for workflow to read
+        try {
+            java.io.File quizFile = new java.io.File(System.getProperty("user.dir") + "/reports/quiz_name.txt");
+            quizFile.getParentFile().mkdirs();
+            java.nio.file.Files.writeString(quizFile.toPath(), quizName);
+        } catch (Exception e) { /* ignore */ }
 
         // Click second "START QUIZ" button (if present)
         try {

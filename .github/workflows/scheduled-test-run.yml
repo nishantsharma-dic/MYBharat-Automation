@@ -71,15 +71,17 @@ jobs:
         id: details
         if: always()
         run: |
-          REPORT_FILE="target/surefire-reports/testng-results.xml"
-          DURATION=$(TZ='Asia/Kolkata' echo "$(( $(date +%s) - $(date -r target/surefire-reports/testng-results.xml +%s 2>/dev/null || echo 0) )) seconds" 2>/dev/null || echo "N/A")
-          
           # Extract registered email from logs
-          REG_EMAIL=$(grep -o '[A-Za-z0-9]*@yopmail.com' target/surefire-reports/*.xml 2>/dev/null | head -1 || echo "N/A")
-          if [ -z "$REG_EMAIL" ]; then
-            REG_EMAIL=$(grep -r 'Email saved to Excel' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9]*@yopmail.com' | head -1 || echo "N/A")
-          fi
+          REG_EMAIL=$(grep -r '@yopmail.com' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9]*@yopmail.com' | head -1 || echo "N/A")
           echo "reg_email=${REG_EMAIL:-N/A}" >> $GITHUB_OUTPUT
+
+          # Extract quiz name
+          if [ -f "reports/quiz_name.txt" ]; then
+            QUIZ_NAME=$(cat reports/quiz_name.txt)
+          else
+            QUIZ_NAME="Competitive Quiz"
+          fi
+          echo "quiz_name=${QUIZ_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload ExtentReport as artifact
         if: always()
@@ -204,7 +206,7 @@ jobs:
                     <td style="padding: 8px; border: 1px solid #eee;">8</td>
                     <td style="padding: 8px; border: 1px solid #eee;">Quiz</td>
                     <td style="padding: 8px; border: 1px solid #eee;">attemptCompetitiveQuiz</td>
-                    <td style="padding: 8px; border: 1px solid #eee;">Play Competitive Quiz + Submit feedback</td>
+                    <td style="padding: 8px; border: 1px solid #eee;">Quiz: ${{ steps.details.outputs.quiz_name }}</td>
                   </tr>
                 </table>
 
