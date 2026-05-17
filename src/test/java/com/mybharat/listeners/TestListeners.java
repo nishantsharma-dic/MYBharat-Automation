@@ -42,11 +42,21 @@ public class TestListeners implements ITestListener {
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
     private static final ExtentReports extent = ExtentReportManager.getReportObject();
 
+    /** Track skipped tests so we can remove them if retry passes */
+    private static final java.util.Map<String, ExtentTest> skippedTests = new java.util.concurrent.ConcurrentHashMap<>();
+
     @Override
     public void onTestStart(ITestResult result) {
         String testName = result.getMethod().getMethodName();
         String description = result.getMethod().getDescription();
         String className = result.getTestClass().getRealClass().getSimpleName();
+
+        // If this test was previously skipped (retry), remove the skipped entry
+        String key = className + "." + testName;
+        if (skippedTests.containsKey(key)) {
+            extent.removeTest(skippedTests.get(key));
+            skippedTests.remove(key);
+        }
 
         // Create test with descriptive name: ClassName > methodName
         ExtentTest test = extent.createTest(className + " > " + testName);
@@ -119,16 +129,23 @@ public class TestListeners implements ITestListener {
 
     @Override
     public void onTestSkipped(ITestResult result) {
+        String testName = result.getMethod().getMethodName();
+        String className = result.getTestClass().getRealClass().getSimpleName();
         ExtentTest test = extentTest.get();
+
+        // Track this skipped test so it can be removed if retry passes
+        String key = className + "." + testName;
+        skippedTests.put(key, test);
+
         test.log(Status.SKIP, MarkupHelper.createLabel(
-                "⏭ TEST SKIPPED — " + result.getMethod().getMethodName(), ExtentColor.ORANGE));
+                "⏭ TEST SKIPPED — " + testName + " (will retry)", ExtentColor.ORANGE));
 
         Throwable throwable = result.getThrowable();
         if (throwable != null) {
             test.skip("Reason: " + throwable.getMessage());
         }
 
-        log.warn("⏭ Test skipped: {}", result.getMethod().getMethodName());
+        log.warn("⏭ Test skipped: {}", testName);
     }
 
     @Override
