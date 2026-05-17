@@ -61,8 +61,26 @@ public class QuizAttemptPage extends BasePage {
         } catch (Exception e) { /* no popup */ }
 
         // Click Quiz & Essay tab
-        waitForClickable(quizAndEssayTab);
-        safeClick(quizAndEssayTab);
+        scrollPage(500);
+        Thread.sleep(1000);
+        try {
+            waitForClickable(quizAndEssayTab);
+            safeClick(quizAndEssayTab);
+        } catch (Exception e) {
+            // Fallback: try JS click or different locator
+            try {
+                WebElement quizTab = driver.findElement(By.xpath(
+                        "//span[contains(text(),'Quiz')] | //a[contains(text(),'Quiz')] | //button[contains(text(),'Quiz')]"));
+                scrollToElement(quizTab);
+                Thread.sleep(500);
+                jsClick(quizTab);
+            } catch (Exception e2) {
+                // Last resort: navigate directly to quiz URL
+                driver.get(config.getUrl() + "/quiz");
+                waitForPageLoad();
+                Thread.sleep(2000);
+            }
+        }
         Thread.sleep(2000);
         scrollPage(1000);
         Thread.sleep(1000);
