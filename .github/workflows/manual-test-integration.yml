@@ -3,6 +3,11 @@ name: Manual Test Run — Integration Branch
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch to test (leave empty for current branch)'
+        required: false
+        default: ''
+        type: string
       suite:
         description: 'Test suite to run'
         required: true
@@ -40,6 +45,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
+          fetch-depth: 0
 
       - name: Run Test Suite
         id: test_run
@@ -112,7 +120,7 @@ jobs:
           echo "${{ steps.result.outputs.emoji }} ${{ steps.result.outputs.status }}"
           echo "=========================================="
           echo "Time:        ${{ steps.result.outputs.timestamp }}"
-          echo "Branch:      ${{ github.ref_name }}"
+          echo "Branch:      ${{ github.event.inputs.branch || github.ref_name }}"
           echo "Suite:       ${{ github.event.inputs.suite }}"
           echo "Browser:     ${{ github.event.inputs.browser }}"
           echo "Environment: ${{ github.event.inputs.environment }}"
