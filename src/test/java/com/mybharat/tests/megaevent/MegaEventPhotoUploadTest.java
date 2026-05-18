@@ -77,10 +77,11 @@ public class MegaEventPhotoUploadTest extends BaseTest {
 
     @Test(priority = 5, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "searchAndOpenEvent")
     public void uploadMediaToEvent() {
-        log.info("=== Step 5: Upload {} images ===", IMAGE_COUNT);
+        log.info("=== Step 5: Upload 2 images + 1 video ===");
         uploadPage.clickUploadMedia();
         uploadPage.uploadImages(IMAGE_COUNT);
-        log.info("✅ {} images uploaded", IMAGE_COUNT);
+        uploadPage.uploadVideo();
+        log.info("✅ 2 images + 1 video uploaded");
     }
 
     @Test(priority = 6, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "uploadMediaToEvent")

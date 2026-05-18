@@ -267,7 +267,7 @@ public class MegaEventPhotoUploadPage extends BasePage {
     public void uploadImages(int count) {
         log.info("Uploading {} images", count);
 
-        String uploadDir = System.getProperty("user.dir") + File.separator + "UploadImages";
+        String uploadDir = "D:\\project\\ProjectM\\TestData";
         File dir = new File(uploadDir);
         File[] imageFiles = dir.listFiles((d, name) -> name.toLowerCase().matches(".*\\.(jpg|jpeg|png)"));
 
@@ -359,6 +359,46 @@ public class MegaEventPhotoUploadPage extends BasePage {
     }
 
     // =========================================================================
+    // STEP 6b: Upload Video
+    // =========================================================================
+
+    /**
+     * Upload a video file via "Upload Videos" button in the modal.
+     * Video picked from TestData folder.
+     */
+    public void uploadVideo() {
+        String videoPath = "D:\\project\\ProjectM\\TestData\\video mega event.mp4";
+        log.info("Uploading video: {}", videoPath);
+
+        // Click "Upload Videos" button
+        WebElement uploadVideoBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+            ExpectedConditions.elementToBeClickable(
+                By.xpath("//h6[@id='uploadVideoButton']")));
+        safeClick(uploadVideoBtn);
+        safeSleep(1500);
+
+        // Find video file input and send file
+        List<WebElement> fileInputs = driver.findElements(By.cssSelector("input[type='file'][accept*='video']"));
+        if (fileInputs.isEmpty()) {
+            fileInputs = driver.findElements(By.cssSelector("input[type='file']"));
+        }
+
+        if (!fileInputs.isEmpty()) {
+            WebElement videoInput = fileInputs.get(fileInputs.size() - 1);
+            js.executeScript(
+                "arguments[0].style.display='block';" +
+                "arguments[0].style.opacity='1';" +
+                "arguments[0].style.position='relative';", videoInput);
+            safeSleep(300);
+            videoInput.sendKeys(videoPath);
+            safeSleep(3000);
+            log.info("✅ Video uploaded: test_video.mp4");
+        } else {
+            log.error("Video file input not found");
+        }
+    }
+
+    // =========================================================================
     // STEP 7: Click Submit
     // =========================================================================
 
@@ -374,7 +414,15 @@ public class MegaEventPhotoUploadPage extends BasePage {
         safeSleep(300);
         safeClick(submitBtn);
         log.info("✅ Submit button clicked");
-        safeSleep(5000);
+
+        // Wait for confirmation popup and click "Okay"
+        safeSleep(3000);
+        WebElement okayBtn = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+            ExpectedConditions.elementToBeClickable(
+                By.xpath("//button[@id='page_reload']")));
+        safeClick(okayBtn);
+        log.info("✅ Okay button clicked — upload confirmed");
+        safeSleep(2000);
     }
 
     public boolean isUploadSuccessful() {
