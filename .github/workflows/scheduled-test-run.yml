@@ -124,8 +124,18 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-      - name: Send report email to seniors
+      - name: Check if tests actually ran
+        id: check_run
         if: always()
+        run: |
+          if [ -f "target/surefire-reports/testng-results.xml" ]; then
+            echo "tests_ran=true" >> $GITHUB_OUTPUT
+          else
+            echo "tests_ran=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send report email to seniors
+        if: always() && steps.check_run.outputs.tests_ran == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -185,7 +195,7 @@ jobs:
                     <th style="padding: 6px; text-align: left;">Description</th>
                     <th style="padding: 6px;">Device</th>
                     <th style="padding: 6px;">Status</th>
-                    <th style="padding: 6px; text-align: left;">Developer</th>
+                    <th style="padding: 6px; text-align: left;">Team Lead</th>
                   </tr>
                   <tr style="background: #f9f9f9;">
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">1</td>
