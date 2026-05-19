@@ -112,6 +112,182 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+      - name: Extract test details
+        id: details
+        if: always()
+        run: |
+          REG_EMAIL=$(grep -r '@yopmail.com' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9]*@yopmail.com' | head -1 || echo "N/A")
+          echo "reg_email=${REG_EMAIL:-N/A}" >> $GITHUB_OUTPUT
+
+          if [ -f "reports/quiz_name.txt" ]; then
+            QUIZ_NAME=$(cat reports/quiz_name.txt)
+          else
+            QUIZ_NAME="Competitive Quiz"
+          fi
+          echo "quiz_name=${QUIZ_NAME}" >> $GITHUB_OUTPUT
+
+          REPORT_FILE="target/surefire-reports/testng-results.xml"
+          get_status() {
+            local method="$1"
+            if grep -q "name=\"$method\"" "$REPORT_FILE" 2>/dev/null; then
+              if grep -A2 "name=\"$method\"" "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+                echo "❌ FAIL"
+              else
+                echo "✅ PASS"
+              fi
+            else
+              echo "⏭ SKIP"
+            fi
+          }
+
+          echo "s1=$(get_status 'registerIndianYouth')" >> $GITHUB_OUTPUT
+          echo "s2=$(get_status 'verifyUserInDatabase')" >> $GITHUB_OUTPUT
+          echo "s3=$(get_status 'logoutUser')" >> $GITHUB_OUTPUT
+          echo "s4=$(get_status 'loginWithOTP')" >> $GITHUB_OUTPUT
+          echo "s5=$(get_status 'completeYouthProfile')" >> $GITHUB_OUTPUT
+          echo "s6=$(get_status 'verifyRegistrationCertificateDownload')" >> $GITHUB_OUTPUT
+          echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
+          echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
+
+      - name: Send test email to QA lead (personal only)
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "[TEST] ${{ steps.result.outputs.emoji }} MY Bharat Report | ${{ steps.result.outputs.status }} | ${{ steps.result.outputs.timestamp }}"
+          to: nishantsharma.dic@digitalindia.gov.in
+          from: "MY Bharat QA <${{ secrets.SMTP_USERNAME }}>"
+          html_body: |
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #160363, #2d0a8f); padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+                <h1 style="color: #fff; margin: 0; font-size: 22px;">MY Bharat — QA Automation Report</h1>
+                <p style="color: #c4b5fd; margin: 8px 0 0; font-size: 13px;">Production Environment | Manual Test Run (Integration)</p>
+              </div>
+              <div style="background: ${{ steps.result.outputs.emoji == '✅' && '#28a745' || '#dc3545' }}; padding: 14px; text-align: center;">
+                <h2 style="color: #fff; margin: 0; font-size: 20px;">${{ steps.result.outputs.emoji }} ${{ steps.result.outputs.status }}</h2>
+              </div>
+              <div style="padding: 25px; border: 1px solid #e0e0e0; border-top: none;">
+                <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Execution Details</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                  <tr><td style="padding: 8px; font-weight: bold; width: 40%;">Execution Time:</td><td style="padding: 8px;">${{ steps.result.outputs.timestamp }}</td></tr>
+                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Environment:</td><td style="padding: 8px;">Production (https://mybharat.gov.in)</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (UI Mode)</td></tr>
+                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules — Full End-to-End</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Registered User:</td><td style="padding: 8px;">${{ steps.details.outputs.reg_email }}</td></tr>
+                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Branch:</td><td style="padding: 8px;">${{ github.event.inputs.branch || github.ref_name }}</td></tr>
+                </table>
+                <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Results Summary</h3>
+                <table style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 20px;">
+                  <tr style="background: #160363; color: white;">
+                    <th style="padding: 10px;">Total</th><th style="padding: 10px;">Passed</th><th style="padding: 10px;">Failed</th>
+                  </tr>
+                  <tr style="font-size: 20px; font-weight: bold;">
+                    <td style="padding: 12px; border: 1px solid #ddd;">${{ steps.parse.outputs.total }}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; color: #28a745;">${{ steps.parse.outputs.passed }}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; color: #dc3545;">${{ steps.parse.outputs.failed }}</td>
+                  </tr>
+                </table>
+                <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Cases Executed</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+                  <tr style="background: #160363; color: white;">
+                    <th style="padding: 6px;">#</th>
+                    <th style="padding: 6px; text-align: left;">Module</th>
+                    <th style="padding: 6px; text-align: left;">Test Case</th>
+                    <th style="padding: 6px; text-align: left;">Description</th>
+                    <th style="padding: 6px;">Device</th>
+                    <th style="padding: 6px;">Status</th>
+                    <th style="padding: 6px; text-align: left;">Developer</th>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">1</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Registration</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">registerIndianYouth</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Register new youth user with OTP</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s1 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">2</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Registration</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">verifyUserInDatabase</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Verify user in DB via Redash</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s2 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">3</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Logout</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">logoutUser</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Logout after registration</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s3 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">4</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Login</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">loginWithOTP</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Login with email + OTP from Yopmail</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s4 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">5</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Profile</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">completeYouthProfile</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Fill all profile sections</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s5 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">6</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Certificate</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">verifyRegistrationCertificateDownload</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Download certificate PNG</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s6 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">7</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Basic Info</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">clickBasicInfoAndExtractEmail</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Verify email in Basic Info</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s7 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">8</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Quiz</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">attemptCompetitiveQuiz</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Quiz: ${{ steps.details.outputs.quiz_name }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s8 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
+                  </tr>
+                </table>
+                <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
+                <p style="font-size: 13px; color: #555; line-height: 1.8;">
+                  Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz
+                </p>
+                <div style="text-align: center; margin: 25px 0;">
+                  <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background: #160363; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Detailed Report & Logs</a>
+                </div>
+              </div>
+              <div style="background: #f8f9fa; padding: 12px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0; border-top: none;">
+                <p style="color: #888; font-size: 11px; margin: 0;">MY Bharat | QA Team | Nishant Sharma | Manual Test Run (Integration)</p>
+              </div>
+            </div>
+
       - name: Print Summary
         if: always()
         run: |
