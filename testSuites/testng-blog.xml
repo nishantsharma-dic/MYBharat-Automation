@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Blog Module Test Suite
+  
+  Flow: Login (with existing user from Excel) → Write and Publish Blog
+  
+  Run with:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-blog.xml
+-->
+<suite name="Blog Module Suite" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Step 1: Login -->
+    <test name="Youth Login">
+        <classes>
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Blog Creation -->
+    <test name="Blog Creation">
+        <classes>
+            <class name="com.mybharat.tests.blog.BlogTest"/>
+        </classes>
+    </test>
+
+</suite>
