@@ -4,22 +4,10 @@
 <!--
   ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
   
-  Flow: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz
+  Flow: Public Page → Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz
   
   Run with:
-    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
-    mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
-  
-  Execution order:
-    1. Youth Registration
-    2. Youth Login
-    3. Youth Profile Completion
-    4. Registration Certificate Verification
-    5. Youth Basic Info
-    6. Quiz Attempt
-    7. CV Builder (TODO)
-    8. Organisation Creation (TODO)
-    9. Join Organisation (TODO)
+    mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
 -->
 <suite name="MYBharat All Modules" parallel="false" verbose="1">
 
@@ -27,63 +15,70 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Registration → Submit popup → Save email to Excel -->
+    <!-- Step 1: Public Page - Header + Organization + Footer -->
+    <test name="Public Page">
+        <classes>
+            <class name="com.mybharat.tests.youth.PublicPageTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Registration → Submit popup → Save email to Excel -->
     <test name="Youth Registration">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
         </classes>
     </test>
 
-    <!-- Step 2: Logout after registration -->
+    <!-- Step 3: Logout after registration -->
     <test name="Logout After Registration">
         <classes>
             <class name="com.mybharat.tests.youth.LogoutTest"/>
         </classes>
     </test>
 
-    <!-- Step 3: Login with email from Excel (password: 25@March) -->
+    <!-- Step 4: Login with email from Excel (OTP based) -->
     <test name="Youth Login">
         <classes>
             <class name="com.mybharat.tests.youth.LoginTest"/>
         </classes>
     </test>
 
-    <!-- Step 3: Complete Youth Profile -->
+    <!-- Step 5: Complete Youth Profile -->
     <test name="Youth Profile Completion">
         <classes>
             <class name="com.mybharat.tests.youth.YouthProfileTest"/>
         </classes>
     </test>
 
-    <!-- Step 4: Registration Certificate Verification -->
+    <!-- Step 6: Registration Certificate Verification -->
     <test name="Registration Certificate Verification">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
         </classes>
     </test>
 
-    <!-- Step 5: Basic Info + Extract Email -->
+    <!-- Step 7: Basic Info + Extract Email -->
     <test name="Youth Basic Info">
         <classes>
             <class name="com.mybharat.tests.youth.BasicInfoTest"/>
         </classes>
     </test>
 
-    <!-- Step 6: Quiz Attempt -->
+    <!-- Step 8: Quiz Attempt -->
     <test name="Quiz Attempt">
         <classes>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
         </classes>
     </test>
 
-    <!-- Step 7: Quiz Certificate Download -->
+    <!-- Step 9: Quiz Certificate Download -->
     <test name="Quiz Certificate Verification">
         <classes>
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
         </classes>
     </test>
 
-    <!-- Module 7: CV Builder (TODO) -->
+    <!-- Module 10: CV Builder (TODO) -->
     <!--
     <test name="CV Builder">
         <classes>
@@ -92,7 +87,7 @@
     </test>
     -->
 
-    <!-- Module 8: Organisation Creation (TODO) -->
+    <!-- Module 11: Organisation Creation (TODO) -->
     <!--
     <test name="Organisation Creation">
         <classes>
@@ -101,7 +96,7 @@
     </test>
     -->
 
-    <!-- Module 9: Join Organisation (TODO) -->
+    <!-- Module 12: Join Organisation (TODO) -->
     <!--
     <test name="Join Organisation">
         <classes>

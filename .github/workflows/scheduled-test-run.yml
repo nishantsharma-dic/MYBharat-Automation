@@ -103,6 +103,9 @@ jobs:
             fi
           }
 
+          # Public Pages — single test method "publicPages"
+          echo "s0=$(get_status 'publicPages')" >> $GITHUB_OUTPUT
+
           echo "s1=$(get_status 'registerIndianYouth')" >> $GITHUB_OUTPUT
           echo "s2=$(get_status 'verifyUserInDatabase')" >> $GITHUB_OUTPUT
           echo "s3=$(get_status 'logoutUser')" >> $GITHUB_OUTPUT
@@ -205,6 +208,15 @@ jobs:
                   </tr>
                   <tr style="background: #f9f9f9;">
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">1</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Public Pages</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">publicPages</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Header, Organization, Footer navigation (43 checks)</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s0 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Prashant/Hariom</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">2</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Registration</td>
                     <td style="padding: 6px; border: 1px solid #eee;">registerIndianYouth</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Register new youth user with OTP verification</td>
@@ -212,8 +224,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s1 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
                   </tr>
-                  <tr>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">2</td>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">3</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Registration</td>
                     <td style="padding: 6px; border: 1px solid #eee;">verifyUserInDatabase</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Verify registered user exists in DB via Redash</td>
@@ -221,8 +233,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s2 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
                   </tr>
-                  <tr style="background: #f9f9f9;">
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">3</td>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">4</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Logout</td>
                     <td style="padding: 6px; border: 1px solid #eee;">logoutUser</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Logout after registration</td>
@@ -230,8 +242,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s3 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
                   </tr>
-                  <tr>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">4</td>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">5</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Login</td>
                     <td style="padding: 6px; border: 1px solid #eee;">loginWithOTP</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Login with email from Excel + OTP from Yopmail</td>
@@ -239,8 +251,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s4 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
                   </tr>
-                  <tr style="background: #f9f9f9;">
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">5</td>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">6</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Profile</td>
                     <td style="padding: 6px; border: 1px solid #eee;">completeYouthProfile</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Fill all profile sections: Photo, About, Education, Language, Work Exp, Tools</td>
@@ -248,8 +260,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s5 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
                   </tr>
-                  <tr>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">6</td>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">7</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Certificate</td>
                     <td style="padding: 6px; border: 1px solid #eee;">verifyRegistrationCertificateDownload</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Download registration certificate as PNG and verify</td>
@@ -257,8 +269,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s6 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
                   </tr>
-                  <tr style="background: #f9f9f9;">
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">7</td>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">8</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Basic Info</td>
                     <td style="padding: 6px; border: 1px solid #eee;">clickBasicInfoAndExtractEmail</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Navigate to Basic Info tab and verify email</td>
@@ -266,8 +278,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s7 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
                   </tr>
-                  <tr>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">8</td>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">9</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Quiz</td>
                     <td style="padding: 6px; border: 1px solid #eee;">attemptCompetitiveQuiz</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Quiz: ${{ steps.details.outputs.quiz_name }}</td>
@@ -275,8 +287,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s8 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
                   </tr>
-                  <tr style="background: #f9f9f9;">
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">9</td>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">10</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Quiz Certificate</td>
                     <td style="padding: 6px; border: 1px solid #eee;">verifyQuizCertificateDownload</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Download quiz certificate and close modal</td>
@@ -289,7 +301,7 @@ jobs:
                 <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Download Quiz Certificate
+                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Download Quiz Certificate
                 </p>
 
                 <!-- View Report Button -->
