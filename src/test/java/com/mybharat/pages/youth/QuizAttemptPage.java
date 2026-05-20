@@ -304,4 +304,40 @@ public class QuizAttemptPage extends BasePage {
         js.executeScript("arguments[0].click();", feedbackSubmit);
         System.out.println("Feedback submitted successfully");
     }
+
+    /**
+     * Download quiz certificate and close the modal.
+     * Called after quiz submission and feedback.
+     */
+    public void downloadQuizCertificateAndClose() throws Exception {
+        WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        // Wait for certificate modal/download button to appear
+        Thread.sleep(3000);
+
+        // Click Download button
+        try {
+            WebElement downloadBtn = qWait.until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Download']")));
+            scrollToElement(downloadBtn);
+            Thread.sleep(500);
+            js.executeScript("arguments[0].click();", downloadBtn);
+            System.out.println("✅ Quiz certificate download clicked");
+            Thread.sleep(2000);
+        } catch (Exception e) {
+            System.out.println("⚠ Download button not found: " + e.getMessage());
+        }
+
+        // Close the certificate modal
+        try {
+            WebElement closeModal = qWait.until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='modal-close']")));
+            js.executeScript("arguments[0].click();", closeModal);
+            System.out.println("✅ Quiz certificate modal closed");
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            System.out.println("⚠ Modal close button not found: " + e.getMessage());
+        }
+    }
 }

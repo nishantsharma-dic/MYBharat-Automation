@@ -76,6 +76,13 @@
         </classes>
     </test>
 
+    <!-- Step 7: Quiz Certificate Download -->
+    <test name="Quiz Certificate Verification">
+        <classes>
+            <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
+        </classes>
+    </test>
+
     <!-- Module 7: CV Builder (TODO) -->
     <!--
     <test name="CV Builder">
