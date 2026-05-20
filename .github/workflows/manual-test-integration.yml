@@ -63,19 +63,6 @@ jobs:
             -Dbrowser=${{ github.event.inputs.browser }} \
             -Dsurefire.suiteXmlFiles=${{ github.event.inputs.suite }}
 
-      - name: Determine test result
-        id: result
-        if: always()
-        run: |
-          if [ "${{ steps.test_run.outcome }}" == "success" ]; then
-            echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
-            echo "emoji=✅" >> $GITHUB_OUTPUT
-          else
-            echo "status=SOME TESTS FAILED" >> $GITHUB_OUTPUT
-            echo "emoji=❌" >> $GITHUB_OUTPUT
-          fi
-          echo "timestamp=$(TZ='Asia/Kolkata' date +'%d-%b-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
-
       - name: Parse test results
         id: parse
         if: always()
@@ -93,6 +80,21 @@ jobs:
           fi
           echo "total=${TOTAL:-0}" >> $GITHUB_OUTPUT
           echo "passed=${PASSED:-0}" >> $GITHUB_OUTPUT
+          echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
+
+      - name: Determine test result
+        id: result
+        if: always()
+        run: |
+          FAILED="${{ steps.parse.outputs.failed }}"
+          if [ "$FAILED" == "0" ] || [ -z "$FAILED" ]; then
+            echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=SOME TESTS FAILED" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+          echo "timestamp=$(TZ='Asia/Kolkata' date +'%d-%b-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
           echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
 
       - name: Upload ExtentReport
