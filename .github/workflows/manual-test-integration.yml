@@ -159,7 +159,7 @@ jobs:
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: "[TEST] ${{ steps.result.outputs.emoji }} MY Bharat Report | ${{ steps.result.outputs.status }} | ${{ steps.result.outputs.timestamp }}"
-          to: nishantsharma.dic@digitalindia.gov.in
+          to: nishantsharma.dic@digitalindia.gov.in,nishant.pal@digitalindia.gov.in,nishant.sameer62@gmail.com,manojdic123@gmail.com,manoj.dic@digitalindia.gov.in,mohit1987kumar7@gmail.com,mohit.dic@digitalindia.gov.in
           from: "MY Bharat QA <${{ secrets.SMTP_USERNAME }}>"
           html_body: |
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
