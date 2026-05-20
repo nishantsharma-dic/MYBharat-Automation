@@ -30,21 +30,6 @@ jobs:
             -Dbrowser=chrome \
             -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
 
-      - name: Determine test result
-        id: result
-        if: always()
-        run: |
-          if [ "${{ steps.test_run.outcome }}" == "success" ]; then
-            echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
-            echo "emoji=✅" >> $GITHUB_OUTPUT
-            echo "color=#28a745" >> $GITHUB_OUTPUT
-          else
-            echo "status=SOME TESTS FAILED" >> $GITHUB_OUTPUT
-            echo "emoji=❌" >> $GITHUB_OUTPUT
-            echo "color=#dc3545" >> $GITHUB_OUTPUT
-          fi
-          echo "timestamp=$(TZ='Asia/Kolkata' date +'%d-%b-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
-
       - name: Parse test results
         id: parse
         if: always()
@@ -66,6 +51,26 @@ jobs:
           echo "passed=${PASSED:-0}" >> $GITHUB_OUTPUT
           echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
           echo "skipped=${SKIPPED:-0}" >> $GITHUB_OUTPUT
+
+      - name: Determine test result
+        id: result
+        if: always()
+        run: |
+          FAILED="${{ steps.parse.outputs.failed }}"
+          if [ "$FAILED" == "0" ] || [ "$FAILED" == "N/A" ] && [ "${{ steps.test_run.outcome }}" == "success" ]; then
+            echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=#28a745" >> $GITHUB_OUTPUT
+          elif [ "$FAILED" == "0" ]; then
+            echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=#28a745" >> $GITHUB_OUTPUT
+          else
+            echo "status=SOME TESTS FAILED" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=#dc3545" >> $GITHUB_OUTPUT
+          fi
+          echo "timestamp=$(TZ='Asia/Kolkata' date +'%d-%b-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
 
       - name: Extract test details
         id: details
