@@ -57,6 +57,12 @@ public class MegaEventPage extends BasePage {
         // Step 2: Close popup
         closePopup();
 
+        // Check if already logged in — skip OTP flow if Sign In button is not present
+        if (isAlreadyLoggedIn()) {
+            log.info("✅ Already logged in — skipping OTP login for: {}", email);
+            return;
+        }
+
         // Step 3: Click Sign In (exact locator from existing LoginPage)
         WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
         WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(
@@ -130,6 +136,18 @@ public class MegaEventPage extends BasePage {
         safeSleep(3000);
         closePopup();
         log.info("Login successful for: {}", email);
+    }
+
+    private boolean isAlreadyLoggedIn() {
+        try {
+            // If "Sign In" button is NOT present within 3 seconds, user is logged in
+            new WebDriverWait(driver, Duration.ofSeconds(3)).until(
+                ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("//span[normalize-space()='Sign In']")));
+            return false; // Sign In found → not logged in
+        } catch (Exception e) {
+            return true; // Sign In not found → already logged in
+        }
     }
 
     private void safeSleep(long millis) {

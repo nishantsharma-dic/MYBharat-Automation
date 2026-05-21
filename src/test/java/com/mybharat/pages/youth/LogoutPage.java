@@ -14,20 +14,42 @@ import com.mybharat.pages.BasePage;
 
 /**
  * LogoutPage - Handles user logout functionality.
- * 
- * Opens the user menu and clicks the logout button.
- * Can be reused after any flow that requires logging out (registration, profile, etc.)
+ *
+ * Two logout contexts:
+ *  1. mybharat.gov.in homepage — "Welcome [name]" circle in top-right nav
+ *     → click circle → dropdown → click "Log Out"
+ *  2. Org portal — rounded-full button → menuitem button
  */
 public class LogoutPage extends BasePage {
 
     private static final Logger log = LogManager.getLogger(LogoutPage.class);
-
     private WebDriverWait longWait;
 
-    // Locators
-    private static final By USER_MENU_BUTTON = By.xpath(
-            "//button[@class='flex items-center rounded-full cursor-pointer']");
-    private static final By LOGOUT_BUTTON = By.xpath("//button[@role='menuitem']");
+    // ── Homepage: "Welcome [name]" circle ────────────────────────────────────
+    // From screenshot: the circle is a clickable element containing "Welcome" text
+    private static final By WELCOME_CIRCLE = By.xpath(
+        "//*[contains(text(),'Welcome')]/ancestor::*[self::a or self::button or self::div][@role or contains(@class,'cursor') or contains(@class,'rounded')]" +
+        " | //*[contains(text(),'Welcome')]/parent::*"
+    );
+
+    // ── Homepage dropdown: "Log Out" item ────────────────────────────────────
+    // From screenshot: dropdown has "MY Bharat Profile" and "Log Out"
+    private static final By LOG_OUT_ITEM = By.xpath(
+        "//*[normalize-space(text())='Log Out'] | " +
+        "//*[normalize-space(text())='Logout'] | " +
+        "//*[contains(text(),'Log Out')]/parent::a | " +
+        "//*[contains(text(),'Log Out')]/parent::button | " +
+        "//a[contains(.,'Log Out')] | " +
+        "//button[contains(.,'Log Out')]"
+    );
+
+    // ── Org portal fallback ───────────────────────────────────────────────────
+    private static final By ORG_MENU_BUTTON = By.xpath(
+        "//button[@class='flex items-center rounded-full cursor-pointer']"
+    );
+    private static final By ORG_LOGOUT_BUTTON = By.xpath(
+        "//button[@role='menuitem']"
+    );
 
     public LogoutPage(WebDriver driver) {
         super(driver);
@@ -35,7 +57,7 @@ public class LogoutPage extends BasePage {
     }
 
     /**
-     * Perform logout: open user menu → click logout → wait for page load.
+     * Perform logout: click Welcome circle → click Log Out from dropdown.
      */
     public void logout() throws InterruptedException {
         log.info("Performing logout...");
@@ -43,44 +65,62 @@ public class LogoutPage extends BasePage {
 
         openUserMenu();
         Thread.sleep(1000);
-        clickLogoutButton();
+        clickLogOut();
 
         waitForPageLoad();
         Thread.sleep(3000);
         log.info("✅ User logged out successfully");
     }
 
-    /**
-     * Open the user profile/avatar menu.
-     */
-    private void openUserMenu() {
+    private void openUserMenu() throws InterruptedException {
+        // Strategy 1: Homepage "Welcome [name]" circle
         try {
-            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(USER_MENU_BUTTON));
+            WebElement circle = longWait.until(ExpectedConditions.elementToBeClickable(WELCOME_CIRCLE));
+            scrollToElement(circle);
+            Thread.sleep(500);
+            jsClick(circle);
+            log.info("✅ Clicked Welcome circle");
+            return;
+        } catch (Exception e) {
+            log.warn("Welcome circle not found — trying org portal button...");
+        }
+
+        // Strategy 2: Org portal rounded button
+        try {
+            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(ORG_MENU_BUTTON));
             scrollToElement(menu);
             Thread.sleep(500);
             jsClick(menu);
-            log.info("Opened user menu");
+            log.info("✅ Clicked org portal menu button");
         } catch (Exception e) {
-            log.warn("First attempt to open menu failed, retrying...");
-            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(USER_MENU_BUTTON));
+            log.warn("Org portal button also failed, retrying...");
+            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(ORG_MENU_BUTTON));
             jsClick(menu);
-            log.info("Opened user menu (retry)");
         }
     }
 
-    /**
-     * Click the logout menu item.
-     */
-    private void clickLogoutButton() {
+    private void clickLogOut() throws InterruptedException {
+        Thread.sleep(500);
+
+        // Strategy 1: "Log Out" text item from homepage dropdown
         try {
-            WebElement logoutBtn = longWait.until(ExpectedConditions.elementToBeClickable(LOGOUT_BUTTON));
-            jsClick(logoutBtn);
-            log.info("Clicked logout");
+            WebElement logOut = longWait.until(ExpectedConditions.elementToBeClickable(LOG_OUT_ITEM));
+            jsClick(logOut);
+            log.info("✅ Clicked Log Out");
+            return;
         } catch (Exception e) {
-            log.warn("First attempt to click logout failed, retrying...");
-            WebElement logoutBtn = longWait.until(ExpectedConditions.elementToBeClickable(LOGOUT_BUTTON));
-            jsClick(logoutBtn);
-            log.info("Clicked logout (retry)");
+            log.warn("'Log Out' item not found — trying org portal menuitem...");
+        }
+
+        // Strategy 2: Org portal menuitem button
+        try {
+            WebElement logOut = longWait.until(ExpectedConditions.elementToBeClickable(ORG_LOGOUT_BUTTON));
+            jsClick(logOut);
+            log.info("✅ Clicked org portal logout button");
+        } catch (Exception e) {
+            log.warn("Org portal logout also failed, retrying...");
+            WebElement logOut = longWait.until(ExpectedConditions.elementToBeClickable(ORG_LOGOUT_BUTTON));
+            jsClick(logOut);
         }
     }
 }

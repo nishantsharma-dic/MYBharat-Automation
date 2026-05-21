@@ -78,9 +78,11 @@ public class MegaEventPhotoUploadTest extends BaseTest {
 
     @Test(priority = 1, groups = {"smoke", "megaevent-upload"})
     public void loginToApplication() {
-        log.info("=== Step 1: Login with {} ===", loginEmail);
+        log.info("=== Step 1: Login check — using already logged-in user or login with {} ===", loginEmail);
+        // When running in E2E suite, user is already logged in after quiz flow — skip OTP login
+        // loginWithOTP handles this via isAlreadyLoggedIn() check internally
         megaEventPage.loginWithOTP(loginEmail);
-        log.info("✅ Step 1 PASSED — Logged in");
+        log.info("✅ Step 1 PASSED — Logged in / already logged in");
     }
 
     @Test(priority = 2, dependsOnMethods = "loginToApplication")

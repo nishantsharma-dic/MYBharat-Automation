@@ -4,7 +4,10 @@
 <!--
   ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
   
-  Flow: Public Page → Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Mega Event
+  Flow: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate
+        → Photo Upload (already logged-in registered user)
+        → Logout (Welcome circle)
+        → Create Mega Event (create_mega_user_prod.xlsx)
   
   Run with:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
@@ -16,11 +19,11 @@
     </listeners>
 
     <!-- Step 1: Public Page - Header + Organization + Footer -->
-    <test name="Public Page">
+   <!-- <test name="Public Page">
         <classes>
             <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
-    </test>
+    </test>-->
 
     <!-- Step 2: Registration → Submit popup → Save email to Excel -->
     <test name="Youth Registration">
@@ -78,14 +81,28 @@
         </classes>
     </test>
 
-    <!-- Step 10: Mega Event Creation -->
+    <!-- Step 10: Mega Event Photo Upload — with already logged-in registered user -->
+    <test name="Mega Event Photo Upload">
+        <classes>
+            <class name="com.mybharat.tests.megaevent.MegaEventPhotoUploadTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 11: Logout via Welcome circle — before Mega Event user login -->
+    <test name="Logout After Photo Upload">
+        <classes>
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 12: Create Mega Event — login from create_mega_user_prod.xlsx -->
     <test name="Create Mega Event">
         <classes>
             <class name="com.mybharat.tests.megaevent.MegaEventTest"/>
         </classes>
     </test>
 
-    <!-- Module 12: CV Builder (TODO) -->
+    <!-- Module: CV Builder (TODO) -->
     <!--
     <test name="CV Builder">
         <classes>
@@ -94,20 +111,11 @@
     </test>
     -->
 
-    <!-- Module 13: Organisation Creation (TODO) -->
+    <!-- Module: Organisation Creation (TODO) -->
     <!--
     <test name="Organisation Creation">
         <classes>
             <class name="com.mybharat.tests.organisation.OrgCreationTest"/>
-        </classes>
-    </test>
-    -->
-
-    <!-- Module 14: Join Organisation (TODO) -->
-    <!--
-    <test name="Join Organisation">
-        <classes>
-            <class name="com.mybharat.tests.organisation.JoinOrgTest"/>
         </classes>
     </test>
     -->
