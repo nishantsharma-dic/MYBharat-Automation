@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Login + Create Organisation (no registration)
+  Uses existing user: test_kk_01@yopmail.com
+  
+  Run:
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-org-login.xml
+-->
+<suite name="Login + Create Organisation" parallel="none" verbose="1">
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+    <test name="Create Organisation">
+        <classes>
+            <class name="com.mybharat.tests.organisation.CreateOrganisationTest"/>
+        </classes>
+    </test>
+</suite>

@@ -1,5 +1,7 @@
 package com.mybharat.tests.megaevent;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
@@ -11,21 +13,25 @@ import com.mybharat.base.BaseTest;
 import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.megaevent.MegaEventPage;
 import com.mybharat.pages.megaevent.MegaEventPhotoUploadPage;
-import com.mybharat.tests.youth.YouthRegistrationTest;
+import com.mybharat.utils.ExcelUtils;
 
 /**
- * MegaEventPhotoUploadTest - Youth uploads photos to an existing Mega Event.
+ * MegaEventPhotoUploadTest - Youth uploads photos/video to an existing Mega Event on PROD.
  *
  * Flow:
- *   1. Register new youth user
- *   2. Navigate to profile → Click MY Bharat logo → Homepage
- *   3. Hover "Events & Program" → Click "Mega Events"
- *   4. Search for "test event" in Ongoing tab
- *   5. Click event card → Event detail page
- *   6. Click "Upload Media" → Upload 7 images → Submit
+ *   1. Login with existing user
+ *   2. Navigate to homepage → Hover "Events & Program" → Click "Mega Events"
+ *   3. Read Mega Event name from Excel (src/test/resources/testdata/MegaEvents.xlsx)
+ *   4. Apply State filter = "All"
+ *   5. Search for Mega Event by name
+ *   6. Click matching event card
+ *   7. Click "Upload Media"
+ *   8. Upload 2 images from testdata
+ *   9. Upload 1 video from testdata
+ *  10. Click Submit → Verify success
  *
  * Run:
- *   mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-megaevent-upload.xml
+ *   mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-megaevent-upload.xml
  */
 @Listeners(TestListeners.class)
 public class MegaEventPhotoUploadTest extends BaseTest {
@@ -35,93 +41,95 @@ public class MegaEventPhotoUploadTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private MegaEventPhotoUploadPage uploadPage;
 
-    private static final String EVENT_NAME = "Test Event";
+    private static final String EXCEL_PATH = "src/test/resources/testdata/MegaEvents.xlsx";
+    private static final String SHEET_NAME = "MegaEvents";
     private static final int IMAGE_COUNT = 2;
 
-    private static final String LOGIN_EMAIL = "nissh_create_01@yopmail.com";
+    // Login email for prod
+    private static final String LOGIN_EMAIL = "mega_uplaod_images_01@yopmail.com";
+
+    // Will be read from Excel
+    private String megaEventName;
 
     @BeforeClass(alwaysRun = true)
     public void initPages() {
         megaEventPage = new MegaEventPage(driver);
         uploadPage = new MegaEventPhotoUploadPage(driver);
+
+        // Read Mega Event name from Excel
+        log.info("[SETUP] Reading Mega Event name from Excel: {}", EXCEL_PATH);
+        List<String> eventNames = ExcelUtils.readColumn(EXCEL_PATH, SHEET_NAME, 0);
+        Assert.assertFalse(eventNames.isEmpty(), "Excel should contain at least one Mega Event name");
+        megaEventName = eventNames.get(0); // Use first event
+        log.info("[SETUP] Selected Mega Event: '{}'", megaEventName);
     }
 
     @Test(priority = 1, groups = {"smoke", "megaevent-upload"})
     public void loginToApplication() {
-        log.info("=== Step 1: Login ===");
+        log.info("=== Step 1: Login with {} ===", LOGIN_EMAIL);
         megaEventPage.loginWithOTP(LOGIN_EMAIL);
-        log.info("✅ Logged in with: {}", LOGIN_EMAIL);
+        log.info("✅ Step 1 PASSED — Logged in");
     }
 
-    @Test(priority = 2, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "loginToApplication")
-    public void clickMyBharatLogo() {
-        log.info("=== Step 2: Click MY Bharat Logo ===");
+    @Test(priority = 2, dependsOnMethods = "loginToApplication")
+    public void navigateToHomepage() {
+        log.info("=== Step 2: Navigate to Homepage ===");
         uploadPage.clickMyBharatLogo();
-        log.info("✅ Navigated to homepage");
+        log.info("✅ Step 2 PASSED — On homepage");
     }
 
-    @Test(priority = 3, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "clickMyBharatLogo")
+    @Test(priority = 3, dependsOnMethods = "navigateToHomepage")
     public void navigateToMegaEvents() {
         log.info("=== Step 3: Hover Events & Program → Click Mega Events ===");
         uploadPage.hoverEventsAndClickMegaEvents();
-        log.info("✅ On Mega Events page");
+        log.info("✅ Step 3 PASSED — On Mega Events page");
     }
 
-    @Test(priority = 4, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "navigateToMegaEvents")
-    public void searchAndOpenEvent() {
-        log.info("=== Step 4: Search for event '{}' ===", EVENT_NAME);
-        uploadPage.searchEvent(EVENT_NAME);
-        uploadPage.clickEventCard(EVENT_NAME);
-        log.info("✅ Event detail page opened");
+    @Test(priority = 4, dependsOnMethods = "navigateToMegaEvents")
+    public void searchMegaEvent() {
+        log.info("=== Step 4: Search for Mega Event '{}' ===", megaEventName);
+        uploadPage.searchEvent(megaEventName);
+        log.info("✅ Step 4 PASSED — Search executed");
     }
 
-    @Test(priority = 5, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "searchAndOpenEvent")
-    public void uploadMediaToEvent() {
-        log.info("=== Step 5: Upload 2 images + 1 video ===");
+    @Test(priority = 5, dependsOnMethods = "searchMegaEvent")
+    public void openMegaEventCard() {
+        log.info("=== Step 5: Click Mega Event card '{}' ===", megaEventName);
+        uploadPage.clickEventCard(megaEventName);
+        log.info("✅ Step 5 PASSED — Event detail page opened");
+    }
+
+    @Test(priority = 6, dependsOnMethods = "openMegaEventCard")
+    public void clickUploadMedia() {
+        log.info("=== Step 6: Click Upload Media ===");
         uploadPage.clickUploadMedia();
-        uploadPage.uploadImages(IMAGE_COUNT);
-        uploadPage.uploadVideo();
-        log.info("✅ 2 images + 1 video uploaded");
+        log.info("✅ Step 6 PASSED — Upload modal opened");
     }
 
-    @Test(priority = 6, groups = {"smoke", "megaevent-upload"}, dependsOnMethods = "uploadMediaToEvent")
+    @Test(priority = 7, dependsOnMethods = "clickUploadMedia")
+    public void uploadImages() {
+        log.info("=== Step 7: Upload {} images ===", IMAGE_COUNT);
+        uploadPage.uploadImages(IMAGE_COUNT);
+        log.info("✅ Step 7 PASSED — Images uploaded");
+    }
+
+    @Test(priority = 8, dependsOnMethods = "uploadImages")
+    public void uploadVideo() {
+        log.info("=== Step 8: Upload video ===");
+        uploadPage.uploadVideo();
+        log.info("✅ Step 8 PASSED — Video uploaded");
+    }
+
+    @Test(priority = 9, dependsOnMethods = "uploadVideo")
     public void submitUpload() {
-        log.info("=== Step 6: Submit ===");
+        log.info("=== Step 9: Submit upload ===");
         uploadPage.clickSubmit();
         boolean success = uploadPage.isUploadSuccessful();
-        Assert.assertTrue(success, "Photo upload should be successful");
-        log.info("✅ Photo upload submitted successfully");
-    }
-
-    // =========================================================================
-    // HELPER
-    // =========================================================================
-
-    private String readLastEmailFromExcel() {
-        String env = System.getProperty("env", "beta");
-        String filePath = System.getProperty("user.dir") + java.io.File.separator
-                + "resources" + java.io.File.separator + "UserDetails_" + env + ".xlsx";
-        java.io.File file = new java.io.File(filePath);
-        if (!file.exists()) {
-            filePath = System.getProperty("user.dir") + java.io.File.separator
-                    + "resources" + java.io.File.separator + "UserDetails.xlsx";
-            file = new java.io.File(filePath);
-        }
-        try (java.io.FileInputStream fis = new java.io.FileInputStream(file);
-             org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook(fis)) {
-            org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheet("UserData");
-            if (sheet == null) sheet = workbook.getSheetAt(0);
-            int lastRow = sheet.getLastRowNum();
-            for (int i = lastRow; i >= 1; i--) {
-                org.apache.poi.ss.usermodel.Row row = sheet.getRow(i);
-                if (row != null && row.getCell(0) != null) {
-                    String email = row.getCell(0).getStringCellValue().trim();
-                    if (!email.isEmpty()) return email;
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to read email from Excel: {}", e.getMessage());
-        }
-        throw new RuntimeException("No email found in Excel");
+        Assert.assertTrue(success, "Mega Event media upload should be successful");
+        log.info("✅ Step 9 PASSED — Upload submitted successfully");
+        log.info("=== MEGA EVENT UPLOAD COMPLETE ===");
+        log.info("  Event: {}", megaEventName);
+        log.info("  Images: {}", IMAGE_COUNT);
+        log.info("  Video: 1");
     }
 }

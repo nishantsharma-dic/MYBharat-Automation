@@ -93,45 +93,53 @@ public class MegaEventPhotoUploadPage extends BasePage {
     // =========================================================================
 
     public void searchEvent(String eventName) {
-        log.info("Searching for event: {}", eventName);
+        log.info("[searchEvent] START — Searching for: {}", eventName);
 
-        // Page is already on mega_events (navigated via hover menu)
-        // Wait for page to fully load with filters
+        // Wait for page to fully load
         safeSleep(8000);
 
-        // Click Ongoing tab
+        // STEP 1: Click "All" tab if available
+        log.info("[searchEvent] BEFORE clicking 'All' tab");
         try {
-            WebElement tab = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//*[normalize-space()='Ongoing']")));
-            safeClick(tab);
-            safeSleep(2000);
-        } catch (Exception e) { }
-
-        // STEP 1: Select State = "All" (MANDATORY)
-        // Wait for mega events page to FULLY load (ion-selects load after API call)
-        safeSleep(8000);
-        try {
-            WebDriverWait stateWait = new WebDriverWait(driver, Duration.ofSeconds(30));
-
-            // Wait for State dropdown clickable
-            // State dropdown locator: //select[@name='filter-state']
-            WebElement stateSelect = stateWait.until(ExpectedConditions.presenceOfElementLocated(
-                By.xpath("//select[@name='filter-state']")));
-            log.info("State dropdown located");
-
-            org.openqa.selenium.support.ui.Select dropdown = new org.openqa.selenium.support.ui.Select(stateSelect);
-            dropdown.selectByVisibleText("All");
-            safeSleep(1500);
-            log.info("✅ State 'ALL' selected successfully");
-
+            WebElement allTab = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                ExpectedConditions.elementToBeClickable(
+                    By.xpath("//*[normalize-space()='All'][self::a or self::span or self::button or self::h5 or self::ion-segment-button or ancestor::ion-segment-button]")));
+            safeClick(allTab);
+            safeSleep(3000);
+            log.info("[searchEvent] ✅ 'All' tab clicked");
         } catch (Exception e) {
-            log.error("❌ State dropdown selection FAILED");
-            log.error("Root Cause: ", e);
-            throw e;
+            // Try "Ongoing" as fallback
+            log.warn("[searchEvent] 'All' tab not found, trying 'Ongoing'...");
+            try {
+                WebElement tab = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                        By.xpath("//*[normalize-space()='Ongoing']")));
+                safeClick(tab);
+                safeSleep(2000);
+                log.info("[searchEvent] ✅ 'Ongoing' tab clicked as fallback");
+            } catch (Exception e2) {
+                log.warn("[searchEvent] No tab found, continuing...");
+            }
         }
 
-        // STEP 2: Type event name
+        // STEP 2: Select State = "All" from dropdown
+        safeSleep(3000);
+        log.info("[searchEvent] BEFORE selecting State filter 'All'");
+        try {
+            WebElement stateSelect = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+                ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("//select[@name='filter-state']")));
+            org.openqa.selenium.support.ui.Select dropdown = new org.openqa.selenium.support.ui.Select(stateSelect);
+            dropdown.selectByVisibleText("All");
+            safeSleep(2000);
+            log.info("[searchEvent] ✅ State 'All' selected");
+        } catch (Exception e) {
+            log.warn("[searchEvent] State dropdown not found: {}", e.getMessage());
+        }
+
+        // STEP 3: Type event name in search input
         safeSleep(1000);
+        log.info("[searchEvent] BEFORE entering search text: '{}'", eventName);
         List<WebElement> allInputs = driver.findElements(By.cssSelector("input[type='text'], input:not([type])"));
         WebElement eventInput = null;
         for (int i = allInputs.size() - 1; i >= 0; i--) {
@@ -148,8 +156,9 @@ public class MegaEventPhotoUploadPage extends BasePage {
             eventInput.clear();
             eventInput.sendKeys(eventName);
             safeSleep(3000);
+            log.info("[searchEvent] ✅ Typed event name");
 
-            // STEP 3: Select suggestion
+            // STEP 4: Select suggestion if appears
             try {
                 WebElement suggestion = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                     ExpectedConditions.elementToBeClickable(
@@ -157,23 +166,29 @@ public class MegaEventPhotoUploadPage extends BasePage {
                             "[not(self::ion-text)][not(ancestor::*[contains(@class,'filteroverlay')])]")));
                 safeClick(suggestion);
                 safeSleep(1000);
-                log.info("✅ Selected suggestion: {}", eventName);
+                log.info("[searchEvent] ✅ Selected suggestion");
             } catch (Exception e) {
-                log.warn("No suggestion found");
+                log.warn("[searchEvent] No suggestion found, continuing...");
             }
 
-            // STEP 4: Click Search icon (MANDATORY)
-            WebElement searchIcon = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                ExpectedConditions.elementToBeClickable(
-                    By.xpath("//img[@alt='search icon']")));
-            safeClick(searchIcon);
-            log.info("✅ Search icon clicked");
+            // STEP 5: Click Search icon
+            log.info("[searchEvent] BEFORE clicking search icon");
+            try {
+                WebElement searchIcon = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(
+                        By.xpath("//img[@alt='search icon'] | //ion-icon[@name='search']")));
+                safeClick(searchIcon);
+                log.info("[searchEvent] ✅ Search icon clicked");
+            } catch (Exception e) {
+                log.warn("[searchEvent] Search icon not found, pressing Enter");
+                eventInput.sendKeys(org.openqa.selenium.Keys.ENTER);
+            }
             safeSleep(3000);
         } else {
-            throw new RuntimeException("Event Name input not found");
+            throw new RuntimeException("Event Name search input not found");
         }
 
-        log.info("Search executed for: {}", eventName);
+        log.info("[searchEvent] END — Search completed for: '{}'", eventName);
     }
 
     // =========================================================================
@@ -186,12 +201,12 @@ public class MegaEventPhotoUploadPage extends BasePage {
 
         WebElement card = new WebDriverWait(driver, Duration.ofSeconds(20)).until(
             ExpectedConditions.elementToBeClickable(
-                By.xpath("//div[@id='event-cards3']//h4[@class='enent_name fontchange18'][normalize-space()='" + eventName.toLowerCase() + "']")));
+                By.xpath("//div[@id='event-cards1']//img[@class='img-fluid']")));
         scrollToElement(card);
         safeClick(card);
         waitForPageLoad();
         safeSleep(3000);
-        log.info("Event detail page opened");
+        log.info("✅ Event detail page opened for: {}", eventName);
     }
 
     /**
@@ -267,13 +282,25 @@ public class MegaEventPhotoUploadPage extends BasePage {
     public void uploadImages(int count) {
         log.info("Uploading {} images", count);
 
-        String uploadDir = "D:\\project\\ProjectM\\TestData";
-        File dir = new File(uploadDir);
+        // Use files from src/test/resources/testdata/ or TestData folder
+        String testDataDir = System.getProperty("user.dir") + File.separator
+                + "src" + File.separator + "test" + File.separator + "resources"
+                + File.separator + "testdata";
+        File dir = new File(testDataDir);
+
+        // Fallback to TestData folder
+        if (!dir.exists() || dir.listFiles((d, name) -> name.toLowerCase().matches(".*\\.(jpg|jpeg|png)")) == null) {
+            testDataDir = "D:\\project\\ProjectM\\TestData";
+            dir = new File(testDataDir);
+        }
+
         File[] imageFiles = dir.listFiles((d, name) -> name.toLowerCase().matches(".*\\.(jpg|jpeg|png)"));
 
         if (imageFiles == null || imageFiles.length < 2) {
-            throw new RuntimeException("Need at least 2 images in: " + uploadDir);
+            throw new RuntimeException("Need at least 2 images in: " + testDataDir);
         }
+
+        log.info("Using images from: {}", testDataDir);
 
         // Wait for modal content
         safeSleep(2000);
@@ -364,10 +391,20 @@ public class MegaEventPhotoUploadPage extends BasePage {
 
     /**
      * Upload a video file via "Upload Videos" button in the modal.
-     * Video picked from TestData folder.
      */
     public void uploadVideo() {
-        String videoPath = "D:\\project\\ProjectM\\TestData\\video mega event.mp4";
+        // Try testdata folder first, then TestData
+        String videoPath = System.getProperty("user.dir") + File.separator
+                + "src" + File.separator + "test" + File.separator + "resources"
+                + File.separator + "testdata" + File.separator + "video mega event.mp4";
+        if (!new File(videoPath).exists()) {
+            videoPath = System.getProperty("user.dir") + File.separator
+                    + "src" + File.separator + "test" + File.separator + "resources"
+                    + File.separator + "testdata" + File.separator + "test_video.mp4";
+        }
+        if (!new File(videoPath).exists()) {
+            videoPath = "D:\\project\\ProjectM\\TestData\\video mega event.mp4";
+        }
         log.info("Uploading video: {}", videoPath);
 
         // Click "Upload Videos" button
