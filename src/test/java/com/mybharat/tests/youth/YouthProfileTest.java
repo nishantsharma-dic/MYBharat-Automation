@@ -30,7 +30,8 @@ public class YouthProfileTest extends BaseTest {
         profilePage = new YouthProfilePage(driver);
     }
 
-    @Test(priority = 1, groups = {"regression", "profile"}, retryAnalyzer = Retry.class)
+    @Test(priority = 1, groups = {"regression", "profile"}, retryAnalyzer = Retry.class,
+          description = "Complete youth profile: Upload photo → About → Area of Interest → Education → Language → Professional Summary → Work Experience → Tools")
     public void completeYouthProfile() throws Exception {
         log.info("Starting: Youth Profile Completion");
 

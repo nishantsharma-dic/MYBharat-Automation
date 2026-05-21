@@ -104,6 +104,16 @@ public class BaseTest {
                     "--disable-dev-shm-usage"
                 );
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
+
+                // Set download directory to project-local folder
+                String downloadDir = System.getProperty("user.dir") + File.separator + "downloads";
+                new File(downloadDir).mkdirs();
+                java.util.HashMap<String, Object> prefs = new java.util.HashMap<>();
+                prefs.put("download.default_directory", downloadDir);
+                prefs.put("download.prompt_for_download", false);
+                prefs.put("plugins.always_open_pdf_externally", true);
+                options.setExperimentalOption("prefs", prefs);
+
                 return new ChromeDriver(options);
             }
             case "headless": {
@@ -114,8 +124,19 @@ public class BaseTest {
                     "--disable-gpu",
                     "--window-size=1920,1080",
                     "--no-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--remote-allow-origins=*"
                 );
+
+                // Set download directory for headless mode
+                String headlessDownloadDir = System.getProperty("user.dir") + File.separator + "downloads";
+                new File(headlessDownloadDir).mkdirs();
+                java.util.HashMap<String, Object> headlessPrefs = new java.util.HashMap<>();
+                headlessPrefs.put("download.default_directory", headlessDownloadDir);
+                headlessPrefs.put("download.prompt_for_download", false);
+                headlessPrefs.put("plugins.always_open_pdf_externally", true);
+                options.setExperimentalOption("prefs", headlessPrefs);
+
                 return new ChromeDriver(options);
             }
             case "firefox": {

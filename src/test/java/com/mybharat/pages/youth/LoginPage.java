@@ -34,7 +34,7 @@ public class LoginPage extends BasePage {
     private static final Logger log = LogManager.getLogger(LoginPage.class);
 
     private final ConfigReader config = new ConfigReader();
-    private static final int LONG_WAIT = 30;
+    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 30;
 
     private String loginEmail;
 
@@ -268,7 +268,8 @@ public class LoginPage extends BasePage {
     public boolean isLoginSuccessful() {
         // Check 1 (priority): Look for user menu button (new React UI) — most common
         try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(7));
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(
+                    Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 30 : 7));
             shortWait.until(ExpectedConditions.presenceOfElementLocated(
                     By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
             log.info("Login verified — user menu button found (new UI)");

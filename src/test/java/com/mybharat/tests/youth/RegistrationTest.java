@@ -26,9 +26,9 @@ import com.mybharat.utils.RedashClient;
  *   mvn test -Denv=prod -Dbrowser=firefox
  */
 @Listeners(TestListeners.class)
-public class YouthRegistrationTest extends BaseTest {
+public class RegistrationTest extends BaseTest {
 
-    private static final Logger log = LogManager.getLogger(YouthRegistrationTest.class);
+    private static final Logger log = LogManager.getLogger(RegistrationTest.class);
 
     private LandingPage landingPage;
     private RegistrationPage registrationPage;
@@ -42,7 +42,8 @@ public class YouthRegistrationTest extends BaseTest {
         registrationPage = new RegistrationPage(driver);
     }
 
-    @Test(priority = 1, groups = {"smoke", "registration"}, retryAnalyzer = Retry.class)
+    @Test(priority = 1, groups = {"smoke", "registration"}, retryAnalyzer = Retry.class,
+          description = "Register a new Indian youth user: Open app → Enter email → Verify OTP → Fill form → Submit → Save email to Excel")
     public void registerIndianYouth() throws Exception {
         log.info("Starting: Register Indian Youth");
 
@@ -65,21 +66,12 @@ public class YouthRegistrationTest extends BaseTest {
         // Step 5: Save the registration email to Excel
         registeredEmail = registrationPage.getEmail();
         registrationPage.saveEmailToExcel();
-        log.info("Registration email saved to Excel: {}", registeredEmail);
-
-        // Step 6: Logout (skip if running with org suite — user needs to stay logged in)
-        String skipLogout = System.getProperty("skipLogout", "false");
-        log.info("skipLogout property: {}", skipLogout);
-        if (!"true".equalsIgnoreCase(skipLogout)) {
-            registrationPage.logout();
-            log.info("✅ Registration completed and user logged out. Email: {}", registeredEmail);
-        } else {
-            log.info("✅ Registration completed. User stays logged in. Email: {}", registeredEmail);
-        }
+        log.info("✅ Registration completed. Email: {}", registeredEmail);
     }
 
     @Test(priority = 2, groups = {"smoke", "registration"},
-          dependsOnMethods = "registerIndianYouth")
+          dependsOnMethods = "registerIndianYouth",
+          description = "Verify the registered user exists in the database via Redash API query")
     public void verifyUserInDatabase() throws Exception {
         log.info("Verifying user in DB: {}", registeredEmail);
 

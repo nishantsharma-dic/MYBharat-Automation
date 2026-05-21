@@ -36,6 +36,11 @@ reports/
 logs/
 
 # ========================
+# Downloads (certificate downloads during test runs)
+# ========================
+downloads/
+
+# ========================
 # Screenshots (generated during test runs)
 # ========================
 screenshots/

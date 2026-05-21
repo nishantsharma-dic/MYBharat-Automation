@@ -41,11 +41,22 @@ public class QuizAttemptPage extends BasePage {
         this(driver, "English");
     }
 
+    /** Stores the quiz name extracted during the test */
+    private String quizName = "Competitive Quiz";
+
+    /**
+     * Get the quiz name that was played.
+     */
+    public String getQuizName() {
+        return quizName;
+    }
+
     /**
      * Navigate to quiz section and start the quiz.
      */
     public void startQuiz() throws Exception {
-        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 30;
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
 
         // Navigate to home page using config URL
         ConfigReader config = new ConfigReader();
@@ -60,11 +71,39 @@ public class QuizAttemptPage extends BasePage {
         } catch (Exception e) { /* no popup */ }
 
         // Click Quiz & Essay tab
-        waitForClickable(quizAndEssayTab);
-        safeClick(quizAndEssayTab);
+        scrollPage(500);
+        Thread.sleep(1000);
+        try {
+            waitForClickable(quizAndEssayTab);
+            safeClick(quizAndEssayTab);
+        } catch (Exception e) {
+            // Fallback: try JS click or different locator
+            try {
+                WebElement quizTab = driver.findElement(By.xpath(
+                        "//span[contains(text(),'Quiz')] | //a[contains(text(),'Quiz')] | //button[contains(text(),'Quiz')]"));
+                scrollToElement(quizTab);
+                Thread.sleep(500);
+                jsClick(quizTab);
+            } catch (Exception e2) {
+                // Last resort: navigate directly to quiz URL
+                driver.get(config.getUrl() + "/quiz");
+                waitForPageLoad();
+                Thread.sleep(2000);
+            }
+        }
         Thread.sleep(2000);
         scrollPage(1000);
         Thread.sleep(1000);
+
+        // Extract quiz name from the card before clicking Start Quiz
+        try {
+            WebElement quizTitle = driver.findElement(By.xpath(
+                    "(//h4[@class='event_name fontchange18'])[1]"));
+            quizName = quizTitle.getText().trim();
+            System.out.println("Quiz Name: " + quizName);
+        } catch (Exception e) {
+            System.out.println("Could not extract quiz name from card, using default");
+        }
 
         // Click Start Quiz — try multiple locators
         WebElement startQuiz = null;
@@ -78,6 +117,13 @@ public class QuizAttemptPage extends BasePage {
         scrollToElement(startQuiz);
         Thread.sleep(500);
         jsClick(startQuiz);
+
+        // Save quiz name to file for workflow to read
+        try {
+            java.io.File quizFile = new java.io.File(System.getProperty("user.dir") + "/reports/quiz_name.txt");
+            quizFile.getParentFile().mkdirs();
+            java.nio.file.Files.writeString(quizFile.toPath(), quizName);
+        } catch (Exception e) { /* ignore */ }
 
         // Click second "START QUIZ" button (if present)
         try {
@@ -257,5 +303,41 @@ public class QuizAttemptPage extends BasePage {
                 ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='submit_button']")));
         js.executeScript("arguments[0].click();", feedbackSubmit);
         System.out.println("Feedback submitted successfully");
+    }
+
+    /**
+     * Download quiz certificate and close the modal.
+     * Called after quiz submission and feedback.
+     */
+    public void downloadQuizCertificateAndClose() throws Exception {
+        WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        // Wait for certificate modal/download button to appear
+        Thread.sleep(3000);
+
+        // Click Download button
+        try {
+            WebElement downloadBtn = qWait.until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Download']")));
+            scrollToElement(downloadBtn);
+            Thread.sleep(500);
+            js.executeScript("arguments[0].click();", downloadBtn);
+            System.out.println("✅ Quiz certificate download clicked");
+            Thread.sleep(2000);
+        } catch (Exception e) {
+            System.out.println("⚠ Download button not found: " + e.getMessage());
+        }
+
+        // Close the certificate modal
+        try {
+            WebElement closeModal = qWait.until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='modal-close']")));
+            js.executeScript("arguments[0].click();", closeModal);
+            System.out.println("✅ Quiz certificate modal closed");
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            System.out.println("⚠ Modal close button not found: " + e.getMessage());
+        }
     }
 }

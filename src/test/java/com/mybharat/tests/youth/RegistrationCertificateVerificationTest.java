@@ -33,7 +33,8 @@ public class RegistrationCertificateVerificationTest extends BaseTest {
         certPage = new RegistrationCertificateVerificationPage(driver);
     }
 
-    @Test(priority = 1, groups = {"smoke", "certificate"}, retryAnalyzer = Retry.class)
+    @Test(priority = 1, groups = {"smoke", "certificate"}, retryAnalyzer = Retry.class,
+          description = "Verify registration certificate: Scroll to My Certifications → Click card → Download PNG → Verify file exists in Downloads")
     public void verifyRegistrationCertificateDownload() throws Exception {
         log.info("Starting: Registration Certificate Verification");
 

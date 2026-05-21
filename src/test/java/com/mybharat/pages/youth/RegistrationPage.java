@@ -383,45 +383,7 @@ public class RegistrationPage extends BasePage {
         Thread.sleep(1000);
     }
 
-    /**
-     * Open user menu and click logout.
-     */
-    public void logout() throws InterruptedException {
-        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(20));
-        Thread.sleep(2000);
 
-        try {
-            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
-            scrollToElement(menu);
-            Thread.sleep(500);
-            jsClick(menu);
-            System.out.println("✅ Opened user menu");
-        } catch (Exception e) {
-            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
-            jsClick(menu);
-            System.out.println("✅ Opened user menu (fallback)");
-        }
-
-        Thread.sleep(1000);
-
-        try {
-            WebElement logout = longWait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[@role='menuitem']")));
-            jsClick(logout);
-            System.out.println("✅ Clicked logout");
-        } catch (Exception e) {
-            WebElement logout = longWait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[@role='menuitem']")));
-            jsClick(logout);
-            System.out.println("✅ Clicked logout (fallback)");
-        }
-
-        waitForPageLoad();
-        Thread.sleep(3000);
-        System.out.println("✅ User logged out successfully");
-    }
 
     /**
      * Save the registration email to Excel file.

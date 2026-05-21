@@ -29,7 +29,8 @@ public class QuizAttemptTest extends BaseTest {
         quizPage = new QuizAttemptPage(driver, "English");
     }
 
-    @Test(priority = 1, groups = {"regression", "quiz"})
+    @Test(priority = 1, groups = {"regression", "quiz"},
+          description = "Attempt competitive quiz: Navigate to quiz → Select language → Answer all questions → Submit → Provide feedback")
     public void attemptCompetitiveQuiz() throws Exception {
         log.info("Starting: Quiz Attempt");
 

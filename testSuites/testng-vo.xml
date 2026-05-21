@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  VO (Volunteer for Bharat) Partner Side - Full Test Cycle
+
+  Flow:
+    Step 1: Login as VO Partner user (email picked from VO_<env>.xlsx)
+    Step 2: Navigate to Org Dashboard → Templates → Create Template page
+    Step 3: Fill Template form and Submit
+    Step 4: Navigate to Events → Add Event page
+    Step 5: Fill Event form → Preview → Publish
+
+  Run on Beta:
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-vo.xml
+
+  Run on Prod:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-vo.xml
+
+  Run headless (CI):
+    mvn test -Denv=beta -Dbrowser=headless -Dsurefire.suiteXmlFiles=testSuites/testng-vo.xml
+
+  Excel data files:
+    Beta → resources/VO_beta.xlsx  (sheet: VO_Users, col A: email)
+    Prod → resources/VO_prod.xlsx  (sheet: VO_Users, col A: email)
+-->
+<suite name="VO Test Cycle" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Step 1: Login as VO Partner user from VO_<env>.xlsx -->
+    <test name="VO Login">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOLoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Navigate to Templates → Create Template page -->
+    <test name="VO Templates -Nodal/DYO">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Fill Template form and Create -->
+    <test name="VO Create Template">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOCreateTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 4: Navigate to Events → Add Event -->
+    <test name="VO Event Navigation">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 5: Fill Add Event form → Preview → Publish -->
+    <test name="VO Event Create">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
+        </classes>
+    </test>
+
+</suite>

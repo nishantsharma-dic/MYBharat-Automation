@@ -1,0 +1,89 @@
+name: Email Notification on Merge
+
+on:
+  push:
+    branches:
+      - integration
+      - main
+
+jobs:
+  notify-testers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get merge details
+        id: merge_info
+        run: |
+          echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "commit_sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+          echo "message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date +'%d-%b-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
+
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | head -20)
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "🔀 [MY Bharat] New merge on ${{ steps.merge_info.outputs.branch }} — ${{ steps.merge_info.outputs.commit_sha }}"
+          to: ${{ secrets.TESTER_EMAILS }}
+          from: "MY Bharat QA <${{ secrets.SMTP_USERNAME }}>"
+          html_body: |
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: #160363; padding: 20px; border-radius: 8px 8px 0 0;">
+                <h2 style="color: #ffffff; margin: 0;">🔀 New Merge — MY Bharat Automation</h2>
+              </div>
+              <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px; font-weight: bold; color: #333;">Branch:</td>
+                    <td style="padding: 8px; color: #160363; font-weight: bold;">${{ steps.merge_info.outputs.branch }}</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 8px; font-weight: bold; color: #333;">Author:</td>
+                    <td style="padding: 8px;">${{ steps.merge_info.outputs.author }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px; font-weight: bold; color: #333;">Commit:</td>
+                    <td style="padding: 8px; font-family: monospace;">${{ steps.merge_info.outputs.commit_sha }}</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 8px; font-weight: bold; color: #333;">Message:</td>
+                    <td style="padding: 8px;">${{ steps.merge_info.outputs.message }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px; font-weight: bold; color: #333;">Time:</td>
+                    <td style="padding: 8px;">${{ steps.merge_info.outputs.timestamp }}</td>
+                  </tr>
+                </table>
+
+                <h3 style="color: #333; margin-top: 20px;">📁 Changed Files:</h3>
+                <pre style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x: auto;">${{ steps.merge_info.outputs.changed_files }}</pre>
+
+                <p style="margin-top: 20px;">
+                  <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}" 
+                     style="background: #160363; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+                    View Commit on GitHub
+                  </a>
+                </p>
+
+                <hr style="margin-top: 30px; border: none; border-top: 1px solid #e0e0e0;">
+                <p style="color: #888; font-size: 12px;">
+                  Project: MY Bharat | Team: QA Team | Automated notification
+                </p>
+              </div>
+            </div>

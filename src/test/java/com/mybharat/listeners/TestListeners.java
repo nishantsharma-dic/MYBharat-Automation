@@ -2,6 +2,8 @@ package com.mybharat.listeners;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -16,54 +18,134 @@ import org.testng.ITestResult;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.markuputils.ExtentColor;
+import com.aventstack.extentreports.markuputils.MarkupHelper;
 import com.mybharat.base.BaseTest;
 import com.mybharat.utils.ExtentReportManager;
 
 /**
  * TestListeners - Integrates TestNG with ExtentReports.
- * Captures screenshots on failure automatically.
+ * 
+ * Provides detailed reporting:
+ * - Test name with description
+ * - Category/module assignment
+ * - Step-by-step execution details
+ * - Screenshots on failure
+ * - Execution time
+ * 
+ * Team: QA Team | Tester: Nishant Sharma | Project: MY Bharat
  */
 public class TestListeners implements ITestListener {
 
     private static final Logger log = LogManager.getLogger(TestListeners.class);
 
-    private final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
-    private final ExtentReports extent = ExtentReportManager.getReportObject();
+    private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
+    private static final ExtentReports extent = ExtentReportManager.getReportObject();
+
+    /** Track skipped tests so we can remove them if retry passes */
+    private static final java.util.Map<String, ExtentTest> skippedTests = new java.util.concurrent.ConcurrentHashMap<>();
 
     @Override
     public void onTestStart(ITestResult result) {
-        ExtentTest test = extent.createTest(result.getMethod().getMethodName());
+        String testName = result.getMethod().getMethodName();
+        String description = result.getMethod().getDescription();
+        String className = result.getTestClass().getRealClass().getSimpleName();
+
+        // If this test was previously skipped (retry), remove the skipped entry
+        String key = className + "." + testName;
+        if (skippedTests.containsKey(key)) {
+            extent.removeTest(skippedTests.get(key));
+            skippedTests.remove(key);
+        }
+
+        // Create test with descriptive name: ClassName > methodName
+        ExtentTest test = extent.createTest(className + " > " + testName);
+
+        // Add description if available from @Test annotation
+        if (description != null && !description.isEmpty()) {
+            test.info("📋 Description: " + description);
+        }
+
+        // Assign categories based on module (not test groups like smoke/regression)
+        test.assignCategory(getModuleFromClass(className));
+
+        // Assign author
+        test.assignAuthor("QA Team");
+
+        // Log start info
+        test.info("🚀 Test execution started at: " + getCurrentTime());
+        test.info("📂 Module: " + getModuleFromClass(className));
+        test.info("🖥 Environment: " + System.getProperty("env", "beta").toUpperCase());
+
         extentTest.set(test);
-        log.info("▶ Test started: {}", result.getMethod().getMethodName());
+        log.info("▶ Test started: {}", testName);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        extentTest.get().log(Status.PASS, "Test Passed");
+        long duration = result.getEndMillis() - result.getStartMillis();
+        ExtentTest test = extentTest.get();
+
+        test.log(Status.PASS, MarkupHelper.createLabel(
+                "✅ TEST PASSED — " + result.getMethod().getMethodName(), ExtentColor.GREEN));
+        test.info("⏱ Duration: " + formatDuration(duration));
+        test.info("🏁 Completed at: " + getCurrentTime());
+
         log.info("✅ Test passed: {}", result.getMethod().getMethodName());
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        extentTest.get().fail(result.getThrowable());
-        log.error("❌ Test failed: {}", result.getMethod().getMethodName());
+        long duration = result.getEndMillis() - result.getStartMillis();
+        ExtentTest test = extentTest.get();
 
-        // Capture screenshot — safely handle invalid/dead sessions
+        test.log(Status.FAIL, MarkupHelper.createLabel(
+                "❌ TEST FAILED — " + result.getMethod().getMethodName(), ExtentColor.RED));
+        test.info("⏱ Duration: " + formatDuration(duration));
+        test.info("🏁 Failed at: " + getCurrentTime());
+
+        // Log the error details
+        Throwable throwable = result.getThrowable();
+        if (throwable != null) {
+            test.fail("💥 Error: " + throwable.getMessage());
+            test.fail(throwable);
+        }
+
+        // Capture screenshot
         WebDriver driver = BaseTest.driverThreadLocal.get();
         if (driver != null) {
             try {
-                String path = captureScreenshot(driver, result.getMethod().getMethodName());
-                extentTest.get().addScreenCaptureFromPath(path);
+                String screenshotPath = captureScreenshot(driver, result.getMethod().getMethodName());
+                test.addScreenCaptureFromPath(screenshotPath, "Failure Screenshot");
+                test.info("📸 Screenshot captured: " + screenshotPath);
             } catch (Exception e) {
+                test.warning("⚠ Could not capture screenshot: " + e.getMessage());
                 log.warn("Could not capture screenshot (session may be invalid): {}", e.getMessage());
             }
         }
+
+        log.error("❌ Test failed: {}", result.getMethod().getMethodName());
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        extentTest.get().log(Status.SKIP, "Test Skipped");
-        log.warn("⏭ Test skipped: {}", result.getMethod().getMethodName());
+        String testName = result.getMethod().getMethodName();
+        String className = result.getTestClass().getRealClass().getSimpleName();
+        ExtentTest test = extentTest.get();
+
+        // Track this skipped test so it can be removed if retry passes
+        String key = className + "." + testName;
+        skippedTests.put(key, test);
+
+        test.log(Status.SKIP, MarkupHelper.createLabel(
+                "⏭ TEST SKIPPED — " + testName + " (will retry)", ExtentColor.ORANGE));
+
+        Throwable throwable = result.getThrowable();
+        if (throwable != null) {
+            test.skip("Reason: " + throwable.getMessage());
+        }
+
+        log.warn("⏭ Test skipped: {}", testName);
     }
 
     @Override
@@ -81,10 +163,51 @@ public class TestListeners implements ITestListener {
                 context.getSkippedTests().size());
     }
 
+    // -------------------------------------------------------------------------
+    // Helper methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get the ExtentTest for the current thread (used by page classes to log steps).
+     */
+    public static ExtentTest getExtentTest() {
+        return extentTest.get();
+    }
+
     private String captureScreenshot(WebDriver driver, String testName) throws IOException {
         File source = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        String path = System.getProperty("user.dir") + "/reports/" + testName + ".png";
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String path = System.getProperty("user.dir") + "/reports/" + testName + "_" + timestamp + ".png";
         FileUtils.copyFile(source, new File(path));
         return path;
+    }
+
+    private String getCurrentTime() {
+        return new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a").format(new Date());
+    }
+
+    private String formatDuration(long millis) {
+        long seconds = millis / 1000;
+        long minutes = seconds / 60;
+        seconds = seconds % 60;
+        if (minutes > 0) {
+            return minutes + " min " + seconds + " sec";
+        }
+        return seconds + " sec " + (millis % 1000) + " ms";
+    }
+
+    /**
+     * Derive module name from test class name for categorization.
+     */
+    private String getModuleFromClass(String className) {
+        if (className.contains("Registration")) return "Registration";
+        if (className.contains("Login")) return "Login";
+        if (className.contains("Logout")) return "Logout";
+        if (className.contains("Profile")) return "Profile";
+        if (className.contains("Certificate")) return "Certificate";
+        if (className.contains("BasicInfo")) return "Basic Info";
+        if (className.contains("Quiz")) return "Quiz";
+        if (className.contains("ELP")) return "ELP";
+        return "General";
     }
 }

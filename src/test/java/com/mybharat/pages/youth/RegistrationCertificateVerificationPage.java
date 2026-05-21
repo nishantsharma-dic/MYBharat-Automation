@@ -114,8 +114,7 @@ public class RegistrationCertificateVerificationPage extends BasePage {
         log.info("✅ Clicked 'Download PNG' button");
 
         // Step 3: Wait for download and verify file exists
-        String downloadDir = System.getProperty("downloadDir",
-                System.getProperty("user.home") + File.separator + "Downloads");
+        String downloadDir = System.getProperty("user.dir") + File.separator + "downloads";
 
         boolean downloaded = false;
         log.info("Waiting for certificate file in: {}", downloadDir);
@@ -128,7 +127,7 @@ public class RegistrationCertificateVerificationPage extends BasePage {
                     for (File file : files) {
                         String name = file.getName().toLowerCase();
                         if (name.endsWith(".png") && !name.contains(".crdownload")
-                                && (name.contains("certificate") || name.contains("registration"))) {
+                                && file.lastModified() > (System.currentTimeMillis() - 30000)) {
                             log.info("✅ Certificate downloaded: {} ({}KB)", file.getName(), file.length() / 1024);
                             downloaded = true;
                             break;

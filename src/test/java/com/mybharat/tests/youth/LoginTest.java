@@ -36,7 +36,8 @@ public class LoginTest extends BaseTest {
         loginPage = new LoginPage(driver);
     }
 
-    @Test(priority = 1, groups = {"smoke", "login"}, retryAnalyzer = Retry.class)
+    @Test(priority = 1, groups = {"smoke", "login"}, retryAnalyzer = Retry.class,
+          description = "Login with OTP: Navigate → Sign In → Enter email from Excel → Send OTP → Fetch OTP from Yopmail → Verify → Login success")
     public void loginWithOTP() throws Exception {
         log.info("=== Starting: Login with OTP ===");
 

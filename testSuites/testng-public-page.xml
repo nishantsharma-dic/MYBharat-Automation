@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Public Page Suite - Home Page Search + Header Menu Validation
+  
+  Run with:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-public-page.xml
+    mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-public-page.xml
+-->
+<suite name="Public Page Suite" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="Public Page - Search and Header Menu">
+        <classes>
+            <class name="com.mybharat.tests.youth.PublicPageTest"/>
+        </classes>
+    </test>
+
+</suite>
