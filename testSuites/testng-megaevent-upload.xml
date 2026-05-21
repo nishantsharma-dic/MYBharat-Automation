@@ -4,7 +4,7 @@
   Mega Event Photo Upload Suite (Login only, no registration)
   
   Run:
-    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-megaevent-upload.xml
+    mvn test -Denv=prod  -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-megaevent-upload.xml
 -->
 <suite name="Mega Event Photo Upload" parallel="false" verbose="1">
     <listeners>

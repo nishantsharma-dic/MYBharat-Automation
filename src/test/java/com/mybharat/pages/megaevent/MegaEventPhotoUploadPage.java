@@ -332,52 +332,45 @@ public class MegaEventPhotoUploadPage extends BasePage {
     }
 
     private void uploadSingleImage(String filePath) {
-        // Find the file input for images (may be hidden)
+        // Find the file input for images (may be hidden) — NEVER click upload area as it opens OS file dialog
         List<WebElement> fileInputs = driver.findElements(By.cssSelector("input[type='file'][accept*='image']"));
 
         if (fileInputs.isEmpty()) {
-            // Try broader search
             fileInputs = driver.findElements(By.cssSelector("input[type='file']"));
-        }
-
-        if (fileInputs.isEmpty()) {
-            // Click the "Upload Images" clickable area to trigger file input creation
-            try {
-                WebElement uploadArea = driver.findElement(
-                    By.xpath("//*[contains(text(),'Upload Images')]//ancestor::div[contains(@class,'upload') or contains(@class,'drop')]" +
-                        " | //*[contains(text(),'Upload Images')]"));
-                safeClick(uploadArea);
-                safeSleep(1000);
-                fileInputs = driver.findElements(By.cssSelector("input[type='file']"));
-            } catch (Exception e) {
-                log.warn("Upload area click failed");
-            }
         }
 
         if (!fileInputs.isEmpty()) {
             // Get the last file input (most recently added)
             WebElement fileInput = fileInputs.get(fileInputs.size() - 1);
-            // Make visible
+            // 1. Make visible so sendKeys works
+            // 2. Remove onclick/onfocus handlers that could re-open OS dialog
             js.executeScript(
                 "arguments[0].style.display='block';" +
                 "arguments[0].style.opacity='1';" +
                 "arguments[0].style.position='relative';" +
                 "arguments[0].style.height='auto';" +
-                "arguments[0].style.width='auto';", fileInput);
+                "arguments[0].style.width='auto';" +
+                "arguments[0].onclick=null;" +
+                "arguments[0].onfocus=null;", fileInput);
             safeSleep(300);
+            // sendKeys directly sets the file — does NOT open OS dialog
             fileInput.sendKeys(filePath);
             safeSleep(1500);
             log.info("Image sent to file input: {}", new File(filePath).getName());
         } else {
-            log.error("No file input found for image upload");
+            log.error("No file input found for image upload — cannot proceed without triggering OS dialog");
+            throw new RuntimeException("No file input found for image upload");
         }
     }
 
     private void clickAddMoreImages() {
         try {
+            // Find "Add More Images" link — this reveals a new file input in the DOM
+            // We click the link (not a file input) so it does NOT open OS dialog
             WebElement addMore = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//a[contains(text(),'Add More Image')] | //span[contains(text(),'Add More Image')] | //*[contains(text(),'Add More')]")));
-            safeClick(addMore);
+            // Use JS click to avoid any browser-level file dialog side effects
+            js.executeScript("arguments[0].click();", addMore);
             safeSleep(1000);
             log.info("Clicked 'Add More Images'");
         } catch (Exception e) {
@@ -407,14 +400,8 @@ public class MegaEventPhotoUploadPage extends BasePage {
         }
         log.info("Uploading video: {}", videoPath);
 
-        // Click "Upload Videos" button
-        WebElement uploadVideoBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-            ExpectedConditions.elementToBeClickable(
-                By.xpath("//h6[@id='uploadVideoButton']")));
-        safeClick(uploadVideoBtn);
-        safeSleep(1500);
-
-        // Find video file input and send file
+        // Find video file input directly — do NOT click the button as it opens OS file dialog
+        // Make the hidden input visible via JS and use sendKeys directly
         List<WebElement> fileInputs = driver.findElements(By.cssSelector("input[type='file'][accept*='video']"));
         if (fileInputs.isEmpty()) {
             fileInputs = driver.findElements(By.cssSelector("input[type='file']"));
@@ -422,10 +409,13 @@ public class MegaEventPhotoUploadPage extends BasePage {
 
         if (!fileInputs.isEmpty()) {
             WebElement videoInput = fileInputs.get(fileInputs.size() - 1);
+            // Make visible + remove onclick/onfocus handlers that could open OS dialog
             js.executeScript(
                 "arguments[0].style.display='block';" +
                 "arguments[0].style.opacity='1';" +
-                "arguments[0].style.position='relative';", videoInput);
+                "arguments[0].style.position='relative';" +
+                "arguments[0].onclick=null;" +
+                "arguments[0].onfocus=null;", videoInput);
             safeSleep(300);
             videoInput.sendKeys(videoPath);
             safeSleep(3000);

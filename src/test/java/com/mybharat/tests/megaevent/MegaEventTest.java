@@ -2,9 +2,11 @@ package com.mybharat.tests.megaevent;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -13,15 +15,16 @@ import com.github.javafaker.Faker;
 import com.mybharat.base.BaseTest;
 import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.megaevent.MegaEventPage;
+import com.mybharat.utils.ExcelUtils;
 
 /**
  * MegaEventTest - Creates a Mega Event end-to-end.
  *
- * Flow: Login → Profile → View Org → Select Org → Mega Event → Create → Fill Form → Save
+ * Flow: Login → Profile → View Org → Select Org → Mega Event → Create → Fill Form → Save → Publish
  *
- * Environment: Beta (yuva-beta.mybharats.in)
- * User: createorg_01@yopmail.com (OTP login)
- * Organization: dasasd
+ * Environment: Prod (mybharat.gov.in)
+ * User: read from resources/create_mega_user_prod.xlsx (Sheet1, col 0)
+ * Event name saved to: resources/Create_Mega_Event_prod1.xlsx (Sheet1, col 0)
  */
 @Listeners(TestListeners.class)
 public class MegaEventTest extends BaseTest {
@@ -30,18 +33,29 @@ public class MegaEventTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private final Faker faker = new Faker();
 
-    private static final String LOGIN_EMAIL = "createorg_01@yopmail.com";
-    private static final String ORG_NAME = "dasasd";
+    // Excel paths (relative to project root)
+    private static final String USER_EXCEL      = "resources/create_mega_user_prod.xlsx";
+    private static final String EVENT_OUT_EXCEL = "resources/Create_Mega_Event_prod1.xlsx";
+    private static final String SHEET_NAME      = "Sheet1";
+
+    private String loginEmail;
+    private String eventName;  // generated in fillEventDetails, saved after publish
 
     @BeforeClass(alwaysRun = true)
     public void initPages() {
         megaEventPage = new MegaEventPage(driver);
+
+        // Read login email from Excel
+        List<String> emails = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 0);
+        Assert.assertFalse(emails.isEmpty(), "create_mega_user_prod.xlsx must have at least one email");
+        loginEmail = emails.get(0);
+        log.info("[SETUP] Login email from Excel: {}", loginEmail);
     }
 
     @Test(priority = 1, groups = {"smoke", "megaevent"})
     public void loginToApplication() {
-        log.info("Step 1: Login with OTP");
-        megaEventPage.loginWithOTP(LOGIN_EMAIL);
+        log.info("Step 1: Login with OTP — {}", loginEmail);
+        megaEventPage.loginWithOTP(loginEmail);
         log.info("✅ Login successful");
     }
 
@@ -50,7 +64,7 @@ public class MegaEventTest extends BaseTest {
         log.info("Step 2-4: Navigate to Organization");
         megaEventPage.navigateToProfile();
         megaEventPage.clickViewOrganization();
-        megaEventPage.selectOrganization(ORG_NAME);
+        megaEventPage.selectOrganization(null);  // selects first available org
         log.info("✅ Organization entered");
     }
 
@@ -73,7 +87,7 @@ public class MegaEventTest extends BaseTest {
     @Test(priority = 5, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
     public void fillEventDetails() {
         log.info("Step 7b: Fill Event Name and About");
-        String eventName = "Automation Mega Event " + faker.number().numberBetween(1000, 9999);
+        eventName = "Automation Mega Event " + faker.number().numberBetween(1000, 9999);
         String aboutText = "This mega event is created via automation testing. " + faker.lorem().sentence(10);
 
         megaEventPage.enterEventName(eventName);
@@ -153,7 +167,11 @@ public class MegaEventTest extends BaseTest {
     public void verifyActiveTab() {
         log.info("Step 10: Verify event in Active tab");
         boolean isActive = megaEventPage.isEventInActiveTab();
-        org.testng.Assert.assertTrue(isActive, "Published event should appear in Active tab");
+        Assert.assertTrue(isActive, "Published event should appear in Active tab");
         log.info("✅ Event verified in Active tab");
+
+        // Save created event name to Excel
+        ExcelUtils.appendValue(EVENT_OUT_EXCEL, SHEET_NAME, eventName);
+        log.info("✅ Event name saved to Excel: {} → {}", EVENT_OUT_EXCEL, eventName);
     }
 }

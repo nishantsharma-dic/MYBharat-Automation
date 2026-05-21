@@ -80,6 +80,7 @@ public class MegaEventPage extends BasePage {
 
         // Step 7: Fetch OTP from Yopmail (open new tab, same as existing framework)
         safeSleep(5000); // Wait for OTP email to arrive
+        String mainWindow = driver.getWindowHandle(); // capture BEFORE opening new tab
         driver.switchTo().newWindow(org.openqa.selenium.WindowType.TAB);
         driver.get(config.getProperty("dummyEmail"));
 
@@ -106,11 +107,14 @@ public class MegaEventPage extends BasePage {
         }
         log.info("OTP extracted: {}", otp);
 
-        // Close Yopmail tab, switch back
+        // Close Yopmail tab, switch back to main window by handle (not index)
         driver.switchTo().defaultContent();
-        java.util.ArrayList<String> tabs = new java.util.ArrayList<>(driver.getWindowHandles());
-        driver.switchTo().window(tabs.get(1)).close();
-        driver.switchTo().window(tabs.get(0));
+        for (String handle : driver.getWindowHandles()) {
+            if (!handle.equals(mainWindow)) {
+                driver.switchTo().window(handle).close();
+            }
+        }
+        driver.switchTo().window(mainWindow);
 
         // Step 8: Enter OTP (#otp-field-3)
         WebElement otpField = longWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("otp-field-3")));
@@ -164,42 +168,42 @@ public class MegaEventPage extends BasePage {
     }
 
     public void selectOrganization(String orgName) {
-        log.info("Selecting organization: {}", orgName);
+        log.info("Selecting organization: {}", orgName != null ? orgName : "first available");
         WebDriverWait wait15 = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-        // Try multiple locator strategies for the org
         WebElement orgLink = null;
-        String[] xpaths = {
-            "//a[contains(text(),'" + orgName + "')]",
-            "//td[contains(text(),'" + orgName + "')]/ancestor::tr//a",
-            "//*[contains(text(),'" + orgName + "')]",
-            "//a[contains(@href,'organization')]"
-        };
 
-        for (String xpath : xpaths) {
-            try {
-                orgLink = wait15.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
-                if (orgLink != null) break;
-            } catch (Exception e) { orgLink = null; }
-        }
-
-        if (orgLink != null) {
-            scrollToElement(orgLink);
-            safeClick(orgLink);
-            waitForPageLoad();
-            log.info("Entered organization: {}", orgName);
-        } else {
-            // If org not found by name, click the first org link in the table
-            log.warn("Org '{}' not found, clicking first available org", orgName);
-            try {
-                WebElement firstOrg = wait15.until(ExpectedConditions.elementToBeClickable(
-                        By.xpath("(//table//a)[1] | (//div[contains(@class,'org')]//a)[1]")));
-                safeClick(firstOrg);
-                waitForPageLoad();
-            } catch (Exception e) {
-                log.error("No organization found to click");
+        // If orgName provided, try to find it by name first
+        if (orgName != null && !orgName.isEmpty()) {
+            String[] xpaths = {
+                "//a[contains(text(),'" + orgName + "')]",
+                "//td[contains(text(),'" + orgName + "')]/ancestor::tr//a",
+                "//*[contains(text(),'" + orgName + "')]"
+            };
+            for (String xpath : xpaths) {
+                try {
+                    orgLink = wait15.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
+                    if (orgLink != null) break;
+                } catch (Exception e) { orgLink = null; }
             }
         }
+
+        // Fallback: click first available org link
+        if (orgLink == null) {
+            log.warn("Org '{}' not found or not specified — clicking first available org", orgName);
+            try {
+                orgLink = wait15.until(ExpectedConditions.elementToBeClickable(
+                        By.xpath("(//table//a)[1] | (//div[contains(@class,'org')]//a)[1]")));
+            } catch (Exception e) {
+                log.error("No organization found to click");
+                return;
+            }
+        }
+
+        scrollToElement(orgLink);
+        safeClick(orgLink);
+        waitForPageLoad();
+        log.info("✅ Organization selected");
     }
 
     public void clickMegaEventMenu() {

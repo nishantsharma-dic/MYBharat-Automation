@@ -5,7 +5,7 @@
   Mega Event Creation Flow
   
   Run:
-    mvn test -Denv=beta -Dbrowser=chrome "-Dsurefire.suiteXmlFiles=testSuites/testng-megaevent.xml"
+    mvn test -Denv=prod -Dbrowser=chrome "-Dsurefire.suiteXmlFiles=testSuites/testng-megaevent.xml"
 -->
 <suite name="Mega Event Module" parallel="none" verbose="1">
 

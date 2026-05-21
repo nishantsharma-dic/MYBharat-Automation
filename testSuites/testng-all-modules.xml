@@ -4,7 +4,7 @@
 <!--
   ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
   
-  Flow: Public Page → Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz
+  Flow: Public Page → Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Mega Event
   
   Run with:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
@@ -78,7 +78,14 @@
         </classes>
     </test>
 
-    <!-- Module 10: CV Builder (TODO) -->
+    <!-- Step 10: Mega Event Creation -->
+    <test name="Create Mega Event">
+        <classes>
+            <class name="com.mybharat.tests.megaevent.MegaEventTest"/>
+        </classes>
+    </test>
+
+    <!-- Module 12: CV Builder (TODO) -->
     <!--
     <test name="CV Builder">
         <classes>
@@ -87,7 +94,7 @@
     </test>
     -->
 
-    <!-- Module 11: Organisation Creation (TODO) -->
+    <!-- Module 13: Organisation Creation (TODO) -->
     <!--
     <test name="Organisation Creation">
         <classes>
@@ -96,7 +103,7 @@
     </test>
     -->
 
-    <!-- Module 12: Join Organisation (TODO) -->
+    <!-- Module 14: Join Organisation (TODO) -->
     <!--
     <test name="Join Organisation">
         <classes>

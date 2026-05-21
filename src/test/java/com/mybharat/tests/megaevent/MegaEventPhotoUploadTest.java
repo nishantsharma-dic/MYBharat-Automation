@@ -1,6 +1,7 @@
 package com.mybharat.tests.megaevent;
 
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,9 +20,9 @@ import com.mybharat.utils.ExcelUtils;
  * MegaEventPhotoUploadTest - Youth uploads photos/video to an existing Mega Event on PROD.
  *
  * Flow:
- *   1. Login with existing user
+ *   1. Login with user from resources/Uplad_photo_user_MegaEvent_prod.xlsx (sheet=UserData, col 0)
  *   2. Navigate to homepage → Hover "Events & Program" → Click "Mega Events"
- *   3. Read Mega Event name from Excel (src/test/resources/testdata/MegaEvents.xlsx)
+ *   3. Pick a RANDOM Mega Event name from resources/Photo_Upload_Mega_Event_Name_prod.xlsx (sheet=Sheet1, col 0)
  *   4. Apply State filter = "All"
  *   5. Search for Mega Event by name
  *   6. Click matching event card
@@ -41,14 +42,18 @@ public class MegaEventPhotoUploadTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private MegaEventPhotoUploadPage uploadPage;
 
-    private static final String EXCEL_PATH = "src/test/resources/testdata/MegaEvents.xlsx";
-    private static final String SHEET_NAME = "MegaEvents";
+    // Excel: login user
+    private static final String USER_EXCEL       = "resources/Uplad_photo_user_MegaEvent_prod.xlsx";
+    private static final String USER_SHEET        = "UserData";
+
+    // Excel: mega event names (random pick)
+    private static final String EVENT_EXCEL      = "resources/Photo_Upload_Mega_Event_Name_prod.xlsx";
+    private static final String EVENT_SHEET      = "Sheet1";
+
     private static final int IMAGE_COUNT = 2;
 
-    // Login email for prod
-    private static final String LOGIN_EMAIL = "mega_uplaod_images_01@yopmail.com";
-
-    // Will be read from Excel
+    // Resolved at runtime from Excel
+    private String loginEmail;
     private String megaEventName;
 
     @BeforeClass(alwaysRun = true)
@@ -56,18 +61,25 @@ public class MegaEventPhotoUploadTest extends BaseTest {
         megaEventPage = new MegaEventPage(driver);
         uploadPage = new MegaEventPhotoUploadPage(driver);
 
-        // Read Mega Event name from Excel
-        log.info("[SETUP] Reading Mega Event name from Excel: {}", EXCEL_PATH);
-        List<String> eventNames = ExcelUtils.readColumn(EXCEL_PATH, SHEET_NAME, 0);
-        Assert.assertFalse(eventNames.isEmpty(), "Excel should contain at least one Mega Event name");
-        megaEventName = eventNames.get(0); // Use first event
-        log.info("[SETUP] Selected Mega Event: '{}'", megaEventName);
+        // Read login email from Excel (first row, col 0)
+        log.info("[SETUP] Reading login email from: {}", USER_EXCEL);
+        List<String> emails = ExcelUtils.readColumn(USER_EXCEL, USER_SHEET, 0);
+        Assert.assertFalse(emails.isEmpty(), USER_EXCEL + " must have at least one email");
+        loginEmail = emails.get(0);
+        log.info("[SETUP] Login email: '{}'", loginEmail);
+
+        // Read all event names and pick a random one
+        log.info("[SETUP] Reading Mega Event names from: {}", EVENT_EXCEL);
+        List<String> eventNames = ExcelUtils.readColumn(EVENT_EXCEL, EVENT_SHEET, 0);
+        Assert.assertFalse(eventNames.isEmpty(), EVENT_EXCEL + " must have at least one event name");
+        megaEventName = eventNames.get(new Random().nextInt(eventNames.size()));
+        log.info("[SETUP] Randomly selected Mega Event: '{}'", megaEventName);
     }
 
     @Test(priority = 1, groups = {"smoke", "megaevent-upload"})
     public void loginToApplication() {
-        log.info("=== Step 1: Login with {} ===", LOGIN_EMAIL);
-        megaEventPage.loginWithOTP(LOGIN_EMAIL);
+        log.info("=== Step 1: Login with {} ===", loginEmail);
+        megaEventPage.loginWithOTP(loginEmail);
         log.info("✅ Step 1 PASSED — Logged in");
     }
 

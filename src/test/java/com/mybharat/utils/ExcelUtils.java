@@ -151,6 +151,44 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * Append a single value to the next empty row in column 0 of an existing Excel file.
+     *
+     * @param filePath  path to existing .xlsx file
+     * @param sheetName sheet name
+     * @param value     value to append
+     */
+    public static void appendValue(String filePath, String sheetName, String value) {
+        File file = new File(filePath);
+        if (!file.isAbsolute()) {
+            file = new File(System.getProperty("user.dir") + File.separator + filePath);
+        }
+
+        log.info("[ExcelUtils] Appending '{}' to sheet '{}' in: {}", value, sheetName, file.getAbsolutePath());
+
+        try (FileInputStream fis = new FileInputStream(file);
+             XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = workbook.getSheet(sheetName);
+            if (sheet == null) {
+                sheet = workbook.getSheetAt(0);
+                log.warn("[ExcelUtils] Sheet '{}' not found, using first sheet: '{}'", sheetName, sheet.getSheetName());
+            }
+
+            int nextRow = sheet.getLastRowNum() + 1;
+            Row row = sheet.createRow(nextRow);
+            row.createCell(0).setCellValue(value);
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                workbook.write(fos);
+            }
+            log.info("[ExcelUtils] Appended '{}' at row {}", value, nextRow);
+        } catch (IOException e) {
+            log.error("[ExcelUtils] Failed to append to Excel: {}", e.getMessage());
+            throw new RuntimeException("Excel append failed: " + e.getMessage(), e);
+        }
+    }
+
     private static String getCellValueAsString(Cell cell) {
         if (cell.getCellType() == CellType.STRING) {
             return cell.getStringCellValue();
