@@ -155,6 +155,9 @@ jobs:
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
 
+          # Mega Event — Photo Upload + Logout + Create (combined as single flow)
+          echo "s10=$(get_status 'verifyActiveTab')" >> $GITHUB_OUTPUT
+
       - name: Send test email to QA lead (personal only)
         if: always()
         uses: dawidd6/action-send-mail@v3
@@ -298,10 +301,19 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s9 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
                   </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Mega Event</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">megaEventFlow</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Photo Upload (logged-in user) → Logout → Login (create_mega_user_prod) → Create Mega Event → Verify Active Tab</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s10 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Pal</td>
+                  </tr>
                 </table>
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Download Quiz Certificate
+                  Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Download Quiz Certificate → Mega Event (Photo Upload + Logout + Create Mega Event)
                 </p>
                 <div style="text-align: center; margin: 25px 0;">
                   <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background: #160363; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Detailed Report & Logs</a>
