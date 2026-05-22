@@ -19,11 +19,11 @@
     </listeners>
 
     <!-- Step 1: Public Page - Header + Organization + Footer -->
-   <!-- <test name="Public Page">
+<test name="Public Page">
         <classes>
             <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
-    </test>-->
+    </test>
 
     <!-- Step 2: Registration → Submit popup → Save email to Excel -->
     <test name="Youth Registration">

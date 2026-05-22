@@ -14,10 +14,10 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-   <!-- <test name="Public Page - Search and Header Menu">
+ <test name="Public Page - Search and Header Menu">
         <classes>
             <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
-    </test>-->
+    </test>
 
 </suite>
