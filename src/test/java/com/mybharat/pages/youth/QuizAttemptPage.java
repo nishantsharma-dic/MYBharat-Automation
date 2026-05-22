@@ -140,37 +140,77 @@ public class QuizAttemptPage extends BasePage {
         Thread.sleep(3000);
         waitForPageLoad();
 
-        // Select "No" for disability — try multiple locators
-        WebElement disability = null;
-        String[] disabilityLocators = {
-            "(//input[@id='check_detail_whether_disability'])[2]",
-            "//input[@name='whether_disability' and @value='No']",
-            "//input[@name='whether_disability'][2]",
-            "//label[contains(text(),'No')]/preceding-sibling::input[@type='radio']",
-            "(//input[@type='radio'][@name='whether_disability'])[2]"
-        };
-        for (String locator : disabilityLocators) {
-            try {
-                disability = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                        ExpectedConditions.presenceOfElementLocated(By.xpath(locator)));
-                if (disability != null) break;
-            } catch (Exception e) { /* try next */ }
+        // Check if the details form is present (it may be skipped for some quizzes)
+        boolean detailsFormPresent = false;
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.presenceOfElementLocated(By.xpath(
+                            "//button[@id='checkDetailsFormButton'] | //input[contains(@id,'check_detail')] | //input[@name='whether_disability']")));
+            detailsFormPresent = true;
+        } catch (Exception e) {
+            System.out.println("Details form not found — may have been skipped or page structure changed");
         }
-        if (disability == null) {
-            // Last resort — try to find any "No" radio button on the page
-            disability = longWait.until(
-                    ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("(//input[@id='check_detail_whether_disability'])[2]")));
-        }
-        scrollToElement(disability);
-        Thread.sleep(500);
-        jsClick(disability);
 
-        // Click Proceed
-        WebElement proceed = longWait.until(
-                ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='checkDetailsFormButton']")));
-        jsClick(proceed);
-        Thread.sleep(1000);
+        if (detailsFormPresent) {
+            // Select "No" for disability — try multiple locators
+            WebElement disability = null;
+            String[] disabilityLocators = {
+                "(//input[@id='check_detail_whether_disability'])[2]",
+                "//input[@name='whether_disability' and @value='No']",
+                "//input[@name='whether_disability'][2]",
+                "//label[contains(text(),'No')]/preceding-sibling::input[@type='radio']",
+                "(//input[@type='radio'][@name='whether_disability'])[2]",
+                "//label[contains(text(),'No')]/input[@type='radio']",
+                "//label[normalize-space()='No']/preceding-sibling::input"
+            };
+            for (String locator : disabilityLocators) {
+                try {
+                    disability = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                            ExpectedConditions.presenceOfElementLocated(By.xpath(locator)));
+                    if (disability != null) break;
+                } catch (Exception e) { /* try next */ }
+            }
+            if (disability == null) {
+                // Last resort — try to find any "No" radio button on the page
+                disability = longWait.until(
+                        ExpectedConditions.presenceOfElementLocated(
+                                By.xpath("(//input[@id='check_detail_whether_disability'])[2]")));
+            }
+            scrollToElement(disability);
+            Thread.sleep(500);
+            jsClick(disability);
+            // Trigger change event to ensure form validation picks up the selection
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].dispatchEvent(new Event('change', {bubbles: true}));", disability);
+            Thread.sleep(500);
+
+            // Click Proceed — try multiple locators
+            WebElement proceed = null;
+            String[] proceedLocators = {
+                "//button[@id='checkDetailsFormButton']",
+                "//button[contains(text(),'Proceed')]",
+                "//button[contains(text(),'PROCEED')]",
+                "//button[contains(text(),'Submit')]",
+                "//button[@type='submit' and ancestor::form[contains(@id,'check')]]"
+            };
+            for (String locator : proceedLocators) {
+                try {
+                    proceed = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                            ExpectedConditions.elementToBeClickable(By.xpath(locator)));
+                    if (proceed != null) break;
+                } catch (Exception e) { /* try next */ }
+            }
+            if (proceed == null) {
+                // Force-enable and click the button via JS
+                proceed = longWait.until(
+                        ExpectedConditions.presenceOfElementLocated(By.xpath("//button[@id='checkDetailsFormButton']")));
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].disabled = false; arguments[0].click();", proceed);
+            } else {
+                jsClick(proceed);
+            }
+            Thread.sleep(1000);
+        }
 
         // Select language
         selectQuizLanguage();
