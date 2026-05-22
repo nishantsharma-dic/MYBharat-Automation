@@ -13,7 +13,7 @@ import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.elp.ELPLoginPage;
 
 /**
- * ELPLoginTest - Logs in with a random ELP admin user from ELP_beta.xlsx.
+ * ELPLoginTest - Logs in with a random ELP admin user from Partner_beta.xlsx or Partner_prod.xlsx.
  * This is the first step in the ELP test cycle.
  */
 @Listeners(TestListeners.class)

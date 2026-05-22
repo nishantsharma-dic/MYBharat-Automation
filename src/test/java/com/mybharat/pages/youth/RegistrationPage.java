@@ -387,13 +387,13 @@ public class RegistrationPage extends BasePage {
 
     /**
      * Save the registration email to Excel file.
-     * Uses environment-specific file: UserDetails_beta.xlsx or UserDetails_prod.xlsx
+     * Uses environment-specific file: Youth_beta.xlsx or Youth_prod.xlsx
      * Skips if email already exists in the file (prevents duplicates on retry).
      */
     public void saveEmailToExcel() {
         String env = System.getProperty("env", "beta");
         String path = System.getProperty("user.dir") + java.io.File.separator
-                + "resources" + java.io.File.separator + "UserDetails_" + env + ".xlsx";
+                + "resources" + java.io.File.separator + "Youth_" + env + ".xlsx";
         java.io.File file = new java.io.File(path);
         file.getParentFile().mkdirs();
 

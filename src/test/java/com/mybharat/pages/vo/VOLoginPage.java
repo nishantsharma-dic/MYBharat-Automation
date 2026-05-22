@@ -265,7 +265,7 @@ public class VOLoginPage extends BasePage {
 
     /**
      * Picks a random email from VO_beta.xlsx or VO_prod.xlsx (based on env).
-     * Same pattern as ELP which reads from ELP_beta.xlsx.
+     * Same pattern as ELP which reads from Partner_beta.xlsx / Partner_prod.xlsx.
      */
     private String pickRandomEmailFromExcel() {
         String env = config.getEnv();

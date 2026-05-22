@@ -13,7 +13,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
-import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -53,23 +52,18 @@ public class LoginPage extends BasePage {
     // -------------------------------------------------------------------------
 
     @FindBy(xpath = "//input[@id='otp_login_header']")
-    @CacheLookup
     private WebElement mobileEmailInput;
 
     @FindBy(css = "#consentCheck1")
-    @CacheLookup
     private WebElement iConsentToTermsOfUse;
 
     @FindBy(css = "button[class='btn btn-outline-primary rounded-pill float-end w-100 login_otp_header firebase-user-sentOtp-btn mb-3']")
-    @CacheLookup
     private WebElement loginBtn;
 
     @FindBy(css = "#otp-field-3")
-    @CacheLookup
     private WebElement enterOTPField;
 
     @FindBy(xpath = "//button[@id='btn-otp-verify-header']")
-    @CacheLookup
     private WebElement verifyOTPBtn;
 
     // -------------------------------------------------------------------------
@@ -236,10 +230,17 @@ public class LoginPage extends BasePage {
         ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
         driver.switchTo().window(tabs.get(1)).close();
         driver.switchTo().window(tabs.get(0));
-        safeSleep(300);
+        safeSleep(1000);
 
-        // Enter OTP in the login form
-        WebElement otpInput = longWait.until(ExpectedConditions.visibilityOf(enterOTPField));
+        // Enter OTP in the login form (use fresh locator after tab switch)
+        WebElement otpInput;
+        try {
+            otpInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#otp-field-3")));
+        } catch (Exception e) {
+            // Fallback: try alternative OTP field locators
+            otpInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//input[contains(@id,'otp-field')] | //input[contains(@class,'otp')]")));
+        }
         otpInput.clear();
         otpInput.sendKeys(otp);
         log.info("OTP entered in login form");
@@ -375,17 +376,17 @@ public class LoginPage extends BasePage {
 
     /**
      * Read the last entry (most recent registration) from environment-specific Excel.
-     * Uses UserDetails_beta.xlsx or UserDetails_prod.xlsx based on -Denv property.
+     * Uses Youth_beta.xlsx or Youth_prod.xlsx based on -Denv property.
      * Sheet: "UserData", Column 0 = email.
      */
     private String readLastEmailFromExcel() {
         String env = System.getProperty("env", "beta");
         String filePath = System.getProperty("user.dir") + File.separator
-                + "resources" + File.separator + "UserDetails_" + env + ".xlsx";
+                + "resources" + File.separator + "Youth_" + env + ".xlsx";
 
         File file = new File(filePath);
         if (!file.exists()) {
-            throw new RuntimeException("UserDetails_" + env + ".xlsx not found at: " + filePath
+            throw new RuntimeException("Youth_" + env + ".xlsx not found at: " + filePath
                     + ". Please run registration on " + env + " first.");
         }
 
@@ -439,7 +440,7 @@ public class LoginPage extends BasePage {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to read UserDetails_" + env + ".xlsx: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to read Youth_" + env + ".xlsx: " + e.getMessage(), e);
         }
     }
 
