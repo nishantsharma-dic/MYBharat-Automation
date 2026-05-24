@@ -125,11 +125,10 @@ public class QuizAttemptPage extends BasePage {
             java.nio.file.Files.writeString(quizFile.toPath(), quizName);
         } catch (Exception e) { /* ignore */ }
 
-        // Wait for the quiz instructions modal to appear
+        // Wait for the big quiz detail popup to fully render
         Thread.sleep(2000);
 
-        // Click "START QUIZ" inside the instructions modal
-        // This is different from the card button — it's uppercase and inside the modal
+        // Click "START QUIZ" inside the big popup (opens the instruction modal)
         try {
             WebElement startQuiz2 = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
                     ExpectedConditions.elementToBeClickable(By.xpath(
@@ -138,9 +137,8 @@ public class QuizAttemptPage extends BasePage {
             scrollToElement(startQuiz2);
             Thread.sleep(500);
             jsClick(startQuiz2);
-            System.out.println("Clicked modal START QUIZ button");
+            System.out.println("Clicked START QUIZ in popup");
         } catch (Exception e) {
-            // Fallback: try any clickable element with START QUIZ text (case-insensitive)
             try {
                 WebElement startQuiz2 = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                         ExpectedConditions.elementToBeClickable(By.xpath(
@@ -148,11 +146,23 @@ public class QuizAttemptPage extends BasePage {
                                 "//span[contains(translate(normalize-space(),'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'START QUIZ')] | " +
                                 "//p[contains(translate(normalize-space(),'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'START QUIZ')]")));
                 jsClick(startQuiz2);
-                System.out.println("Clicked modal START QUIZ (fallback)");
+                System.out.println("Clicked START QUIZ (fallback)");
             } catch (Exception e2) {
-                System.out.println("Modal START QUIZ button not found — may not be required for this quiz");
+                System.out.println("START QUIZ button not found in popup");
             }
         }
+
+        // Wait for instruction modal to appear, then dismiss background overlay if present
+        Thread.sleep(2000);
+        // Close any background modal/overlay that might be blocking (the big popup)
+        ((JavascriptExecutor) driver).executeScript(
+                "try { " +
+                "  var backdrops = document.querySelectorAll('.modal-backdrop, .overlay, .popup-overlay');" +
+                "  backdrops.forEach(function(b) { b.remove(); });" +
+                "  var modals = document.querySelectorAll('.modal.show, .popup.show');" +
+                "  modals.forEach(function(m) { if(!m.querySelector('#startQuizButton') && !m.querySelector('#quizLanguage')) m.style.display='none'; });" +
+                "} catch(e) {}");
+        Thread.sleep(1000);
 
         // Wait for page to stabilize after quiz start
         Thread.sleep(3000);
@@ -233,7 +243,7 @@ public class QuizAttemptPage extends BasePage {
         // Select language
         selectQuizLanguage();
 
-        // Click Start Quiz button — try multiple locators
+        // Click Start Quiz button (red button in instruction modal)
         try {
             WebElement startBtn = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
                     ExpectedConditions.elementToBeClickable(By.xpath(
@@ -241,21 +251,47 @@ public class QuizAttemptPage extends BasePage {
                             "//button[contains(text(),'Start Quiz')] | " +
                             "//button[contains(text(),'START QUIZ')] | " +
                             "//a[contains(text(),'Start Quiz')]")));
-            jsClick(startBtn);
-        } catch (Exception e) {
-            // Quiz may have auto-started after language selection or details form
-            System.out.println("startQuizButton not found — quiz may have auto-started: " + e.getMessage());
-            // Verify we're on the quiz questions page
+            // Use direct click first, then JS click as fallback
             try {
-                new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                        ExpectedConditions.presenceOfElementLocated(By.xpath(
-                                "//div[contains(@class,'form-check')]//label | " +
-                                "//div[contains(@class,'option')]//label | " +
-                                "//button[@id='save_button']")));
-                System.out.println("Quiz questions page detected — continuing");
-            } catch (Exception e2) {
-                throw new RuntimeException("Could not start quiz — neither startQuizButton nor questions found", e2);
+                startBtn.click();
+            } catch (Exception clickEx) {
+                jsClick(startBtn);
             }
+            System.out.println("Clicked Start Quiz button (instruction modal)");
+        } catch (Exception e) {
+            System.out.println("startQuizButton not found — trying JS force click: " + e.getMessage());
+            // Force click via JS on the specific button
+            ((JavascriptExecutor) driver).executeScript(
+                    "var btn = document.getElementById('startQuizButton');" +
+                    "if(btn) { btn.click(); } else { " +
+                    "  var btns = document.querySelectorAll('button');" +
+                    "  for(var i=0; i<btns.length; i++) { if(btns[i].textContent.trim().includes('Start Quiz')) { btns[i].click(); break; } }" +
+                    "}");
+        }
+
+        // Wait and dismiss all remaining modals/overlays after quiz start
+        Thread.sleep(2000);
+        ((JavascriptExecutor) driver).executeScript(
+                "try { " +
+                "  document.querySelectorAll('.modal-backdrop').forEach(function(b) { b.remove(); });" +
+                "  document.querySelectorAll('.modal').forEach(function(m) { m.style.display='none'; m.classList.remove('show'); });" +
+                "  document.body.classList.remove('modal-open');" +
+                "  document.body.style.overflow='auto';" +
+                "} catch(e) {}");
+        Thread.sleep(2000);
+        waitForPageLoad();
+
+        // Verify quiz questions page loaded
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+                    ExpectedConditions.presenceOfElementLocated(By.xpath(
+                            "//div[contains(@class,'form-check')]//label | " +
+                            "//div[contains(@class,'option')]//label | " +
+                            "//button[@id='save_button'] | " +
+                            "//div[contains(@class,'question')]")));
+            System.out.println("Quiz questions page loaded successfully");
+        } catch (Exception e) {
+            throw new RuntimeException("Quiz questions page did not load after clicking Start Quiz", e);
         }
     }
 
