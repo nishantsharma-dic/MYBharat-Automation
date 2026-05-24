@@ -14,7 +14,7 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Login as ELP Admin (random email from ELP_beta.xlsx) -->
+    <!-- Step 1: Login as ELP Admin (random email from Partner_beta.xlsx / Partner_prod.xlsx) -->
     <test name="ELP Admin Login">
         <classes>
             <class name="com.mybharat.tests.elp.ELPLoginTest"/>

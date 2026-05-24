@@ -23,7 +23,7 @@ import com.mybharat.utils.ConfigReader;
 
 /**
  * ELPLoginPage - Handles OTP-based login for ELP admin users.
- * Picks a random email from resources/ELP_beta.xlsx and logs in via OTP.
+ * Picks a random email from resources/Partner_beta.xlsx or Partner_prod.xlsx and logs in via OTP.
  */
 public class ELPLoginPage extends BasePage {
 
@@ -46,7 +46,7 @@ public class ELPLoginPage extends BasePage {
 
     /**
      * Full login flow: navigate → sign in → OTP → verify.
-     * Picks a random email from ELP_beta.xlsx.
+     * Picks a random email from Partner_beta.xlsx or Partner_prod.xlsx.
      */
     public void loginWithRandomELPUser() throws InterruptedException {
         loginEmail = pickRandomEmailFromExcel();
@@ -255,11 +255,12 @@ public class ELPLoginPage extends BasePage {
     }
 
     /**
-     * Pick a random email from resources/ELP_beta.xlsx
+     * Pick a random email from resources/Partner_beta.xlsx or Partner_prod.xlsx
      */
     private String pickRandomEmailFromExcel() {
+        String env = System.getProperty("env", "beta");
         String path = System.getProperty("user.dir") + File.separator
-                + "resources" + File.separator + "ELP_beta.xlsx";
+                + "resources" + File.separator + "Partner_" + env + ".xlsx";
 
         try (FileInputStream fis = new FileInputStream(path);
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -276,14 +277,14 @@ public class ELPLoginPage extends BasePage {
                 }
             }
 
-            if (emails.isEmpty()) throw new RuntimeException("No emails found in ELP_beta.xlsx");
+            if (emails.isEmpty()) throw new RuntimeException("No emails found in Partner_" + env + ".xlsx");
 
             String selected = emails.get(random.nextInt(emails.size()));
             log.info("Randomly picked ELP email: {}", selected);
             return selected;
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to read ELP_beta.xlsx: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to read Partner_" + env + ".xlsx: " + e.getMessage(), e);
         }
     }
 
