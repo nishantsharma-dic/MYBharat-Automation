@@ -13,37 +13,30 @@
   Run with:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
 -->
-<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1">
+<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1"
+       group-by-instances="true" preserve-order="true">
 
     <listeners>
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
     <!-- PARALLEL THREAD 1: Public Page validation (independent, own browser) -->
-    <test name="Public Page">
+    <test name="Public Page" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
     </test>
 
     <!-- PARALLEL THREAD 2: Sequential user flow (shared browser session) -->
-    <test name="Youth Flow">
+    <test name="Youth Flow" preserve-order="true">
         <classes>
-            <!-- Step 1: Registration -->
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
-            <!-- Step 2: Logout -->
             <class name="com.mybharat.tests.youth.LogoutTest"/>
-            <!-- Step 3: Login -->
             <class name="com.mybharat.tests.youth.LoginTest"/>
-            <!-- Step 4: Profile -->
             <class name="com.mybharat.tests.youth.YouthProfileTest"/>
-            <!-- Step 5: Registration Certificate -->
             <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
-            <!-- Step 6: Basic Info -->
             <class name="com.mybharat.tests.youth.BasicInfoTest"/>
-            <!-- Step 7: Quiz -->
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
-            <!-- Step 8: Quiz Certificate -->
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
         </classes>
     </test>

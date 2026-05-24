@@ -83,6 +83,13 @@ public class BaseTest {
     public void syncDriver() {
         if (this.driver == null) {
             this.driver = driverThreadLocal.get();
+            if (this.driver != null) {
+                log.info("Driver synced from ThreadLocal for: {} | Thread: {}",
+                        this.getClass().getSimpleName(), Thread.currentThread().getName());
+            } else {
+                log.error("Driver is NULL in ThreadLocal for: {} | Thread: {}",
+                        this.getClass().getSimpleName(), Thread.currentThread().getName());
+            }
         }
     }
 
