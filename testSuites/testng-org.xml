@@ -17,7 +17,7 @@
 
     <test name="Youth Registration">
         <classes>
-            <class name="com.mybharat.tests.youth.YouthRegistrationTest"/>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
         </classes>
     </test>
 

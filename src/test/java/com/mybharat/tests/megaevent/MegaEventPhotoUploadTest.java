@@ -1,7 +1,6 @@
 package com.mybharat.tests.megaevent;
 
 import java.util.List;
-import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,13 +41,13 @@ public class MegaEventPhotoUploadTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private MegaEventPhotoUploadPage uploadPage;
 
-    // Excel: login user
-    private static final String USER_EXCEL       = "resources/Uplad_photo_user_MegaEvent_prod.xlsx";
+    // Excel: login user (registered youth from Youth_prod.xlsx)
+    private static final String USER_EXCEL       = "resources/Youth_prod.xlsx";
     private static final String USER_SHEET        = "UserData";
 
-    // Excel: mega event names (random pick)
-    private static final String EVENT_EXCEL      = "resources/Photo_Upload_Mega_Event_Name_prod.xlsx";
-    private static final String EVENT_SHEET      = "Sheet1";
+    // Excel: mega event names (pick LAST created event from Create_MegaEvent_Prod.xlsx)
+    private static final String EVENT_EXCEL      = "resources/Create_MegaEvent_Prod.xlsx";
+    private static final String EVENT_SHEET      = "ELP_Users";
 
     private static final int IMAGE_COUNT = 2;
 
@@ -61,19 +60,19 @@ public class MegaEventPhotoUploadTest extends BaseTest {
         megaEventPage = new MegaEventPage(driver);
         uploadPage = new MegaEventPhotoUploadPage(driver);
 
-        // Read login email from Excel (first row, col 0)
+        // Read login email from Excel (last row, col 0 — most recently registered user)
         log.info("[SETUP] Reading login email from: {}", USER_EXCEL);
         List<String> emails = ExcelUtils.readColumn(USER_EXCEL, USER_SHEET, 0);
         Assert.assertFalse(emails.isEmpty(), USER_EXCEL + " must have at least one email");
-        loginEmail = emails.get(0);
+        loginEmail = emails.get(emails.size() - 1); // Last registered user
         log.info("[SETUP] Login email: '{}'", loginEmail);
 
-        // Read all event names and pick a random one
-        log.info("[SETUP] Reading Mega Event names from: {}", EVENT_EXCEL);
+        // Read last created mega event name (most recent entry)
+        log.info("[SETUP] Reading Mega Event name from: {}", EVENT_EXCEL);
         List<String> eventNames = ExcelUtils.readColumn(EVENT_EXCEL, EVENT_SHEET, 0);
         Assert.assertFalse(eventNames.isEmpty(), EVENT_EXCEL + " must have at least one event name");
-        megaEventName = eventNames.get(new Random().nextInt(eventNames.size()));
-        log.info("[SETUP] Randomly selected Mega Event: '{}'", megaEventName);
+        megaEventName = eventNames.get(eventNames.size() - 1); // Last created event
+        log.info("[SETUP] Using last created Mega Event: '{}'", megaEventName);
     }
 
     @Test(priority = 1, groups = {"smoke", "megaevent-upload"})

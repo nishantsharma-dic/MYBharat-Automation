@@ -13,6 +13,13 @@ Thumbs.db
 .idea/
 *.iml
 .vscode/
+*.code-workspace
+
+# ========================
+# Excel temp lock files
+# ========================
+~$*.xlsx
+~$*.xls
 
 # ========================
 # Maven Build Output
@@ -34,6 +41,11 @@ reports/
 # ========================
 *.log
 logs/
+
+# ========================
+# Large test media files (use small test_video.mp4 instead)
+# ========================
+src/test/resources/testdata/video mega event.mp4
 
 # ========================
 # Downloads (certificate downloads during test runs)

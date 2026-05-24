@@ -35,27 +35,34 @@ public class MegaEventTest extends BaseTest {
 
     // Excel paths (relative to project root)
     private static final String USER_EXCEL      = "resources/Partner_prod.xlsx";
-    private static final String EVENT_OUT_EXCEL = "resources/Create_Mega_Event_prod1.xlsx";
+    private static final String EVENT_OUT_EXCEL = "resources/Create_MegaEvent_Prod.xlsx";
     private static final String SHEET_NAME      = "ELP_Users";
 
     private String loginEmail;
+    private String loginPassword;
     private String eventName;  // generated in fillEventDetails, saved after publish
 
     @BeforeClass(alwaysRun = true)
     public void initPages() {
         megaEventPage = new MegaEventPage(driver);
 
-        // Read login email from Excel
+        // Read login email from Partner_prod.xlsx (last entry = mega event user)
         List<String> emails = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 0);
         Assert.assertFalse(emails.isEmpty(), "Partner_prod.xlsx must have at least one email");
-        loginEmail = emails.get(0);
-        log.info("[SETUP] Login email from Excel: {}", loginEmail);
+        loginEmail = emails.get(emails.size() - 1); // Last user = mega event creator
+
+        // Read password (column 1) if available
+        List<String> passwords = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 1);
+        loginPassword = (passwords.size() >= emails.size()) ? passwords.get(passwords.size() - 1) : null;
+
+        log.info("[SETUP] Login email: {}, hasPassword: {}", loginEmail, loginPassword != null);
     }
 
     @Test(priority = 1, groups = {"smoke", "megaevent"})
-    public void loginToApplication() {
-        log.info("Step 1: Login with OTP — {}", loginEmail);
-        megaEventPage.loginWithOTP(loginEmail);
+    public void loginToApplication() throws Exception {
+        log.info("Step 1: Login — {}", loginEmail);
+        com.mybharat.pages.youth.LoginPage loginPage = new com.mybharat.pages.youth.LoginPage(driver);
+        loginPage.login(loginEmail, loginPassword);
         log.info("✅ Login successful");
     }
 

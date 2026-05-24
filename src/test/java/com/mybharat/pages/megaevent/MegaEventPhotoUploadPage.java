@@ -34,12 +34,10 @@ public class MegaEventPhotoUploadPage extends BasePage {
     private static final Logger log = LogManager.getLogger(MegaEventPhotoUploadPage.class);
     private final ConfigReader config = new ConfigReader();
     private final JavascriptExecutor js;
-    private final WebDriverWait wait;
 
     public MegaEventPhotoUploadPage(WebDriver driver) {
         super(driver);
         this.js = (JavascriptExecutor) driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(25));
     }
 
     // =========================================================================
@@ -282,22 +280,16 @@ public class MegaEventPhotoUploadPage extends BasePage {
     public void uploadImages(int count) {
         log.info("Uploading {} images", count);
 
-        // Use files from src/test/resources/testdata/ or TestData folder
         String testDataDir = System.getProperty("user.dir") + File.separator
                 + "src" + File.separator + "test" + File.separator + "resources"
                 + File.separator + "testdata";
         File dir = new File(testDataDir);
 
-        // Fallback to TestData folder
-        if (!dir.exists() || dir.listFiles((d, name) -> name.toLowerCase().matches(".*\\.(jpg|jpeg|png)")) == null) {
-            testDataDir = "D:\\project\\ProjectM\\TestData";
-            dir = new File(testDataDir);
-        }
-
         File[] imageFiles = dir.listFiles((d, name) -> name.toLowerCase().matches(".*\\.(jpg|jpeg|png)"));
 
         if (imageFiles == null || imageFiles.length < 2) {
-            throw new RuntimeException("Need at least 2 images in: " + testDataDir);
+            throw new RuntimeException("Need at least 2 images in: " + testDataDir
+                    + ". Please add test images to src/test/resources/testdata/");
         }
 
         log.info("Using images from: {}", testDataDir);
@@ -386,17 +378,14 @@ public class MegaEventPhotoUploadPage extends BasePage {
      * Upload a video file via "Upload Videos" button in the modal.
      */
     public void uploadVideo() {
-        // Try testdata folder first, then TestData
+        // Use test_video.mp4 from src/test/resources/testdata/ (small ~1MB test video)
         String videoPath = System.getProperty("user.dir") + File.separator
                 + "src" + File.separator + "test" + File.separator + "resources"
-                + File.separator + "testdata" + File.separator + "video mega event.mp4";
+                + File.separator + "testdata" + File.separator + "test_video.mp4";
+
         if (!new File(videoPath).exists()) {
-            videoPath = System.getProperty("user.dir") + File.separator
-                    + "src" + File.separator + "test" + File.separator + "resources"
-                    + File.separator + "testdata" + File.separator + "test_video.mp4";
-        }
-        if (!new File(videoPath).exists()) {
-            videoPath = "D:\\project\\ProjectM\\TestData\\video mega event.mp4";
+            throw new RuntimeException("Video file not found: " + videoPath
+                    + ". Please add test_video.mp4 to src/test/resources/testdata/");
         }
         log.info("Uploading video: {}", videoPath);
 

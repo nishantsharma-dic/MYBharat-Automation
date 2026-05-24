@@ -154,6 +154,20 @@ public class LoginPage extends BasePage {
     }
 
     /**
+     * Enter a specific email into the OTP login email field (for external callers).
+     */
+    public void enterEmailForOTPLogin(String email) {
+        loginEmail = email;
+        log.info("Using email for OTP login: {}", loginEmail);
+
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(LONG_WAIT));
+        WebElement input = longWait.until(ExpectedConditions.visibilityOf(mobileEmailInput));
+        input.clear();
+        input.sendKeys(loginEmail);
+        log.info("Email entered in OTP login field");
+    }
+
+    /**
      * Click the consent/terms checkbox.
      */
     public void clickConsentCheckbox() {
@@ -310,6 +324,100 @@ public class LoginPage extends BasePage {
         clickLoginToSendOTP();
         fetchOTPFromYopmail();
         clickVerifyOTP();
+    }
+
+    /**
+     * Unified login — automatically chooses password or OTP based on credentials.
+     * 
+     * @param email    user email
+     * @param password user password (null or empty = use OTP via Yopmail)
+     */
+    public void login(String email, String password) throws InterruptedException {
+        navigateToHomePage();
+        closePopupIfPresent();
+
+        // Skip if already logged in
+        if (isLoginSuccessful()) {
+            log.info("Already logged in — skipping login for: {}", email);
+            return;
+        }
+
+        clickSignIn();
+
+        if (password != null && !password.isEmpty()) {
+            // Password-based login
+            loginWithPassword(email, password);
+        } else {
+            // OTP-based login via Yopmail
+            enterEmailForOTPLogin(email);
+            clickConsentCheckbox();
+            clickLoginToSendOTP();
+            fetchOTPFromYopmail();
+            clickVerifyOTP();
+        }
+    }
+
+    /**
+     * Login using email and password (for non-Yopmail accounts like sharklasers).
+     * Flow: Enter email → consent → click "Login with Password" link →
+     *       Enter password → consent checkbox → click "Login" button
+     */
+    private void loginWithPassword(String email, String password) {
+        log.info("Logging in with password for: {}", email);
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(LONG_WAIT));
+
+        // Step 1: Enter email
+        WebElement emailInput = longWait.until(ExpectedConditions.visibilityOf(mobileEmailInput));
+        emailInput.clear();
+        emailInput.sendKeys(email);
+        log.info("Email entered: {}", email);
+
+        // Step 2: Click consent checkbox (first popup)
+        clickConsentCheckbox();
+
+        // Step 3: Click "Login with Password" link
+        WebElement loginWithPwdLink = longWait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[contains(text(),'Login with Password')] | //span[contains(text(),'Login with Password')]")));
+        loginWithPwdLink.click();
+        safeSleep(1500);
+        log.info("Clicked 'Login with Password' link");
+
+        // Step 4: Enter password in the password popup
+        WebElement passwordInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[@type='password']")));
+        passwordInput.clear();
+        passwordInput.sendKeys(password);
+        log.info("Password entered");
+
+        // Step 5: Click consent checkbox again (password popup has its own checkbox)
+        try {
+            WebElement consent = longWait.until(ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("//input[@type='checkbox' and contains(@id,'consent') or contains(@id,'Consent')]")));
+            if (!consent.isSelected()) {
+                try { consent.click(); } catch (Exception e) { jsClick(consent); }
+                log.info("Password popup consent checkbox checked");
+            }
+        } catch (Exception e) {
+            // Try clicking any unchecked checkbox in the popup
+            try {
+                WebElement cb = driver.findElement(By.xpath(
+                        "//input[@type='checkbox'][not(@checked)]"));
+                jsClick(cb);
+                log.info("Checkbox clicked (fallback)");
+            } catch (Exception e2) {
+                log.info("No unchecked checkbox found — may already be checked");
+            }
+        }
+
+        // Step 6: Click "Login" button
+        WebElement loginBtn = longWait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button[contains(text(),'Login') and not(contains(text(),'Password')) and not(contains(text(),'OTP'))]")));
+        try { loginBtn.click(); } catch (Exception e) { jsClick(loginBtn); }
+        log.info("Login button clicked");
+
+        waitForPageLoad();
+        safeSleep(2000);
+        log.info("Password login completed for: {}", email);
     }
 
     /**

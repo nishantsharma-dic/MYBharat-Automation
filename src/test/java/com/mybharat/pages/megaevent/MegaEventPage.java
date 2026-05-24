@@ -18,6 +18,7 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.mybharat.pages.BasePage;
+import com.mybharat.pages.youth.LoginPage;
 import com.mybharat.utils.ConfigReader;
 
 /**
@@ -44,114 +45,40 @@ public class MegaEventPage extends BasePage {
     }
 
     // =========================================================================
-    // LOGIN
+    // LOGIN — delegates to LoginPage (single source of truth for OTP flow)
     // =========================================================================
 
     public void loginWithOTP(String email) {
         log.info("Logging in with OTP for: {}", email);
 
-        // Step 1: Navigate to home
-        driver.get(config.getUrl());
-        waitForPageLoad();
+        LoginPage loginPage = new LoginPage(driver);
 
-        // Step 2: Close popup
-        closePopup();
+        // Navigate to home and close popup
+        loginPage.navigateToHomePage();
+        loginPage.closePopupIfPresent();
 
-        // Check if already logged in — skip OTP flow if Sign In button is not present
-        if (isAlreadyLoggedIn()) {
+        // Check if already logged in
+        if (loginPage.isLoginSuccessful()) {
             log.info("✅ Already logged in — skipping OTP login for: {}", email);
             return;
         }
 
-        // Step 3: Click Sign In (exact locator from existing LoginPage)
-        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//span[normalize-space()='Sign In']")));
-        try { signIn.click(); } catch (Exception e) { jsClick(signIn); }
-
-        // Step 4: Enter email in OTP login field (id="otp_login_header")
-        WebElement emailInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.id("otp_login_header")));
-        emailInput.clear();
-        emailInput.sendKeys(email);
-
-        // Step 5: Click consent (#consentCheck1)
-        WebElement consent = longWait.until(ExpectedConditions.presenceOfElementLocated(By.id("consentCheck1")));
-        if (!consent.isSelected()) { try { consent.click(); } catch (Exception e) { jsClick(consent); } }
-
-        // Step 6: Click Login button (class="login_otp_header")
-        WebElement loginBtn = longWait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector("button.login_otp_header")));
-        try { loginBtn.click(); } catch (Exception e) { jsClick(loginBtn); }
-
-        // Step 7: Fetch OTP from Yopmail (open new tab, same as existing framework)
-        safeSleep(5000); // Wait for OTP email to arrive
-        String mainWindow = driver.getWindowHandle(); // capture BEFORE opening new tab
-        driver.switchTo().newWindow(org.openqa.selenium.WindowType.TAB);
-        driver.get(config.getProperty("dummyEmail"));
-
-        WebElement inbox = longWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login")));
-        inbox.clear();
-        inbox.sendKeys(email.split("@")[0]);
-        safeClick(driver.findElement(By.cssSelector(".material-icons-outlined.f36")));
-        safeSleep(2000);
-        safeClick(driver.findElement(By.id("refresh")));
-        safeSleep(2000);
-
-        // Extract OTP from email frame
-        driver.switchTo().frame("ifmail");
-        WebElement otpElement = longWait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//p[contains(text(),'OTP') or contains(text(),'otp') or contains(text(),'one-time password')]")));
-        String otpText = otpElement.getText();
-        String otp;
+        // Perform full OTP login flow via LoginPage
         try {
-            otp = otpText.split("\\. This")[0].trim().split(" is ")[1].trim();
-        } catch (Exception e) {
-            // Fallback: extract digits
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\d{4,6}").matcher(otpText);
-            otp = matcher.find() ? matcher.group() : otpText.replaceAll("[^0-9]", "").substring(0, 6);
+            loginPage.clickSignIn();
+            loginPage.enterEmailForOTPLogin(email);
+            loginPage.clickConsentCheckbox();
+            loginPage.clickLoginToSendOTP();
+            loginPage.fetchOTPFromYopmail();
+            loginPage.clickVerifyOTP();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Login interrupted", e);
         }
-        log.info("OTP extracted: {}", otp);
 
-        // Close Yopmail tab, switch back to main window by handle (not index)
-        driver.switchTo().defaultContent();
-        for (String handle : driver.getWindowHandles()) {
-            if (!handle.equals(mainWindow)) {
-                driver.switchTo().window(handle).close();
-            }
-        }
-        driver.switchTo().window(mainWindow);
-
-        // Step 8: Enter OTP (#otp-field-3)
-        WebElement otpField = longWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("otp-field-3")));
-        otpField.clear();
-        otpField.sendKeys(otp);
-
-        // Step 9: Click Verify OTP (#btn-otp-verify-header)
-        WebElement verifyBtn = longWait.until(ExpectedConditions.elementToBeClickable(By.id("btn-otp-verify-header")));
-        try { verifyBtn.click(); } catch (Exception e) { jsClick(verifyBtn); }
-
-        // Wait for login to complete
         waitForPageLoad();
-        safeSleep(3000);
         closePopup();
-        log.info("Login successful for: {}", email);
-    }
-
-    private boolean isAlreadyLoggedIn() {
-        try {
-            // If "Sign In" button is NOT present within 3 seconds, user is logged in
-            new WebDriverWait(driver, Duration.ofSeconds(3)).until(
-                ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("//span[normalize-space()='Sign In']")));
-            return false; // Sign In found → not logged in
-        } catch (Exception e) {
-            return true; // Sign In not found → already logged in
-        }
-    }
-
-    private void safeSleep(long millis) {
-        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        log.info("✅ Login successful for: {}", email);
     }
 
     // =========================================================================
@@ -160,8 +87,6 @@ public class MegaEventPage extends BasePage {
 
     public void navigateToProfile() {
         log.info("On Profile page — handling popup");
-        // After login, user is already on profile page. Don't refresh.
-        // Just close any popup that appears
         closeAllPopups();
         waitForPageLoad();
     }
@@ -485,6 +410,10 @@ public class MegaEventPage extends BasePage {
     // =========================================================================
     // PRIVATE HELPERS
     // =========================================================================
+
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
 
     private void setDateField(String fieldId, String dateValue) {
         // Datepicker fields are readonly — set value via JS
