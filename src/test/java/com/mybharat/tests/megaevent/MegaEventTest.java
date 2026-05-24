@@ -34,9 +34,9 @@ public class MegaEventTest extends BaseTest {
     private final Faker faker = new Faker();
 
     // Excel paths (relative to project root)
-    private static final String USER_EXCEL      = "resources/create_mega_user_prod.xlsx";
+    private static final String USER_EXCEL      = "resources/Partner_prod.xlsx";
     private static final String EVENT_OUT_EXCEL = "resources/Create_Mega_Event_prod1.xlsx";
-    private static final String SHEET_NAME      = "Sheet1";
+    private static final String SHEET_NAME      = "ELP_Users";
 
     private String loginEmail;
     private String eventName;  // generated in fillEventDetails, saved after publish
@@ -47,7 +47,7 @@ public class MegaEventTest extends BaseTest {
 
         // Read login email from Excel
         List<String> emails = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 0);
-        Assert.assertFalse(emails.isEmpty(), "create_mega_user_prod.xlsx must have at least one email");
+        Assert.assertFalse(emails.isEmpty(), "Partner_prod.xlsx must have at least one email");
         loginEmail = emails.get(0);
         log.info("[SETUP] Login email from Excel: {}", loginEmail);
     }
