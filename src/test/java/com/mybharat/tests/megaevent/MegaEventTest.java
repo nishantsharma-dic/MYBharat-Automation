@@ -94,7 +94,7 @@ public class MegaEventTest extends BaseTest {
     @Test(priority = 5, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
     public void fillEventDetails() {
         log.info("Step 7b: Fill Event Name and About");
-        eventName = "Automation Mega Event " + faker.number().numberBetween(1000, 9999);
+        eventName = "Seva Se Seekhen";
         String aboutText = "This mega event is created via automation testing. " + faker.lorem().sentence(10);
 
         megaEventPage.enterEventName(eventName);
@@ -105,9 +105,9 @@ public class MegaEventTest extends BaseTest {
     @Test(priority = 6, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
     public void fillEventDates() {
         log.info("Step 7c: Fill Event Dates");
-        // Future dates
-        LocalDate startDate = LocalDate.now().plusDays(7);
-        LocalDate endDate = LocalDate.now().plusDays(14);
+        // Past dates (event already happened)
+        LocalDate startDate = LocalDate.now().minusDays(14);
+        LocalDate endDate = LocalDate.now().minusDays(7);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         megaEventPage.fillEventDates(
@@ -120,8 +120,9 @@ public class MegaEventTest extends BaseTest {
     @Test(priority = 7, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
     public void fillInclusionDates() {
         log.info("Step 7d: Fill Inclusion Dates");
-        LocalDate startDate = LocalDate.now().plusDays(7);
-        LocalDate endDate = LocalDate.now().plusDays(14);
+        // Past dates
+        LocalDate startDate = LocalDate.now().minusDays(14);
+        LocalDate endDate = LocalDate.now().minusDays(7);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         megaEventPage.fillInclusionDates(

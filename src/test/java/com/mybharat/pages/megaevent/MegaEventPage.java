@@ -35,9 +35,20 @@ public class MegaEventPage extends BasePage {
     private final ConfigReader config = new ConfigReader();
     private final JavascriptExecutor js;
 
-    // File paths for uploads
-    private static final String BANNER_IMAGE = "UploadImages" + File.separator + "JPG1.jpg";
-    private static final String LOGO_IMAGE = "UploadImages" + File.separator + "JPG2.jpg";
+    // File paths for uploads — dynamic from testdata folder
+    private static final String BANNER_IMAGE_NAME = "mybharat banner image 1.png";
+    private static final String LOGO_IMAGE_NAME   = "mybharat logo image 1.png";
+
+    private String getTestDataPath(String fileName) {
+        String path = System.getProperty("user.dir") + File.separator
+                + "src" + File.separator + "test" + File.separator + "resources"
+                + File.separator + "testdata" + File.separator + fileName;
+        if (new File(path).exists()) return path;
+        // Fallback to UploadImages folder
+        String fallback = System.getProperty("user.dir") + File.separator + "UploadImages" + File.separator + "JPG1.jpg";
+        if (new File(fallback).exists()) return fallback;
+        throw new RuntimeException("Image not found: " + path);
+    }
 
     public MegaEventPage(WebDriver driver) {
         super(driver);
@@ -169,6 +180,7 @@ public class MegaEventPage extends BasePage {
 
     public void clickCreateMegaEvent() {
         log.info("Clicking Create a Mega Event");
+        closeAllPopups();
         WebDriverWait wait10 = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement createBtn = wait10.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//a[contains(text(),'Create a Mega Event')] | //button[contains(text(),'Create a Mega Event')]")));
@@ -183,20 +195,20 @@ public class MegaEventPage extends BasePage {
 
     public void uploadBanner() {
         log.info("Uploading banner image");
-        String filePath = System.getProperty("user.dir") + File.separator + BANNER_IMAGE;
+        String filePath = getTestDataPath(BANNER_IMAGE_NAME);
         WebElement fileInput = driver.findElement(By.id("fileInput"));
         js.executeScript("arguments[0].style.display='block'", fileInput);
         fileInput.sendKeys(filePath);
-        log.info("Banner uploaded");
+        log.info("Banner uploaded: {}", filePath);
     }
 
     public void uploadLogo() {
         log.info("Uploading logo image");
-        String filePath = System.getProperty("user.dir") + File.separator + LOGO_IMAGE;
+        String filePath = getTestDataPath(LOGO_IMAGE_NAME);
         WebElement fileInput = driver.findElement(By.id("fileInput1"));
         js.executeScript("arguments[0].style.display='block'", fileInput);
         fileInput.sendKeys(filePath);
-        log.info("Logo uploaded");
+        log.info("Logo uploaded: {}", filePath);
     }
 
     public void enterEventName(String name) {
@@ -375,35 +387,42 @@ public class MegaEventPage extends BasePage {
     }
 
     public boolean isEventInActiveTab() {
-        log.info("Verifying event in Active tab");
+        log.info("Verifying event in Past tab (event dates are in past)");
         WebDriverWait wait10 = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // Click Active tab if not already selected
+        // Click Past tab (since event dates are in the past)
         try {
-            WebElement activeTab = wait10.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//a[contains(text(),'Active')] | //span[contains(text(),'Active')]")));
-            safeClick(activeTab);
+            WebElement pastTab = wait10.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//a[contains(text(),'Past')] | //span[contains(text(),'Past')]")));
+            safeClick(pastTab);
             waitForPageLoad();
         } catch (Exception e) {
-            log.info("Active tab may already be selected");
+            log.info("Past tab not found — trying Active tab");
+            try {
+                WebElement activeTab = wait10.until(ExpectedConditions.elementToBeClickable(
+                        By.xpath("//a[contains(text(),'Active')] | //span[contains(text(),'Active')]")));
+                safeClick(activeTab);
+                waitForPageLoad();
+            } catch (Exception e2) {
+                log.info("No tab found — may already be on correct tab");
+            }
         }
 
-        // Verify event is listed (not "No record found")
+        // Verify event is listed
         try {
             wait10.until(ExpectedConditions.invisibilityOfElementLocated(
                     By.xpath("//*[contains(text(),'No record found')]")));
-            log.info("Event found in Active tab");
+            log.info("Event found in listing");
             return true;
         } catch (Exception e) {
-            // Check if any event card/row exists
             List<WebElement> events = driver.findElements(By.xpath(
                     "//div[contains(@class,'event')] | //tr[contains(@class,'event')] | //a[contains(@class,'event')]"));
             if (!events.isEmpty()) {
-                log.info("Events found in Active tab: {}", events.size());
+                log.info("Events found: {}", events.size());
                 return true;
             }
         }
-        log.warn("No events found in Active tab");
+        log.warn("No events found");
         return false;
     }
 

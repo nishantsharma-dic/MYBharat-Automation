@@ -96,25 +96,25 @@ public class MegaEventPhotoUploadPage extends BasePage {
         // Wait for page to fully load
         safeSleep(8000);
 
-        // STEP 1: Click "All" tab if available
-        log.info("[searchEvent] BEFORE clicking 'All' tab");
+        // STEP 1: Click "Past" tab (events are created with past dates)
+        log.info("[searchEvent] BEFORE clicking 'Past' tab");
         try {
-            WebElement allTab = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+            WebElement pastTab = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                 ExpectedConditions.elementToBeClickable(
-                    By.xpath("//*[normalize-space()='All'][self::a or self::span or self::button or self::h5 or self::ion-segment-button or ancestor::ion-segment-button]")));
-            safeClick(allTab);
+                    By.xpath("//*[normalize-space()='Past'][self::a or self::span or self::button or self::h5 or self::ion-segment-button or ancestor::ion-segment-button]")));
+            safeClick(pastTab);
             safeSleep(3000);
-            log.info("[searchEvent] ✅ 'All' tab clicked");
+            log.info("[searchEvent] ✅ 'Past' tab clicked");
         } catch (Exception e) {
-            // Try "Ongoing" as fallback
-            log.warn("[searchEvent] 'All' tab not found, trying 'Ongoing'...");
+            // Try "All" as fallback
+            log.warn("[searchEvent] 'Past' tab not found, trying 'All'...");
             try {
-                WebElement tab = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                WebElement allTab = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.elementToBeClickable(
-                        By.xpath("//*[normalize-space()='Ongoing']")));
-                safeClick(tab);
-                safeSleep(2000);
-                log.info("[searchEvent] ✅ 'Ongoing' tab clicked as fallback");
+                        By.xpath("//*[normalize-space()='All'][self::a or self::span or self::button or self::h5 or self::ion-segment-button or ancestor::ion-segment-button]")));
+                safeClick(allTab);
+                safeSleep(3000);
+                log.info("[searchEvent] ✅ 'All' tab clicked as fallback");
             } catch (Exception e2) {
                 log.warn("[searchEvent] No tab found, continuing...");
             }
