@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  VO Template Only - Login → Navigate to Template → Create Template
+
+  Run:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-vo-template.xml
+-->
+<suite name="VO Create Template" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Step 1: Login as VO Partner user -->
+    <test name="VO Login">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOLoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Navigate to Templates → Nodal/DYO -->
+    <test name="Navigate to Template">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Fill Template form and Create -->
+    <test name="Create Template">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOCreateTest"/>
+        </classes>
+    </test>
+
+</suite>
