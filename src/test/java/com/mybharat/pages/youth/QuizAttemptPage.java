@@ -338,12 +338,11 @@ public class QuizAttemptPage extends BasePage {
                 jsClick(selected);
             }
 
-            // Click Next (except for last question — detect by checking if Submit button is visible)
-            if (isSubmitButtonVisible()) {
-                System.out.println("Submit button detected after question " + q + " — all questions answered");
+            // Try to click Next — if Next button is not found, we're on the last question
+            if (!clickNextIfAvailable(qWait, js)) {
+                System.out.println("No Next button found after question " + q + " — this is the last question");
                 break;
             }
-            clickNextButton(qWait, js);
             Thread.sleep(1500); // Wait for next question to load
         }
 
@@ -352,15 +351,24 @@ public class QuizAttemptPage extends BasePage {
     }
 
     /**
-     * Check if the Submit button is visible (indicates last question).
+     * Try to click the Next button. Returns false if Next button is not found (last question).
      */
-    private boolean isSubmitButtonVisible() {
-        try {
-            WebElement submitBtn = driver.findElement(By.xpath("//button[@id='submit_button']"));
-            return submitBtn.isDisplayed();
-        } catch (Exception e) {
-            return false;
+    private boolean clickNextIfAvailable(WebDriverWait qWait, JavascriptExecutor js) {
+        String[] selectors = {"//button[@id='save_button']", "//button[contains(text(),'Next')]"};
+        for (String selector : selectors) {
+            try {
+                WebElement btn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.elementToBeClickable(By.xpath(selector)));
+                // Check if this is actually a Next/Save button and not the Submit button
+                String btnText = btn.getText().trim().toLowerCase();
+                if (btnText.contains("submit")) {
+                    return false; // It's the submit button, not next
+                }
+                js.executeScript("arguments[0].click();", btn);
+                return true;
+            } catch (Exception e) { /* try next selector */ }
         }
+        return false; // No Next button found — last question
     }
 
     // -------------------------------------------------------------------------
@@ -395,17 +403,6 @@ public class QuizAttemptPage extends BasePage {
             } catch (Exception e) { /* try next */ }
         }
         return List.of();
-    }
-
-    private void clickNextButton(WebDriverWait qWait, JavascriptExecutor js) {
-        String[] selectors = {"//button[@id='save_button']", "//button[contains(text(),'Next')]"};
-        for (String selector : selectors) {
-            try {
-                WebElement btn = qWait.until(ExpectedConditions.elementToBeClickable(By.xpath(selector)));
-                js.executeScript("arguments[0].click();", btn);
-                return;
-            } catch (Exception e) { /* try next */ }
-        }
     }
 
     private void submitQuiz(WebDriverWait qWait, JavascriptExecutor js) throws Exception {
