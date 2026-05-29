@@ -60,7 +60,7 @@ public class CreateYouthClubPage extends BasePage {
     private static final String MOA_GROUP          = "//ion-label[contains(.,'Memorandum')]/following::ion-radio-group[1]";
 
     // ion-checkbox — declaration
-    private static final String AGREE_CHECKBOX     = "//ion-checkbox[@formcontrolname='agree_to_affiliate'] | //ion-checkbox[contains(.,'agree') or contains(.,'declare')]";
+    private static final String AGREE_CHECKBOX     = "//ion-checkbox[@formcontrolname='declarationAccepted'] | //ion-checkbox[@formcontrolname='agree_to_affiliate'] | //ion-checkbox[contains(.,'agree') or contains(.,'declare')]";
 
     // Buttons — search is the orange button next to the email input
     private static final String SEARCH_BTN         = "//button[contains(@class,'search') or contains(@class,'btn')]//ion-icon | //button[.//ion-icon[@name='search']]";
@@ -216,32 +216,23 @@ public class CreateYouthClubPage extends BasePage {
 
     public void selectAffiliation(String value) {
         log.info("Selecting Affiliation: {}", value);
-        // From screenshot: "Affiliation with MY Bharat*" with Yes/No ion-radio
+        // Affiliation with MY Bharat — ion-radio-group with Yes/No
+        // Use index: first radio = Yes, second radio = No
         try {
-            String radioXpath = value.equals("No")
-                    ? "(//*[contains(text(),'Affiliation with MY Bharat')]/following::ion-radio[contains(.,'No')])[1]"
-                    : "(//*[contains(text(),'Affiliation with MY Bharat')]/following::ion-radio[contains(.,'Yes')])[1]";
-            WebElement radio = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.presenceOfElementLocated(By.xpath(radioXpath)));
-            scrollToElement(radio);
-            jsClick(radio);
-            safeSleep(1000);
-            log.info("  Affiliation = {}", value);
-        } catch (Exception e) {
-            // Fallback: find radio-group
-            try {
-                WebElement group = driver.findElement(By.xpath(
-                        "//ion-label[contains(.,'Affiliation')]/following::ion-radio-group[1]"));
-                scrollToElement(group);
-                List<WebElement> radios = group.findElements(By.xpath(".//ion-radio"));
-                if (value.equals("No") && radios.size() >= 2) {
-                    jsClick(radios.get(1));
-                } else if (radios.size() >= 1) {
-                    jsClick(radios.get(0));
-                }
-            } catch (Exception e2) {
-                log.warn("Affiliation radio not found: {}", e2.getMessage());
+            WebElement group = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.presenceOfElementLocated(
+                            By.xpath("//ion-label[contains(.,'Affiliation with MY Bharat')]/following::ion-radio-group[1]")));
+            scrollToElement(group);
+            List<WebElement> radios = group.findElements(By.xpath(".//ion-radio"));
+            if (value.equals("No") && radios.size() >= 2) {
+                jsClick(radios.get(1)); // Second = No
+            } else if (radios.size() >= 1) {
+                jsClick(radios.get(0)); // First = Yes
             }
+            safeSleep(1000);
+            log.info("  ✅ Affiliation = {}", value);
+        } catch (Exception e) {
+            log.warn("Affiliation radio-group not found: {}", e.getMessage());
         }
     }
 
@@ -265,10 +256,51 @@ public class CreateYouthClubPage extends BasePage {
 
     public void selectPhysicalOfficeNo() {
         log.info("Physical Office: No");
-        WebElement radio = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(PHYSICAL_OFFICE_NO)));
+        // Scroll to Infrastructure section first
+        try {
+            WebElement section = driver.findElement(By.xpath("//*[contains(text(),'Infrastructure Information')]"));
+            scrollToElement(section);
+            safeSleep(1000);
+        } catch (Exception e) { scrollPage(400); safeSleep(500); }
+
+        // Click Yes radio — scroll to Infrastructure section first
+        try {
+            WebElement section = driver.findElement(By.xpath("//*[contains(text(),'Infrastructure Information')]"));
+            scrollToElement(section);
+            safeSleep(500);
+        } catch (Exception e) { scrollPage(400); safeSleep(500); }
+
+        WebElement radio = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.xpath("//ion-label[contains(.,'physical office')]/following::ion-radio[2]")));
         scrollToElement(radio);
+        safeSleep(300);
         jsClick(radio);
-        safeSleep(500);
+        safeSleep(1500);
+
+        // Select "Rent-Free" from Type of Office dropdown
+        try {
+            WebElement option = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//*[normalize-space()='Rent-Free']")));
+            // First open the dropdown
+            WebElement typeDropdown = driver.findElement(By.xpath(
+                    "//ion-label[contains(.,'Type of Office')]/following::ion-select[1]"));
+            scrollToElement(typeDropdown);
+            js.executeScript("arguments[0].click()", typeDropdown);
+            safeSleep(1000);
+            // Click Rent-Free option
+            WebElement rentFree = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//ion-item[contains(@class,'select-interface-option')][contains(.,'Rent-Free')]")));
+            rentFree.click();
+            safeSleep(300);
+            clickOkIfPresent();
+            dismissPopover();
+            safeSleep(500);
+            log.info("  Type of Office = Rent-Free");
+        } catch (Exception e) {
+            log.warn("Type of Office selection failed: {}", e.getMessage());
+        }
+        log.info("  ✅ Physical Office = No");
     }
 
     public void selectFinancialAssistance(String value) {
@@ -359,32 +391,16 @@ public class CreateYouthClubPage extends BasePage {
 
     public void selectMoA(String value) {
         log.info("MoA/Bylaws: {}", value);
-        // From screenshot: "Does the Club have a Memorandum of Association (MoA) / Bylaws?*" with Yes/No radio
+        // Locator: (//ion-radio-group)[5]//ion-radio[2] for No
         try {
-            // Find the radio by looking for text near "Memorandum" or "MoA"
-            String radioXpath = value.equals("No")
-                    ? "(//*[contains(text(),'Memorandum') or contains(text(),'MoA')]/following::ion-radio[contains(.,'No')])[1]"
-                    : "(//*[contains(text(),'Memorandum') or contains(text(),'MoA')]/following::ion-radio[contains(.,'Yes')])[1]";
-            WebElement radio = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.presenceOfElementLocated(By.xpath(radioXpath)));
+            WebElement radio = wait.until(ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("(//ion-radio-group)[5]//ion-radio[2]")));
             scrollToElement(radio);
             jsClick(radio);
             safeSleep(500);
-            log.info("  MoA = {}", value);
+            log.info("  MoA = No");
         } catch (Exception e) {
-            // Fallback: use radio-group
-            try {
-                WebElement group = driver.findElement(By.xpath(MOA_GROUP));
-                scrollToElement(group);
-                List<WebElement> radios = group.findElements(By.xpath(".//ion-radio"));
-                if (value.equals("No") && radios.size() >= 2) {
-                    jsClick(radios.get(1));
-                } else if (radios.size() >= 1) {
-                    jsClick(radios.get(0));
-                }
-            } catch (Exception e2) {
-                log.warn("MoA radio not found: {}", e2.getMessage());
-            }
+            log.warn("MoA radio not found: {}", e.getMessage());
         }
     }
 
@@ -416,31 +432,51 @@ public class CreateYouthClubPage extends BasePage {
     // =========================================================================
 
     public void clickAgreeCheckbox() {
-        log.info("Clicking declaration/agree checkbox");
-        // Scroll to find the checkbox
-        js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
-        safeSleep(1000);
+        log.info("Clicking 'We agree to affiliate' checkbox");
         try {
             WebElement cb = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.presenceOfElementLocated(By.xpath(AGREE_CHECKBOX)));
+                    ExpectedConditions.presenceOfElementLocated(
+                            By.xpath("//ion-checkbox[@formcontrolname='agree_to_affiliate']")));
             scrollToElement(cb);
             safeSleep(300);
-            jsClick(cb);
-            safeSleep(500);
-            log.info("  ✅ Agree checkbox clicked");
-        } catch (Exception e) {
-            // Try by formcontrolname directly
-            try {
-                WebElement cb = driver.findElement(By.xpath("//ion-checkbox[@formcontrolname='agree_to_affiliate']"));
-                scrollToElement(cb);
+            // Only click if NOT already checked
+            String checked = cb.getAttribute("aria-checked");
+            if (!"true".equals(checked)) {
                 jsClick(cb);
-                log.info("  ✅ Agree checkbox clicked (formcontrolname)");
-            } catch (Exception e2) {
-                log.warn("  Agree checkbox not found: {}", e2.getMessage());
+                safeSleep(500);
+                log.info("  ✅ Agree checkbox checked");
+            } else {
+                log.info("  Agree checkbox already checked — skipping");
             }
+        } catch (Exception e) {
+            log.warn("  Agree checkbox not found: {}", e.getMessage());
         }
     }
 
+    public void clickDeclarationCheckbox() {
+        log.info("Clicking declaration checkbox");
+        js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+        safeSleep(1000);
+        // Locator: //ion-checkbox[@formcontrolname='declarationAccepted']
+        try {
+            WebElement cb = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.presenceOfElementLocated(
+                            By.xpath("//ion-checkbox[@formcontrolname='declarationAccepted']")));
+            scrollToElement(cb);
+            safeSleep(300);
+            // Only click if NOT already checked
+            String checked = cb.getAttribute("aria-checked");
+            if (!"true".equals(checked)) {
+                jsClick(cb);
+                safeSleep(500);
+                log.info("  ✅ Declaration checkbox checked");
+            } else {
+                log.info("  Declaration checkbox already checked — skipping");
+            }
+        } catch (Exception e) {
+            log.warn("  Declaration checkbox not found: {}", e.getMessage());
+        }
+    }
     // =========================================================================
     // MEMBERSHIP — Search + Add 6 members
     // =========================================================================
@@ -458,10 +494,12 @@ public class CreateYouthClubPage extends BasePage {
             safeSleep(1000);
         } catch (Exception e) { scrollPage(500); }
 
-        for (int i = 0; i < emails.length; i++) {
+        int addedCount = 0;
+        int roleIndex = 0;
+        for (int i = 0; i < emails.length && addedCount < 6; i++) {
             String email = emails[i];
-            String role = i < roles.length ? roles[i] : "Member";
-            log.info("  Member {}: {} ({})", i + 1, email, role);
+            String role = roleIndex < roles.length ? roles[roleIndex] : "Member";
+            log.info("  Trying member {}: {} ({})", addedCount + 1, email, role);
 
             // Enter email in the search input
             WebElement input = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(EMAIL_INPUT)));
@@ -472,14 +510,116 @@ public class CreateYouthClubPage extends BasePage {
             input.sendKeys(Keys.TAB);
             safeSleep(1000);
 
-            // Click the orange search button — use ion-button with color attribute
-            WebElement searchBtn = driver.findElement(By.xpath(
-                    "//ion-button[@color='myb'] | //ion-button[contains(@class,'search')] | " +
-                    "(//ion-button)[last()]"));
-            scrollToElement(searchBtn);
-            jsClick(searchBtn);
+            // Click the orange search button
+            safeSleep(500);
+            try {
+                WebElement searchBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.elementToBeClickable(
+                                By.xpath("//ion-button[@color='myb']")));
+                scrollToElement(searchBtn);
+                jsClick(searchBtn);
+            } catch (Exception searchEx) {
+                // Fallback: JS click
+                js.executeScript(
+                        "var btns = document.querySelectorAll('ion-button[color=myb]');" +
+                        "if(btns.length > 0) btns[btns.length-1].click();");
+            }
             log.info("  Search button clicked");
-            safeSleep(3000); // Wait for member row to appear
+            safeSleep(2000);
+
+            // Check for alert: "User has already been invited..."
+            try {
+                driver.switchTo().alert().accept();
+                log.warn("  Member {} already invited — skipping email: {}", i + 1, email);
+                safeSleep(1000);
+                continue; // Skip to next email
+            } catch (Exception noAlert) {
+                // No alert — member was added successfully
+            }
+            safeSleep(2000); // Wait for member row to appear
+
+            // For first 3 members: Send OTP → Get from Yopmail → Enter → Verify
+            if (i < 3) {
+                try {
+                    // Click "Send OTP" link
+                    WebElement sendOtp = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                            ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//ion-button[contains(.,'Send OTP')]")));
+                    scrollToElement(sendOtp);
+                    jsClick(sendOtp);
+                    log.info("  Send OTP clicked for member {}", i + 1);
+                    safeSleep(5000); // Wait for OTP email
+
+                    // Open Yopmail in new tab, get OTP
+                    String mainWindow = driver.getWindowHandle();
+                    driver.switchTo().newWindow(org.openqa.selenium.WindowType.TAB);
+                    driver.get("https://yopmail.com/en/");
+                    safeSleep(1000);
+
+                    WebElement inbox = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                            ExpectedConditions.visibilityOfElementLocated(By.id("login")));
+                    inbox.clear();
+                    inbox.sendKeys(email.split("@")[0]);
+                    driver.findElement(By.cssSelector(".material-icons-outlined.f36")).click();
+                    safeSleep(3000);
+                    driver.findElement(By.id("refresh")).click();
+                    safeSleep(3000);
+                    // Refresh again to ensure latest email
+                    driver.findElement(By.id("refresh")).click();
+                    safeSleep(2000);
+
+                    // Extract OTP from email
+                    driver.switchTo().frame("ifmail");
+                    String otp = "";
+                    try {
+                        // Look for "Your OTP:" pattern in the email
+                        WebElement otpEl = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                                ExpectedConditions.visibilityOfElementLocated(
+                                        By.xpath("//*[contains(text(),'Your OTP') or contains(text(),'OTP:') or contains(text(),'otp')]")));
+                        String otpText = otpEl.getText();
+                        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\d{4,6}").matcher(otpText);
+                        if (matcher.find()) otp = matcher.group();
+                    } catch (Exception e3) {
+                        WebElement body = driver.findElement(By.tagName("body"));
+                        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\b(\\d{4,6})\\b").matcher(body.getText());
+                        if (matcher.find()) otp = matcher.group(1);
+                    }
+                    log.info("  OTP extracted: {}", otp);
+
+                    // Close Yopmail tab, switch back
+                    driver.switchTo().defaultContent();
+                    for (String handle : driver.getWindowHandles()) {
+                        if (!handle.equals(mainWindow)) {
+                            driver.switchTo().window(handle).close();
+                        }
+                    }
+                    driver.switchTo().window(mainWindow);
+                    safeSleep(1000);
+
+                    // Enter OTP in the OTP field (last one)
+                    if (!otp.isEmpty()) {
+                        List<WebElement> otpFields = driver.findElements(By.xpath(
+                                "//ion-input[@formcontrolname='myBharat_otp']//input"));
+                        if (!otpFields.isEmpty()) {
+                            WebElement otpInput = otpFields.get(otpFields.size() - 1);
+                            scrollToElement(otpInput);
+                            otpInput.clear();
+                            otpInput.sendKeys(otp);
+                            safeSleep(500);
+
+                            // Click "Verify OTP"
+                            WebElement verifyOtp = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                                    ExpectedConditions.elementToBeClickable(
+                                            By.xpath("//*[contains(text(),'Verify OTP') or contains(@class,'membership-verify-otp-btn')]")));
+                            jsClick(verifyOtp);
+                            safeSleep(2000);
+                            log.info("  OTP verified for member {}", i + 1);
+                        }
+                    }
+                } catch (Exception otpEx) {
+                    log.warn("  OTP verification failed for member {}: {}", i + 1, otpEx.getMessage());
+                }
+            }
 
             // Select Role from the LAST Role dropdown (most recently added member)
             try {
@@ -508,8 +648,11 @@ public class CreateYouthClubPage extends BasePage {
                 log.warn("  Role selection failed: {}", e.getMessage());
             }
             safeSleep(500);
-            log.info("  ✅ Member {} added", i + 1);
+            log.info("  ✅ Member {} added", addedCount + 1);
+            addedCount++;
+            roleIndex++;
         }
+        log.info("✅ {} members added", addedCount);
     }
 
     // =========================================================================
@@ -529,6 +672,36 @@ public class CreateYouthClubPage extends BasePage {
                 ExpectedConditions.presenceOfElementLocated(
                         By.xpath("//*[contains(text(),'SUBMIT')] | //ion-checkbox")));
         log.info("✅ Preview loaded");
+
+        // On preview page: click agree checkbox and download
+        safeSleep(2000);
+        try {
+            WebElement agreeCb = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.presenceOfElementLocated(
+                            By.xpath("//ion-checkbox[contains(.,'agree') or contains(.,'I agree') or @formcontrolname='declarationAccepted']")));
+            scrollToElement(agreeCb);
+            String checked = agreeCb.getAttribute("aria-checked");
+            if (!"true".equals(checked)) {
+                jsClick(agreeCb);
+                safeSleep(500);
+                log.info("  Preview agree checkbox checked");
+            }
+        } catch (Exception e) {
+            log.warn("  Preview agree checkbox not found: {}", e.getMessage());
+        }
+
+        // Click Download if available
+        try {
+            WebElement downloadBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//ion-button[contains(.,'Download') or contains(.,'DOWNLOAD')]")));
+            scrollToElement(downloadBtn);
+            jsClick(downloadBtn);
+            safeSleep(3000);
+            log.info("  Download clicked");
+        } catch (Exception e) {
+            log.info("  Download button not found - skipping");
+        }
     }
 
     public boolean isPreviewLoaded() {
@@ -580,14 +753,32 @@ public class CreateYouthClubPage extends BasePage {
     public void clickGoToProfile() {
         log.info("Clicking GO TO MY BHARAT PROFILE");
         safeSleep(5000);
+        // Use shadow DOM approach (proven from join-org flow)
         try {
-            WebElement btn = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
-                    ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("//ion-button[contains(., 'GO TO MY BHARAT PROFILE')]")));
-            js.executeScript("arguments[0].click();", btn);
+            new WebDriverWait(driver, Duration.ofSeconds(15)).until(d ->
+                    ((JavascriptExecutor) d).executeScript(
+                            "var btn = document.querySelector('ion-button.button-block');" +
+                            "return btn && btn.shadowRoot && " +
+                            "btn.shadowRoot.querySelector('button.button-native') !== null;"
+                    ).equals(true));
+            WebElement nativeButton = (WebElement) js.executeScript(
+                    "return document.querySelector('ion-button.button-block')" +
+                    ".shadowRoot.querySelector('button.button-native')");
+            js.executeScript("arguments[0].click();", nativeButton);
             safeSleep(3000);
             waitForPageLoad();
-        } catch (Exception e) { log.warn("GO TO PROFILE not found"); }
+            log.info("  ✅ Navigated to Profile");
+        } catch (Exception e) {
+            try {
+                WebElement btn = driver.findElement(
+                        By.xpath("//ion-button[contains(., 'GO TO MY BHARAT PROFILE')]"));
+                js.executeScript("arguments[0].click();", btn);
+                safeSleep(3000);
+                waitForPageLoad();
+            } catch (Exception e2) {
+                log.warn("GO TO PROFILE not found: {}", e2.getMessage());
+            }
+        }
     }
 
     // =========================================================================

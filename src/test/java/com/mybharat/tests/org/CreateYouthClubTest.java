@@ -158,14 +158,14 @@ public class CreateYouthClubTest extends BaseTest {
         } catch (Exception e) {
             log.warn("Failed to read Youth Excel: {}", e.getMessage());
         }
-        // Ensure 6 emails
-        while (allEmails.size() < 6) {
+        // Ensure enough emails (provide extras in case some are already invited)
+        while (allEmails.size() < 10) {
             allEmails.add("member" + (allEmails.size() + 1) + "@yopmail.com");
         }
-        // Take last 6
-        int start = Math.max(0, allEmails.size() - 6);
-        String[] emails = new String[6];
-        for (int i = 0; i < 6; i++) emails[i] = allEmails.get(start + i);
+        // Take last 10 (extras for retry if member already invited)
+        int start = Math.max(0, allEmails.size() - 10);
+        String[] emails = new String[10];
+        for (int i = 0; i < 10; i++) emails[i] = allEmails.get(start + i);
         createOrgPage.addMembers(emails);
     }
 
@@ -178,8 +178,13 @@ public class CreateYouthClubTest extends BaseTest {
 
     @Test(priority = 14, dependsOnMethods = "step13_establishment", retryAnalyzer = Retry.class)
     public void step14_declarationAndPreview() {
-        createOrgPage.clickAgreeCheckbox();
+        // Click declaration checkbox: //ion-checkbox[@formcontrolname='declarationAccepted']
+        createOrgPage.clickDeclarationCheckbox();
         createOrgPage.clickPreview();
+    }
+
+    private void clickDeclarationCheckbox() {
+        // This is handled by createOrgPage.clickAgreeCheckbox() which uses AGREE_CHECKBOX locator
     }
 
     @Test(priority = 15, dependsOnMethods = "step14_declarationAndPreview", retryAnalyzer = Retry.class)

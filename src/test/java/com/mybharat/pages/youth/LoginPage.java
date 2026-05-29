@@ -313,6 +313,37 @@ public class LoginPage extends BasePage {
     }
 
     /**
+     * Unified login — OTP based (password not supported on this branch).
+     */
+    public void login(String email, String password) throws InterruptedException {
+        navigateToHomePage();
+        closePopupIfPresent();
+        if (isLoginSuccessful()) {
+            log.info("Already logged in — skipping");
+            return;
+        }
+        clickSignIn();
+        enterEmailForOTPLogin(email);
+        clickConsentCheckbox();
+        clickLoginToSendOTP();
+        fetchOTPFromYopmail();
+        clickVerifyOTP();
+    }
+
+    /**
+     * Enter a specific email into the OTP login field.
+     */
+    public void enterEmailForOTPLogin(String email) {
+        loginEmail = email;
+        log.info("Using email for OTP login: {}", loginEmail);
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(LONG_WAIT));
+        WebElement input = longWait.until(ExpectedConditions.visibilityOf(mobileEmailInput));
+        input.clear();
+        input.sendKeys(loginEmail);
+        log.info("Email entered in OTP login field");
+    }
+
+    /**
      * Get the last registered email from Excel (for external use/logging).
      */
     public String getLastRegisteredEmail() {
