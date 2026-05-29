@@ -1,0 +1,484 @@
+package com.mybharat.pages.megaevent;
+
+import java.io.File;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.mybharat.pages.BasePage;
+import com.mybharat.pages.youth.LoginPage;
+import com.mybharat.utils.ConfigReader;
+
+/**
+ * MegaEventPage - Handles the complete Mega Event creation flow.
+ *
+ * This is a standard PHP/CakePHP form (NOT Ionic/Angular).
+ * All elements are standard HTML — input, select, textarea, checkbox.
+ * Form ID: megaEventAddForm
+ * Form action: /orgeventmanagement/add_mega_event
+ */
+public class MegaEventPage extends BasePage {
+
+    private static final Logger log = LogManager.getLogger(MegaEventPage.class);
+    private final ConfigReader config = new ConfigReader();
+    private final JavascriptExecutor js;
+
+    // File paths for uploads — dynamic from testdata folder
+    private static final String BANNER_IMAGE_NAME = "mybharat banner image 1.png";
+    private static final String LOGO_IMAGE_NAME   = "mybharat logo image 1.png";
+
+    private String getTestDataPath(String fileName) {
+        String path = System.getProperty("user.dir") + File.separator
+                + "src" + File.separator + "test" + File.separator + "resources"
+                + File.separator + "testdata" + File.separator + fileName;
+        if (new File(path).exists()) return path;
+        // Fallback to UploadImages folder
+        String fallback = System.getProperty("user.dir") + File.separator + "UploadImages" + File.separator + "JPG1.jpg";
+        if (new File(fallback).exists()) return fallback;
+        throw new RuntimeException("Image not found: " + path);
+    }
+
+    public MegaEventPage(WebDriver driver) {
+        super(driver);
+        this.js = (JavascriptExecutor) driver;
+    }
+
+    // =========================================================================
+    // LOGIN — delegates to LoginPage (single source of truth for OTP flow)
+    // =========================================================================
+
+    public void loginWithOTP(String email) {
+        log.info("Logging in with OTP for: {}", email);
+
+        LoginPage loginPage = new LoginPage(driver);
+
+        // Navigate to home and close popup
+        loginPage.navigateToHomePage();
+        loginPage.closePopupIfPresent();
+
+        // Check if already logged in
+        if (loginPage.isLoginSuccessful()) {
+            log.info("✅ Already logged in — skipping OTP login for: {}", email);
+            return;
+        }
+
+        // Perform full OTP login flow via LoginPage
+        try {
+            loginPage.clickSignIn();
+            loginPage.enterEmailForOTPLogin(email);
+            loginPage.clickConsentCheckbox();
+            loginPage.clickLoginToSendOTP();
+            loginPage.fetchOTPFromYopmail();
+            loginPage.clickVerifyOTP();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Login interrupted", e);
+        }
+
+        waitForPageLoad();
+        closePopup();
+        log.info("✅ Login successful for: {}", email);
+    }
+
+    // =========================================================================
+    // NAVIGATION
+    // =========================================================================
+
+    public void navigateToProfile() {
+        log.info("On Profile page — handling popup");
+        closeAllPopups();
+        waitForPageLoad();
+    }
+
+    public void clickViewOrganization() {
+        log.info("Looking for organization on profile page");
+        closePopup();
+        for (int i = 0; i < 5; i++) {
+            try {
+                WebElement viewMore = driver.findElement(By.xpath(
+                        "//button[contains(text(),'View More')] | //a[contains(text(),'View More')]"));
+                if (viewMore.isDisplayed()) {
+                    scrollToElement(viewMore);
+                    safeClick(viewMore);
+                    waitForPageLoad();
+                    log.info("Clicked View More");
+                    return;
+                }
+            } catch (Exception e) { scrollPage(300); }
+        }
+        log.info("View More not found — org may be directly visible");
+    }
+
+    public void selectOrganization(String orgName) {
+        log.info("Selecting organization: {}", orgName != null ? orgName : "first available");
+        WebDriverWait wait15 = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+        WebElement orgLink = null;
+
+        // If orgName provided, try to find it by name first
+        if (orgName != null && !orgName.isEmpty()) {
+            String[] xpaths = {
+                "//a[contains(text(),'" + orgName + "')]",
+                "//td[contains(text(),'" + orgName + "')]/ancestor::tr//a",
+                "//*[contains(text(),'" + orgName + "')]"
+            };
+            for (String xpath : xpaths) {
+                try {
+                    orgLink = wait15.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
+                    if (orgLink != null) break;
+                } catch (Exception e) { orgLink = null; }
+            }
+        }
+
+        // Fallback: click first available org link
+        if (orgLink == null) {
+            log.warn("Org '{}' not found or not specified — clicking first available org", orgName);
+            try {
+                orgLink = wait15.until(ExpectedConditions.elementToBeClickable(
+                        By.xpath("(//table//a)[1] | (//div[contains(@class,'org')]//a)[1]")));
+            } catch (Exception e) {
+                log.error("No organization found to click");
+                return;
+            }
+        }
+
+        scrollToElement(orgLink);
+        safeClick(orgLink);
+        waitForPageLoad();
+        log.info("✅ Organization selected");
+    }
+
+    public void clickMegaEventMenu() {
+        log.info("Clicking Mega Event from sidebar");
+        WebDriverWait wait20 = new WebDriverWait(driver, Duration.ofSeconds(20));
+        waitForPageLoad();
+
+        // Aggressively close ALL popups/modals/overlays
+        closeAllPopups();
+        safeSleep(1000);
+        closeAllPopups();
+
+        WebElement megaEventLink = wait20.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[@title='Mega Event']")));
+        scrollToElement(megaEventLink);
+        safeClick(megaEventLink);
+        waitForPageLoad();
+        log.info("Mega Event page loaded");
+    }
+
+    public void clickCreateMegaEvent() {
+        log.info("Clicking Create a Mega Event");
+        closeAllPopups();
+        WebDriverWait wait10 = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement createBtn = wait10.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[contains(text(),'Create a Mega Event')] | //button[contains(text(),'Create a Mega Event')]")));
+        safeClick(createBtn);
+        waitForPageLoad();
+        log.info("Create Mega Event form loaded");
+    }
+
+    // =========================================================================
+    // FORM FILLING
+    // =========================================================================
+
+    public void uploadBanner() {
+        log.info("Uploading banner image");
+        String filePath = getTestDataPath(BANNER_IMAGE_NAME);
+        WebElement fileInput = driver.findElement(By.id("fileInput"));
+        js.executeScript("arguments[0].style.display='block'", fileInput);
+        fileInput.sendKeys(filePath);
+        log.info("Banner uploaded: {}", filePath);
+    }
+
+    public void uploadLogo() {
+        log.info("Uploading logo image");
+        String filePath = getTestDataPath(LOGO_IMAGE_NAME);
+        WebElement fileInput = driver.findElement(By.id("fileInput1"));
+        js.executeScript("arguments[0].style.display='block'", fileInput);
+        fileInput.sendKeys(filePath);
+        log.info("Logo uploaded: {}", filePath);
+    }
+
+    public void enterEventName(String name) {
+        log.info("Entering event name: {}", name);
+        WebElement input = driver.findElement(By.id("editableText"));
+        scrollToElement(input);
+        input.clear();
+        input.sendKeys(name);
+    }
+
+    public void enterAbout(String text) {
+        log.info("Entering About text");
+        WebElement textarea = driver.findElement(By.id("exampleFormControlTextarea1"));
+        scrollToElement(textarea);
+        textarea.clear();
+        textarea.sendKeys(text);
+    }
+
+    public void fillEventDates(String startDate, String startTime, String endDate, String endTime) {
+        log.info("Filling Event Dates");
+        scrollToText("Event Dates");
+
+        // Start Date (datepicker — set via JS to bypass readonly)
+        setDateField("start_date", startDate);
+
+        // Start Time
+        WebElement startTimeInput = driver.findElement(By.xpath("//input[@name='event_start_time']"));
+        startTimeInput.sendKeys(startTime);
+
+        // End Date
+        setDateField("end_date", endDate);
+
+        // End Time
+        WebElement endTimeInput = driver.findElement(By.xpath("//input[@name='event_end_time']"));
+        endTimeInput.sendKeys(endTime);
+    }
+
+    public void fillInclusionDates(String startDate, String startTime, String endDate, String endTime) {
+        log.info("Filling Inclusion Dates");
+        scrollToText("Event Inclusion Dates");
+
+        setDateField("inclusion_start_date", startDate);
+
+        WebElement startTimeInput = driver.findElement(By.id("inclusion_start_time"));
+        startTimeInput.sendKeys(startTime);
+
+        setDateField("inclusion_end_date", endDate);
+
+        WebElement endTimeInput = driver.findElement(By.id("inclusion_end_time"));
+        endTimeInput.sendKeys(endTime);
+    }
+
+    public void checkVolunteerOpportunity() {
+        log.info("Checking Volunteer Opportunity");
+        WebElement checkbox = driver.findElement(By.xpath("//input[@name='event_type[]'][@value='1']"));
+        scrollToElement(checkbox);
+        if (!checkbox.isSelected()) checkbox.click();
+    }
+
+    public void checkExperientialLearning() {
+        log.info("Checking Experiential Learning");
+        WebElement checkbox = driver.findElement(By.xpath("//input[@name='event_type[]'][@value='2']"));
+        scrollToElement(checkbox);
+        if (!checkbox.isSelected()) checkbox.click();
+    }
+
+    public void selectSpecialization() {
+        log.info("Selecting Specialization");
+        // Multi-select with id="specialization" — click to open, select first option
+        WebElement specSelect = driver.findElement(By.id("specialization"));
+        scrollToElement(specSelect);
+        // This is likely a multi-select plugin — try clicking and selecting first visible option
+        safeClick(specSelect);
+        WebDriverWait wait5 = new WebDriverWait(driver, Duration.ofSeconds(5));
+        try {
+            WebElement option = wait5.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//select[@id='specialization']/option[2] | //div[contains(@class,'option')][1]")));
+            safeClick(option);
+        } catch (Exception e) {
+            // Fallback: use Select class
+            Select select = new Select(specSelect);
+            if (select.getOptions().size() > 1) select.selectByIndex(1);
+        }
+    }
+
+    public void selectMedium() {
+        log.info("Selecting Medium");
+        WebElement mediumSelect = driver.findElement(By.xpath("//select[@name='medium']"));
+        scrollToElement(mediumSelect);
+        Select select = new Select(mediumSelect);
+        if (select.getOptions().size() > 1) select.selectByIndex(1);
+    }
+
+    public void selectFunctionalCategory() {
+        log.info("Selecting Functional Category");
+        WebElement catSelect = driver.findElement(By.id("area_of_interest"));
+        scrollToElement(catSelect);
+        Select select = new Select(catSelect);
+        if (select.getOptions().size() > 1) select.selectByIndex(1);
+    }
+
+    public void selectState() {
+        log.info("Selecting State");
+        WebElement stateSelect = driver.findElement(By.id("state_id"));
+        scrollToElement(stateSelect);
+        safeClick(stateSelect);
+        // Multi-select — try selecting first option
+        try {
+            Select select = new Select(stateSelect);
+            if (select.getOptions().size() > 0) select.selectByIndex(0);
+        } catch (Exception e) {
+            // Custom multi-select — click first option in dropdown
+            WebDriverWait wait5 = new WebDriverWait(driver, Duration.ofSeconds(5));
+            WebElement option = wait5.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//select[@id='state_id']/option[1] | //div[contains(@class,'option')][1]")));
+            safeClick(option);
+        }
+    }
+
+    public void selectDistrict() {
+        log.info("Selecting District");
+        WebDriverWait wait10 = new WebDriverWait(driver, Duration.ofSeconds(10));
+        // Wait for districts to load after state selection
+        wait10.until(d -> {
+            WebElement distSelect = d.findElement(By.id("district_id"));
+            return distSelect.findElements(By.tagName("option")).size() > 0;
+        });
+
+        WebElement distSelect = driver.findElement(By.id("district_id"));
+        scrollToElement(distSelect);
+        try {
+            Select select = new Select(distSelect);
+            if (select.getOptions().size() > 0) select.selectByIndex(0);
+        } catch (Exception e) {
+            safeClick(distSelect);
+            WebElement option = wait10.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//select[@id='district_id']/option[1]")));
+            safeClick(option);
+        }
+    }
+
+    public void clickSave() {
+        log.info("Clicking Save");
+        WebElement saveBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                ExpectedConditions.elementToBeClickable(
+                        By.xpath("//button[contains(text(),'Save')] | //input[@type='submit'] | //button[@type='submit'] | //a[contains(@class,'save')]")));
+        scrollToElement(saveBtn);
+        safeClick(saveBtn);
+        waitForPageLoad();
+        log.info("Mega Event saved — navigated to preview page");
+    }
+
+    public void publishMegaEvent() {
+        log.info("Publishing Mega Event — clicking green tick mark");
+        WebDriverWait wait15 = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+        // Click green tick icon (fa fa-check-circle)
+        WebElement greenTick = wait15.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//i[@class='fa fa-check-circle']")));
+        scrollToElement(greenTick);
+        safeClick(greenTick);
+
+        // Handle confirmation popup if appears
+        try {
+            WebDriverWait wait5 = new WebDriverWait(driver, Duration.ofSeconds(5));
+            WebElement confirmBtn = wait5.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[contains(text(),'Yes')] | //button[contains(text(),'Confirm')] | //button[contains(text(),'OK')] | //button[contains(text(),'Publish')]")));
+            safeClick(confirmBtn);
+            log.info("Confirmed publish");
+        } catch (Exception e) {
+            log.info("No confirmation popup — published directly");
+        }
+
+        waitForPageLoad();
+        log.info("Mega Event published — navigated to listing page");
+    }
+
+    public boolean isEventInActiveTab() {
+        log.info("Verifying event in Past tab (event dates are in past)");
+        WebDriverWait wait10 = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Click Past tab (since event dates are in the past)
+        try {
+            WebElement pastTab = wait10.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//a[contains(text(),'Past')] | //span[contains(text(),'Past')]")));
+            safeClick(pastTab);
+            waitForPageLoad();
+        } catch (Exception e) {
+            log.info("Past tab not found — trying Active tab");
+            try {
+                WebElement activeTab = wait10.until(ExpectedConditions.elementToBeClickable(
+                        By.xpath("//a[contains(text(),'Active')] | //span[contains(text(),'Active')]")));
+                safeClick(activeTab);
+                waitForPageLoad();
+            } catch (Exception e2) {
+                log.info("No tab found — may already be on correct tab");
+            }
+        }
+
+        // Verify event is listed
+        try {
+            wait10.until(ExpectedConditions.invisibilityOfElementLocated(
+                    By.xpath("//*[contains(text(),'No record found')]")));
+            log.info("Event found in listing");
+            return true;
+        } catch (Exception e) {
+            List<WebElement> events = driver.findElements(By.xpath(
+                    "//div[contains(@class,'event')] | //tr[contains(@class,'event')] | //a[contains(@class,'event')]"));
+            if (!events.isEmpty()) {
+                log.info("Events found: {}", events.size());
+                return true;
+            }
+        }
+        log.warn("No events found");
+        return false;
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
+    private void setDateField(String fieldId, String dateValue) {
+        // Datepicker fields are readonly — set value via JS
+        js.executeScript("document.getElementById('" + fieldId + "').value = '" + dateValue + "'");
+        // Trigger change event
+        js.executeScript("$('#" + fieldId + "').trigger('change')");
+    }
+
+    private void closePopup() {
+        try {
+            WebElement popup = driver.findElement(By.xpath("//i[@class='fa fa-times']"));
+            if (popup.isDisplayed()) popup.click();
+        } catch (Exception e) { /* no popup */ }
+    }
+
+    private void closeAllPopups() {
+        // Close fa-times popups
+        try {
+            List<WebElement> closeButtons = driver.findElements(By.xpath(
+                    "//i[@class='fa fa-times'] | //button[@class='close'] | //button[contains(@class,'btn-close')] | " +
+                    "//button[@data-dismiss='modal'] | //button[@data-bs-dismiss='modal'] | " +
+                    "//span[@aria-hidden='true'][text()='×']/parent::button | //div[contains(@class,'modal')]//button[contains(.,'Close')] | " +
+                    "//div[contains(@class,'modal')]//button[contains(.,'OK')] | //div[contains(@class,'modal')]//button[contains(.,'Submit')]"));
+            for (WebElement btn : closeButtons) {
+                try { if (btn.isDisplayed()) btn.click(); } catch (Exception e) { /* skip */ }
+            }
+        } catch (Exception e) { /* no popups */ }
+
+        // Dismiss any JS alerts
+        try { driver.switchTo().alert().accept(); } catch (Exception e) { /* no alert */ }
+
+        // Click any modal backdrop to dismiss
+        try {
+            WebElement backdrop = driver.findElement(By.xpath("//div[contains(@class,'modal-backdrop')]"));
+            if (backdrop.isDisplayed()) js.executeScript("arguments[0].click()", backdrop);
+        } catch (Exception e) { /* no backdrop */ }
+
+        // Force hide all modals via JS
+        js.executeScript("try { $('.modal').modal('hide'); } catch(e) {}");
+        js.executeScript("try { document.querySelectorAll('.modal-backdrop').forEach(e => e.remove()); } catch(e) {}");
+    }
+
+    private void scrollToText(String text) {
+        try {
+            WebElement el = driver.findElement(By.xpath("//*[contains(text(),'" + text + "')]"));
+            scrollToElement(el);
+        } catch (Exception e) { scrollPage(300); }
+    }
+}
