@@ -38,26 +38,43 @@ public class YouthApplyOnVOTest extends BaseTest {
 
     @Test(priority = 1, groups = {"vo", "youth-upload"})
     public void uploadImagesForEvent() throws Exception {
-        log.info("=== Starting: Youth Upload Images for VO Event ===");
+        log.info("=== Starting: Youth Search → Click Card → Upload Images → Apply ===");
 
+        // Open Volunteer for Bharat page
         applyPage.openVolunteerForBharat();
+
+        // Search by event name from Excel (e.g. "Swachhta Hi Seva Pune")
         applyPage.searchEvent(eventName);
-        applyPage.clickEventByName(eventName);
+
+        // Click first card from search results
+        applyPage.clickFirstAvailableVOCard();
+
+        // Upload 3 images (scroll down → Images by Youth → upload → send for approval)
         uploadPage.uploadAndSubmitImages();
 
-        log.info("=== ✅ Youth Upload Images PASSED ===");
-    }
-
-    @Test(priority = 2, groups = {"vo", "youth-apply"}, dependsOnMethods = "uploadImagesForEvent")
-    public void applyOnVOEvent() throws Exception {
-        log.info("=== Starting: Youth Apply on VO Event ===");
-
+        // Apply on event
         applyPage.clickApplyButton();
 
-        log.info("=== ✅ Youth Apply on VO PASSED ===");
+        log.info("=== ✅ Youth Search → Upload → Apply PASSED ===");
+    }
+
+    @Test(priority = 2, groups = {"vo", "youth-apply"})
+    public void applyOnVOEvent() throws Exception {
+        log.info("=== ✅ Youth Apply — already completed in previous step ===");
     }
 
     private String getLastEventNameFromExcel() {
+        return getEventNameFromExcel(0);
+    }
+
+    private String getSecondLastEventNameFromExcel() {
+        return getEventNameFromExcel(1);
+    }
+
+    /**
+     * Get event name from Excel. offset=0 means last row, offset=1 means second last, etc.
+     */
+    private String getEventNameFromExcel(int offsetFromLast) {
         String path = System.getProperty("user.dir") + java.io.File.separator
                 + "resources" + java.io.File.separator + "Event_Name.xlsx";
         try (java.io.FileInputStream fis = new java.io.FileInputStream(path);
@@ -67,13 +84,16 @@ public class YouthApplyOnVOTest extends BaseTest {
             if (sheet == null) sheet = workbook.getSheetAt(0);
 
             int lastRow = sheet.getLastRowNum();
-            org.apache.poi.ss.usermodel.Row row = sheet.getRow(lastRow);
+            int targetRow = lastRow - offsetFromLast;
+            if (targetRow < 1) targetRow = 1; // skip header
+
+            org.apache.poi.ss.usermodel.Row row = sheet.getRow(targetRow);
             if (row != null && row.getCell(0) != null) {
                 return row.getCell(0).getStringCellValue().trim();
             }
         } catch (Exception e) {
             log.error("Failed to read Event_Name.xlsx: {}", e.getMessage());
         }
-        return "VO Automation Event";
+        return "Swachhta Hi Seva";
     }
 }

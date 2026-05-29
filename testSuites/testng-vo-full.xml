@@ -2,15 +2,10 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  VO Full End-to-End Flow:
-    1. Org Login (createorg_01@yopmail.com from VO_prod.xlsx)
-    2. Create Template (Templates - Nodal/DYO)
-    3. Create Event (Fill form → Preview → Publish → Save to Excel → Logout)
-    4. Youth Login (maynak@yopmail.com from VO_Youth_prod.xlsx)
-    5. Search Event → Upload Images → Apply on VO
-    6. Youth Logout
-    7. Org Login Again
-    8. Navigate to Events → Edit Event → Save as Draft → Logout
+  VO Full End-to-End Flow (single browser session):
+    1. Org Login → Template → Event → Publish → Logout
+    2. Youth Login → Search → Apply → Upload Images → Logout
+    3. Org Login Again → Youth Photo Moderation → Approve/Reject → Events → Edit → Save Draft → Logout
 
   Run:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-vo-full.xml"
@@ -21,86 +16,23 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- ============ ORG SIDE: CREATE ============ -->
-
-    <!-- Step 1: Login as Org user (from VO_prod.xlsx) -->
-    <test name="Org Login">
+    <test name="VO Full Cycle" preserve-order="true">
         <classes>
+            <!-- ORG SIDE: CREATE -->
             <class name="com.mybharat.tests.vo.VOLoginTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 2: Navigate to Templates → Nodal/DYO -->
-    <test name="Navigate to Template">
-        <classes>
             <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 3: Fill Template form and Create -->
-    <test name="Create Template">
-        <classes>
             <class name="com.mybharat.tests.vo.VOCreateTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 4: Navigate to Events → Add Event -->
-    <test name="Navigate to Event">
-        <classes>
             <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 5: Fill Event form → Preview → Publish → Logout -->
-    <test name="Create Event and Logout">
-        <classes>
             <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
-        </classes>
-    </test>
 
-    <!-- ============ YOUTH SIDE ============ -->
-
-    <!-- Step 6: Login as Youth user (from VO_Youth_prod.xlsx) -->
-    <test name="Youth Login">
-        <classes>
+            <!-- YOUTH SIDE -->
             <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 7: Search Event → Upload Images → Apply -->
-    <test name="Youth Upload and Apply">
-        <classes>
             <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 8: Youth Logout -->
-    <test name="Youth Logout">
-        <classes>
             <class name="com.mybharat.tests.vo.VOYouthLogoutTest"/>
-        </classes>
-    </test>
 
-    <!-- ============ ORG SIDE: EDIT ============ -->
-
-    <!-- Step 9: Org Login Again -->
-    <test name="Org Login Again">
-        <classes>
+            <!-- ORG SIDE: APPROVE + EDIT + LOGOUT -->
             <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 10: Navigate to Events → Click 1st card → Images by Youth → Reject 1st → Approve 2nd -->
-    <test name="Image Approval">
-        <classes>
             <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 11: Scroll up → Edit Event → Save as Draft → Logout -->
-    <test name="Edit Event Save as Draft">
-        <classes>
-            <class name="com.mybharat.tests.vo.VOEventEditTest"/>
         </classes>
     </test>
 

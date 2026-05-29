@@ -126,8 +126,10 @@ public class VOCreatePage extends BasePage {
      */
     private void fillTemplateName() throws InterruptedException {
         log.info("Filling Template Name...");
-        String city = CITIES[random.nextInt(CITIES.length)];
-        String uniqueName = EVENT_PREFIX + " " + city;
+
+        // Read last number from Excel and increment by 1
+        int nextNumber = getNextTemplateNumber();
+        String uniqueName = "Swachhta Hi Seva " + nextNumber;
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -140,6 +142,40 @@ public class VOCreatePage extends BasePage {
         // Click the toggle switch next to Template Name
         clickNearestToggle(nameInput);
         log.info("✅ Template Name: {}", uniqueName);
+    }
+
+    /**
+     * Get the next template number by reading the last number used and incrementing by 1.
+     * Stores the counter in resources/Template_Counter.txt
+     */
+    private int getNextTemplateNumber() {
+        String counterPath = System.getProperty("user.dir") + java.io.File.separator
+                + "resources" + java.io.File.separator + "Template_Counter.txt";
+        java.io.File counterFile = new java.io.File(counterPath);
+        int currentNumber = 0;
+
+        // Read current number
+        if (counterFile.exists()) {
+            try (java.util.Scanner scanner = new java.util.Scanner(counterFile)) {
+                if (scanner.hasNextInt()) {
+                    currentNumber = scanner.nextInt();
+                }
+            } catch (Exception e) {
+                log.warn("Could not read Template_Counter.txt, starting from 1");
+            }
+        }
+
+        // Increment
+        int nextNumber = currentNumber + 1;
+
+        // Save new number
+        try (java.io.FileWriter writer = new java.io.FileWriter(counterFile)) {
+            writer.write(String.valueOf(nextNumber));
+        } catch (Exception e) {
+            log.warn("Could not write Template_Counter.txt: {}", e.getMessage());
+        }
+
+        return nextNumber;
     }
 
     /**

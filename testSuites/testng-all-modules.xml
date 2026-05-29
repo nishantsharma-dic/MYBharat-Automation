@@ -2,32 +2,32 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  ALL MODULES - Runs Public Pages in PARALLEL with the main user flow.
-  
+  ALL MODULES - Full E2E Flow: Youth + VO (parallel)
+
   Thread 1: Public Pages (independent, own browser)
-  Thread 2: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate
-  
-  Both threads run simultaneously, reducing total execution time.
-  Report and email content display all results together as before.
-  
+  Thread 2: Youth Registration → Login → Profile → Quiz
+  Thread 3: VO Full Cycle (independent, own browser)
+
+  All 3 threads run simultaneously, reducing total execution time.
+
   Run with:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
 -->
-<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1"
+<suite name="MYBharat All Modules" parallel="tests" thread-count="3" verbose="1"
        group-by-instances="true" preserve-order="true">
 
     <listeners>
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- PARALLEL THREAD 1: Public Page validation (independent, own browser) -->
+    <!-- ============ THREAD 1: Public Page (independent) ============ -->
     <test name="Public Page" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
     </test>
 
-    <!-- PARALLEL THREAD 2: Sequential user flow (shared browser session) -->
+    <!-- ============ THREAD 2: Youth Flow (sequential) ============ -->
     <test name="Youth Flow" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
@@ -38,6 +38,23 @@
             <class name="com.mybharat.tests.youth.BasicInfoTest"/>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
+        </classes>
+    </test>
+
+    <!-- ============ THREAD 3: VO Full Cycle (independent, own browser, single session) ============ -->
+    <test name="VO Full Cycle" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOLoginTest"/>
+            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
+            <class name="com.mybharat.tests.vo.VOCreateTest"/>
+            <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
+            <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
+            <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
+            <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
+            <class name="com.mybharat.tests.vo.VOYouthLogoutTest"/>
+            <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
+            <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
+            <class name="com.mybharat.tests.vo.VOEventEditTest"/>
         </classes>
     </test>
 

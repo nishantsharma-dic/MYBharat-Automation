@@ -75,7 +75,7 @@ public class YouthUploadImagesPage extends BasePage {
     }
 
     public void uploadImages() throws InterruptedException {
-        log.info("Uploading 2 images...");
+        log.info("Uploading 3 images...");
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
         String imagePath = VOEventCreatePage.getImagePath();
@@ -85,11 +85,11 @@ public class YouthUploadImagesPage extends BasePage {
                 "arguments[0].style.display='block';arguments[0].style.opacity='1';arguments[0].classList.remove('hidden');", fileInput);
         Thread.sleep(300);
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             fileInput.sendKeys(imagePath);
             Thread.sleep(500);
         }
-        log.info("✅ Uploaded 2 images");
+        log.info("✅ Uploaded 3 images");
         Thread.sleep(1000);
     }
 

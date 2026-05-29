@@ -13,6 +13,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.mybharat.pages.BasePage;
 import com.mybharat.utils.ConfigReader;
+import com.mybharat.utils.SessionHelper;
 
 /**
  * VOTemplateNodalDyoPage - Same flow as ELPNavigationPage but clicks
@@ -39,6 +40,13 @@ public class VOTemplateNodalDyoPage extends BasePage {
      * Full navigation: Profile → View More → Org → Templates -Nodal/DYO → Create Template
      */
     public void navigateToCreateTemplate() throws InterruptedException {
+        // Check session before navigating
+        SessionHelper sessionHelper = new SessionHelper(driver);
+        if (!sessionHelper.isSessionActive()) {
+            log.warn("Session expired before template navigation — re-logging in...");
+            sessionHelper.ensureLoggedIn(null);
+        }
+
         navigateToProfileAndClickViewMore();
         clickTemplatesNodalDyo();
         clickCreateTemplateButton();

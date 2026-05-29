@@ -13,16 +13,9 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Youth Login (second last email from Youth_prod.xlsx) -->
-    <test name="Youth Login">
+    <test name="VO Youth Flow" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 2: Search Event → Upload Images → Apply on Event -->
-    <test name="Youth Apply on VO">
-        <classes>
             <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
         </classes>
     </test>

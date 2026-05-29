@@ -11,16 +11,17 @@ import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.vo.VOImageApprovalPage;
 
 /**
- * VOImageApprovalTest - Org side: review youth-uploaded images on an event.
+ * VOImageApprovalTest - Org side: Youth Photo Moderation + Edit Event + Save as Draft
  *
  * Flow:
- *   1. Scroll down on profile page → Click "View More"
- *   2. Click org name in table
- *   3. Click "Events" in left sidebar
- *   4. Click the 2nd event card (latest created event)
- *   5. Scroll down → Click "Images by Youth" tab
- *   6. Reject first image card
- *   7. Approve second image card
+ *   1. Navigate to Org Dashboard (View More → Click org)
+ *   2. Click "Youth Photo Moderation" in sidebar
+ *   3. Click "VO" tab
+ *   4. Approve 1st image, Reject 2nd image
+ *   5. Click "Events" in sidebar
+ *   6. Click "Edit Event" on latest card
+ *   7. Scroll down → Save as draft
+ *   8. Logout
  */
 @Listeners(TestListeners.class)
 public class VOImageApprovalTest extends BaseTest {
@@ -35,34 +36,33 @@ public class VOImageApprovalTest extends BaseTest {
     }
 
     @Test(priority = 1, groups = {"vo", "image-approval"})
-    public void reviewYouthImages() throws Exception {
-        log.info("=== Starting: VO Image Approval (Reject 1st, Approve 2nd) ===");
+    public void reviewAndEditEvent() throws Exception {
+        log.info("=== Starting: VO Image Approval + Edit Event ===");
 
-        // Step 1 + 2: Scroll → View More → Click org name
+        // Step 1: Navigate to Org Dashboard
         approvalPage.navigateToOrgDashboard();
 
-        // Step 3: Click Events in sidebar
+        // Step 2: Click Youth Photo Moderation
+        approvalPage.clickYouthPhotoModeration();
+
+        // Step 3: Click VO tab
+        approvalPage.clickVOTab();
+
+        // Step 4: Approve 1st, Reject 2nd
+        approvalPage.approveFirstRejectSecond();
+
+        // Step 5: Click Events in sidebar
         approvalPage.clickEventsInSidebar();
 
-        // Step 4: Try cards 1 through 5 — click card, scroll down, check Images by Youth
-        // If no images, go back and try next card
-        boolean imagesFound = false;
-        for (int i = 0; i < 5; i++) {
-            imagesFound = approvalPage.tryCardForImageApproval(i);
-            if (imagesFound) break;
+        // Step 6: Click Edit Event on latest card
+        approvalPage.clickEditEventOnLatestCard();
 
-            log.info("No images on card {}, going back to try next card...", i + 1);
-            approvalPage.goBackToEventsList();
-        }
+        // Step 7: Save as draft
+        approvalPage.clickSaveAsDraft();
 
-        if (!imagesFound) {
-            log.warn("No images found on first 5 cards — skipping image approval, moving to next process");
-            return;
-        }
+        // Step 8: Logout
+        approvalPage.logout();
 
-        // Reject first, Approve second
-        approvalPage.rejectFirstAndApproveSecond();
-
-        log.info("=== ✅ Image Approval PASSED ===");
+        log.info("=== ✅ Image Approval + Edit Event + Logout PASSED ===");
     }
 }

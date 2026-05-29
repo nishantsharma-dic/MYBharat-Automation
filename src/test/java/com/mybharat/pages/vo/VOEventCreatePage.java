@@ -23,6 +23,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.mybharat.pages.BasePage;
 import com.mybharat.utils.ConfigReader;
+import com.mybharat.utils.SessionHelper;
 
 /**
  * VOEventCreatePage - Fills the "Add Event" form at /orgeventmanagement/add_volunteer?type=vo
@@ -93,6 +94,19 @@ public class VOEventCreatePage extends BasePage {
      */
     public void fillEventFormAndPreview() throws InterruptedException {
         log.info("=== Filling Add Event form ===");
+
+        // Check session before filling form
+        SessionHelper sessionHelper = new SessionHelper(driver);
+        if (!sessionHelper.isSessionActive()) {
+            log.warn("Session expired before event form — re-logging in...");
+            sessionHelper.ensureLoggedIn(null);
+            // Navigate back to add event page
+            String baseUrl = config.getUrl();
+            driver.get(baseUrl + "/orgeventmanagement/add_volunteer?type=vo");
+            Thread.sleep(3000);
+            waitForPageLoad();
+        }
+
         dismissOverlay();
 
         uploadBanner();
@@ -451,8 +465,8 @@ public class VOEventCreatePage extends BasePage {
         scrollPage(300);
         Thread.sleep(300);
 
-        String city = CITIES[random.nextInt(CITIES.length)];
-        eventName = EVENT_PREFIX + " " + city;
+        // Use the same name as event title (createdEventName) for consistency
+        eventName = createdEventName;
 
         try {
             WebElement partnerInput = driver.findElement(By.id("partner_name"));
@@ -665,8 +679,9 @@ public class VOEventCreatePage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(3000);
+        Thread.sleep(5000); // Wait for event to be indexed/visible on public side
         dismissOverlay();
+        log.info("✅ Event published successfully");
     }
 
     /**
