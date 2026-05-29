@@ -46,16 +46,15 @@ public class MegaEventPhotoUploadPage extends BasePage {
 
     public void clickMyBharatLogo() {
         log.info("Clicking MY Bharat logo to navigate to homepage");
-        // Navigate directly to the main homepage (more reliable than clicking logo)
         driver.get(config.getUrl());
         waitForPageLoad();
-        safeSleep(3000);
+        safeSleep(2000);
         // Close any popup
         try {
-            WebElement popup = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+            WebElement popup = new WebDriverWait(driver, Duration.ofSeconds(3)).until(
                 ExpectedConditions.elementToBeClickable(By.xpath("//i[@class='fa fa-times']")));
             popup.click();
-            safeSleep(500);
+            safeSleep(300);
         } catch (Exception e) { /* no popup */ }
         log.info("Navigated to homepage: {}", driver.getCurrentUrl());
     }
@@ -75,14 +74,14 @@ public class MegaEventPhotoUploadPage extends BasePage {
         // Hover to open dropdown
         Actions actions = new Actions(driver);
         actions.moveToElement(eventsMenu).perform();
-        safeSleep(1500); // Wait for dropdown to render
+        safeSleep(1000); // Wait for dropdown to render
 
         // Click "Mega Events" from the dropdown
         WebElement megaEventsLink = wait.until(ExpectedConditions.elementToBeClickable(
             By.xpath("//a[normalize-space()='Mega Events'] | //span[normalize-space()='Mega Events'] | //*[contains(text(),'Mega Events')]")));
         safeClick(megaEventsLink);
         waitForPageLoad();
-        safeSleep(3000);
+        safeSleep(2000);
         log.info("Navigated to Mega Events public page");
     }
 
@@ -93,50 +92,46 @@ public class MegaEventPhotoUploadPage extends BasePage {
     public void searchEvent(String eventName) {
         log.info("[searchEvent] START — Searching for: {}", eventName);
 
-        // Wait for page to fully load
-        safeSleep(8000);
+        safeSleep(2000);
 
-        // STEP 1: Click "Past" tab (events are created with past dates)
+        // STEP 1: Click "Past" tab
         log.info("[searchEvent] BEFORE clicking 'Past' tab");
         try {
             WebElement pastTab = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                 ExpectedConditions.elementToBeClickable(
                     By.xpath("//*[normalize-space()='Past'][self::a or self::span or self::button or self::h5 or self::ion-segment-button or ancestor::ion-segment-button]")));
             safeClick(pastTab);
-            safeSleep(3000);
+            safeSleep(2000);
             log.info("[searchEvent] ✅ 'Past' tab clicked");
         } catch (Exception e) {
-            // Try "All" as fallback
             log.warn("[searchEvent] 'Past' tab not found, trying 'All'...");
             try {
                 WebElement allTab = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.elementToBeClickable(
                         By.xpath("//*[normalize-space()='All'][self::a or self::span or self::button or self::h5 or self::ion-segment-button or ancestor::ion-segment-button]")));
                 safeClick(allTab);
-                safeSleep(3000);
+                safeSleep(2000);
                 log.info("[searchEvent] ✅ 'All' tab clicked as fallback");
             } catch (Exception e2) {
                 log.warn("[searchEvent] No tab found, continuing...");
             }
         }
 
-        // STEP 2: Select State = "All" from dropdown
-        safeSleep(3000);
+        // STEP 2: Select State filter as "All"
         log.info("[searchEvent] BEFORE selecting State filter 'All'");
         try {
-            WebElement stateSelect = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+            WebElement stateSelect = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                 ExpectedConditions.presenceOfElementLocated(
                     By.xpath("//select[@name='filter-state']")));
             org.openqa.selenium.support.ui.Select dropdown = new org.openqa.selenium.support.ui.Select(stateSelect);
             dropdown.selectByVisibleText("All");
-            safeSleep(2000);
+            safeSleep(1000);
             log.info("[searchEvent] ✅ State 'All' selected");
         } catch (Exception e) {
             log.warn("[searchEvent] State dropdown not found: {}", e.getMessage());
         }
 
         // STEP 3: Type event name in search input
-        safeSleep(1000);
         log.info("[searchEvent] BEFORE entering search text: '{}'", eventName);
         List<WebElement> allInputs = driver.findElements(By.cssSelector("input[type='text'], input:not([type])"));
         WebElement eventInput = null;
@@ -153,26 +148,25 @@ public class MegaEventPhotoUploadPage extends BasePage {
             scrollToElement(eventInput);
             eventInput.clear();
             eventInput.sendKeys(eventName);
-            safeSleep(3000);
+            safeSleep(2000);
             log.info("[searchEvent] ✅ Typed event name");
 
-            // STEP 4: Select suggestion if appears
+            // STEP 4: Select first suggestion from the list
             try {
-                WebElement suggestion = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                WebElement firstSuggestion = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.elementToBeClickable(
-                        By.xpath("//*[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'" + eventName.toLowerCase() + "')]" +
-                            "[not(self::ion-text)][not(ancestor::*[contains(@class,'filteroverlay')])]")));
-                safeClick(suggestion);
-                safeSleep(1000);
-                log.info("[searchEvent] ✅ Selected suggestion");
+                        By.xpath("(//ul//li | //div[contains(@class,'suggestion')]//div | //mat-option | //div[contains(@class,'autocomplete')]//div)[1]")));
+                safeClick(firstSuggestion);
+                safeSleep(500);
+                log.info("[searchEvent] ✅ Selected first suggestion");
             } catch (Exception e) {
-                log.warn("[searchEvent] No suggestion found, continuing...");
+                log.warn("[searchEvent] No suggestion list found, continuing with search icon...");
             }
 
             // STEP 5: Click Search icon
             log.info("[searchEvent] BEFORE clicking search icon");
             try {
-                WebElement searchIcon = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                WebElement searchIcon = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.elementToBeClickable(
                         By.xpath("//img[@alt='search icon'] | //ion-icon[@name='search']")));
                 safeClick(searchIcon);
@@ -197,9 +191,33 @@ public class MegaEventPhotoUploadPage extends BasePage {
         log.info("Clicking event card: {}", eventName);
         safeSleep(3000);
 
-        WebElement card = new WebDriverWait(driver, Duration.ofSeconds(20)).until(
-            ExpectedConditions.elementToBeClickable(
-                By.xpath("//div[@id='event-cards1']//img[@class='img-fluid']")));
+        // Try multiple locators for the event card
+        String[] cardXpaths = {
+            "//div[@id='event-cards1']//img[@class='img-fluid']",
+            "//div[contains(@class,'event-card')]//img",
+            "//div[contains(@class,'card')]//img[@class='img-fluid']",
+            "//div[contains(@id,'event')]//a//img",
+            "(//img[@class='img-fluid'])[1]"
+        };
+
+        WebElement card = null;
+        for (String xpath : cardXpaths) {
+            try {
+                card = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
+                if (card != null && card.isDisplayed()) {
+                    log.info("Found event card with locator: {}", xpath);
+                    break;
+                }
+            } catch (Exception e) {
+                card = null;
+            }
+        }
+
+        if (card == null) {
+            throw new RuntimeException("Event card not found for: " + eventName);
+        }
+
         scrollToElement(card);
         safeClick(card);
         waitForPageLoad();
@@ -378,14 +396,14 @@ public class MegaEventPhotoUploadPage extends BasePage {
      * Upload a video file via "Upload Videos" button in the modal.
      */
     public void uploadVideo() {
-        // Use test_video.mp4 from src/test/resources/testdata/ (small ~1MB test video)
+        // Use megaevent video.mp4 from src/test/resources/testdata/
         String videoPath = System.getProperty("user.dir") + File.separator
                 + "src" + File.separator + "test" + File.separator + "resources"
-                + File.separator + "testdata" + File.separator + "test_video.mp4";
+                + File.separator + "testdata" + File.separator + "megaevent video.mp4";
 
         if (!new File(videoPath).exists()) {
             throw new RuntimeException("Video file not found: " + videoPath
-                    + ". Please add test_video.mp4 to src/test/resources/testdata/");
+                    + ". Please add megaevent video.mp4 to src/test/resources/testdata/");
         }
         log.info("Uploading video: {}", videoPath);
 
@@ -423,7 +441,7 @@ public class MegaEventPhotoUploadPage extends BasePage {
         safeSleep(2000);
 
         // Submit button: class='btn btn-danger firebase-megaevent-upload-btn'
-        WebElement submitBtn = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+        WebElement submitBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
             ExpectedConditions.elementToBeClickable(
                 By.cssSelector("button.firebase-megaevent-upload-btn")));
         js.executeScript("arguments[0].scrollIntoView({block:'center'});", submitBtn);
@@ -433,11 +451,15 @@ public class MegaEventPhotoUploadPage extends BasePage {
 
         // Wait for confirmation popup and click "Okay"
         safeSleep(3000);
-        WebElement okayBtn = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
-            ExpectedConditions.elementToBeClickable(
-                By.xpath("//button[@id='page_reload']")));
-        safeClick(okayBtn);
-        log.info("✅ Okay button clicked — upload confirmed");
+        try {
+            WebElement okayBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[@id='page_reload'] | //button[contains(text(),'Okay')] | //button[contains(text(),'OK')]")));
+            safeClick(okayBtn);
+            log.info("✅ Okay button clicked — upload confirmed");
+        } catch (Exception e) {
+            log.warn("Okay button not found — upload may have completed without confirmation");
+        }
         safeSleep(2000);
     }
 

@@ -41,13 +41,18 @@ public class MegaEventPhotoUploadTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private MegaEventPhotoUploadPage uploadPage;
 
-    // Excel: login user (registered youth from Youth_prod.xlsx)
-    private static final String USER_EXCEL       = "resources/Youth_prod.xlsx";
-    private static final String USER_SHEET        = "UserData";
+    // Excel paths — environment-aware (beta/prod)
+    private static final String ENV              = System.getProperty("env", "beta");
+    private static final String USER_EXCEL       = "resources/Youth_" + ENV + ".xlsx";
+    private static final String USER_SHEET       = "UserData";
 
-    // Excel: mega event names (pick LAST created event from Create_MegaEvent_Prod.xlsx)
-    private static final String EVENT_EXCEL      = "resources/Create_MegaEvent_Prod.xlsx";
+    // Excel: mega event names (pick LAST created event)
+    private static final String EVENT_EXCEL      = "resources/Create_MegaEvent_" + capitalize(ENV) + ".xlsx";
     private static final String EVENT_SHEET      = "ELP_Users";
+
+    private static String capitalize(String s) {
+        return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
 
     private static final int IMAGE_COUNT = 2;
 
@@ -144,5 +149,13 @@ public class MegaEventPhotoUploadTest extends BaseTest {
         log.info("  Event: {}", megaEventName);
         log.info("  Images: {}", IMAGE_COUNT);
         log.info("  Video: 1");
+    }
+
+    @Test(priority = 10, alwaysRun = true)
+    public void logoutAfterUpload() throws Exception {
+        log.info("=== Step 10: Logout after photo upload ===");
+        com.mybharat.pages.youth.LogoutPage logoutPage = new com.mybharat.pages.youth.LogoutPage(driver);
+        logoutPage.logout();
+        log.info("✅ Step 10 PASSED — Logged out successfully");
     }
 }

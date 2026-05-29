@@ -36,8 +36,8 @@ public class MegaEventPage extends BasePage {
     private final JavascriptExecutor js;
 
     // File paths for uploads — dynamic from testdata folder
-    private static final String BANNER_IMAGE_NAME = "mybharat banner image 1.png";
-    private static final String LOGO_IMAGE_NAME   = "mybharat logo image 1.png";
+    private static final String BANNER_IMAGE_NAME = "banner logo.png";
+    private static final String LOGO_IMAGE_NAME   = "banner logo.png"; // same image used for both
 
     private String getTestDataPath(String fileName) {
         String path = System.getProperty("user.dir") + File.separator

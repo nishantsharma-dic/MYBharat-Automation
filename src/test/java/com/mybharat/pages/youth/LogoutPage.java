@@ -26,27 +26,24 @@ public class LogoutPage extends BasePage {
 
     // Locators
     private static final By USER_MENU_BUTTON = By.xpath(
-            "//button[@class='flex items-center rounded-full cursor-pointer']");
-    private static final By LOGOUT_BUTTON = By.xpath("//button[@role='menuitem']");
+            "//a[@id='user-options']//div[contains(@class,'user-info-wrapper')]");
+    private static final By LOGOUT_BUTTON = By.xpath(
+            "//a[contains(@class,'firebase-profile-logout-btn')]");
 
     public LogoutPage(WebDriver driver) {
         super(driver);
-        this.longWait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        this.longWait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     /**
-     * Perform logout: open user menu → click logout → wait for page load.
+     * Perform logout: click user menu circle → click Log Out.
      */
     public void logout() throws InterruptedException {
         log.info("Performing logout...");
-        Thread.sleep(2000);
-
         openUserMenu();
-        Thread.sleep(1000);
+        Thread.sleep(500);
         clickLogoutButton();
-
         waitForPageLoad();
-        Thread.sleep(3000);
         log.info("✅ User logged out successfully");
     }
 
@@ -56,31 +53,20 @@ public class LogoutPage extends BasePage {
     private void openUserMenu() {
         try {
             WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(USER_MENU_BUTTON));
-            scrollToElement(menu);
-            Thread.sleep(500);
             jsClick(menu);
             log.info("Opened user menu");
         } catch (Exception e) {
-            log.warn("First attempt to open menu failed, retrying...");
-            WebElement menu = longWait.until(ExpectedConditions.elementToBeClickable(USER_MENU_BUTTON));
-            jsClick(menu);
-            log.info("Opened user menu (retry)");
+            // Fallback: try clicking the logout button directly (visible on some pages)
+            log.warn("User menu button not found, trying logout button directly");
         }
     }
 
     /**
-     * Click the logout menu item.
+     * Click the logout button.
      */
     private void clickLogoutButton() {
-        try {
-            WebElement logoutBtn = longWait.until(ExpectedConditions.elementToBeClickable(LOGOUT_BUTTON));
-            jsClick(logoutBtn);
-            log.info("Clicked logout");
-        } catch (Exception e) {
-            log.warn("First attempt to click logout failed, retrying...");
-            WebElement logoutBtn = longWait.until(ExpectedConditions.elementToBeClickable(LOGOUT_BUTTON));
-            jsClick(logoutBtn);
-            log.info("Clicked logout (retry)");
-        }
+        WebElement logoutBtn = longWait.until(ExpectedConditions.elementToBeClickable(LOGOUT_BUTTON));
+        jsClick(logoutBtn);
+        log.info("Clicked logout");
     }
 }

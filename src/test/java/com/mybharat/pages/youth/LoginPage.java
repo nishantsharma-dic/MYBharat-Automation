@@ -33,7 +33,7 @@ public class LoginPage extends BasePage {
     private static final Logger log = LogManager.getLogger(LoginPage.class);
 
     private final ConfigReader config = new ConfigReader();
-    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 30;
+    private static final int LONG_WAIT = 15;
 
     private String loginEmail;
 
@@ -214,7 +214,7 @@ public class LoginPage extends BasePage {
         log.info("Fetching OTP from Yopmail for: {}", loginEmail);
 
         // Wait for OTP email to arrive before opening Yopmail
-        safeSleep(5000);
+        safeSleep(2000);
 
         // Open new tab for Yopmail
         driver.switchTo().newWindow(WindowType.TAB);
@@ -228,11 +228,11 @@ public class LoginPage extends BasePage {
         String emailPrefix = loginEmail.split("@")[0];
         inbox.sendKeys(emailPrefix);
         safeClick(yopmailGoBtn);
-        safeSleep(2000);
+        safeSleep(1500);
 
         // Refresh to get latest email
         safeClick(yopmailRefresh);
-        safeSleep(2000);
+        safeSleep(1500);
 
         // Switch to mail iframe and extract OTP
         driver.switchTo().frame("ifmail");
@@ -274,41 +274,46 @@ public class LoginPage extends BasePage {
         }
         log.info("Clicked Verify OTP");
         waitForPageLoad();
-        safeSleep(1500); // Wait for login to complete
+        safeSleep(1000); // Wait for login to complete
     }
 
     /**
      * Verify that login was successful by checking for post-login elements.
      */
     public boolean isLoginSuccessful() {
-        // Check 1 (priority): Look for user menu button (new React UI) — most common
+        // Temporarily reduce implicit wait to speed up this check
+        driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(0));
         try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(
-                    Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 30 : 7));
-            shortWait.until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
-            log.info("Login verified — user menu button found (new UI)");
-            return true;
-        } catch (Exception e1) {
-            // Check 2: Profile dropdown (old UI)
+            // Check 1: Look for user menu button (new UI)
             try {
-                WebDriverWait shortWait2 = new WebDriverWait(driver, Duration.ofSeconds(5));
-                shortWait2.until(ExpectedConditions.visibilityOf(profileDropdown));
-                log.info("Login verified — profile dropdown visible");
+                WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+                shortWait.until(ExpectedConditions.presenceOfElementLocated(
+                        By.xpath("//button[@class='flex items-center rounded-full cursor-pointer']")));
+                log.info("Login verified — user menu button found (new UI)");
                 return true;
-            } catch (Exception e2) {
-                // Check 3: URL contains dashboard or profile
-                String currentUrl = driver.getCurrentUrl();
-                if (currentUrl.contains("dashboard") || currentUrl.contains("profile")
-                        || currentUrl.contains("home")) {
-                    log.info("Login verified — URL indicates logged-in state: {}", currentUrl);
+            } catch (Exception e1) {
+                // Check 2: Profile dropdown (old UI)
+                try {
+                    WebDriverWait shortWait2 = new WebDriverWait(driver, Duration.ofSeconds(2));
+                    shortWait2.until(ExpectedConditions.visibilityOf(profileDropdown));
+                    log.info("Login verified — profile dropdown visible");
                     return true;
+                } catch (Exception e2) {
+                    // Check 3: URL contains dashboard or profile
+                    String currentUrl = driver.getCurrentUrl();
+                    if (currentUrl.contains("dashboard") || currentUrl.contains("profile")
+                            || currentUrl.contains("home")) {
+                        log.info("Login verified — URL indicates logged-in state: {}", currentUrl);
+                        return true;
+                    }
                 }
             }
+            log.warn("Login verification failed — no logged-in indicators found");
+            return false;
+        } finally {
+            // Restore implicit wait
+            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(10));
         }
-
-        log.warn("Login verification failed — no logged-in indicators found");
-        return false;
     }
 
     /**
@@ -378,7 +383,7 @@ public class LoginPage extends BasePage {
         WebElement loginWithPwdLink = longWait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//a[contains(text(),'Login with Password')] | //span[contains(text(),'Login with Password')]")));
         loginWithPwdLink.click();
-        safeSleep(1500);
+        safeSleep(1000);
         log.info("Clicked 'Login with Password' link");
 
         // Step 4: Enter password in the password popup
@@ -415,7 +420,7 @@ public class LoginPage extends BasePage {
         log.info("Login button clicked");
 
         waitForPageLoad();
-        safeSleep(2000);
+        safeSleep(1000);
         log.info("Password login completed for: {}", email);
     }
 

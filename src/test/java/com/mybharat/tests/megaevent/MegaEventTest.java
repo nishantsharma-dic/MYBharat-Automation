@@ -33,10 +33,15 @@ public class MegaEventTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private final Faker faker = new Faker();
 
-    // Excel paths (relative to project root)
-    private static final String USER_EXCEL      = "resources/Partner_prod.xlsx";
-    private static final String EVENT_OUT_EXCEL = "resources/Create_MegaEvent_Prod.xlsx";
+    // Excel paths (relative to project root) — environment-aware
+    private static final String ENV = System.getProperty("env", "beta");
+    private static final String USER_EXCEL      = "resources/Partner_" + ENV + ".xlsx";
+    private static final String EVENT_OUT_EXCEL = "resources/Create_MegaEvent_" + capitalize(ENV) + ".xlsx";
     private static final String SHEET_NAME      = "ELP_Users";
+
+    private static String capitalize(String s) {
+        return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
 
     private String loginEmail;
     private String loginPassword;
@@ -94,7 +99,7 @@ public class MegaEventTest extends BaseTest {
     @Test(priority = 5, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
     public void fillEventDetails() {
         log.info("Step 7b: Fill Event Name and About");
-        eventName = "Seva Se Seekhen";
+        eventName = "Seeva See Seekhen";
         String aboutText = "This mega event is created via automation testing. " + faker.lorem().sentence(10);
 
         megaEventPage.enterEventName(eventName);
