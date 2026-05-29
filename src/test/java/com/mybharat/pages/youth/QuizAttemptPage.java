@@ -294,17 +294,18 @@ public class QuizAttemptPage extends BasePage {
     }
 
     /**
-     * Attempt all 20 questions with random answers and submit.
+     * Attempt all questions with random answers and submit.
+     * Dynamically detects the number of questions (works for 10, 15, 20, 25 or any count).
      */
     public void attemptAllQuestionsAndSubmit() throws Exception {
         WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(30));
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        int totalQuestions = 20;
+        int maxQuestions = 30; // safety limit
 
         Thread.sleep(3000);
         waitForPageLoad();
 
-        for (int q = 1; q <= totalQuestions; q++) {
+        for (int q = 1; q <= maxQuestions; q++) {
             System.out.println("Answering question " + q);
             Thread.sleep(1000); // Wait for question to fully load
             waitForPageLoad();
@@ -337,15 +338,29 @@ public class QuizAttemptPage extends BasePage {
                 jsClick(selected);
             }
 
-            // Click Next (except for last question)
-            if (q < totalQuestions) {
-                clickNextButton(qWait, js);
-                Thread.sleep(1500); // Wait for next question to load
+            // Click Next (except for last question — detect by checking if Submit button is visible)
+            if (isSubmitButtonVisible()) {
+                System.out.println("Submit button detected after question " + q + " — all questions answered");
+                break;
             }
+            clickNextButton(qWait, js);
+            Thread.sleep(1500); // Wait for next question to load
         }
 
         // Submit quiz
         submitQuiz(qWait, js);
+    }
+
+    /**
+     * Check if the Submit button is visible (indicates last question).
+     */
+    private boolean isSubmitButtonVisible() {
+        try {
+            WebElement submitBtn = driver.findElement(By.xpath("//button[@id='submit_button']"));
+            return submitBtn.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // -------------------------------------------------------------------------
