@@ -37,7 +37,7 @@ public class MegaEventTest extends BaseTest {
     private static final String ENV = System.getProperty("env", "beta");
     private static final String USER_EXCEL      = "resources/Partner_" + ENV + ".xlsx";
     private static final String EVENT_OUT_EXCEL = "resources/Create_MegaEvent_" + capitalize(ENV) + ".xlsx";
-    private static final String SHEET_NAME      = "ELP_Users";
+    private static final String SHEET_NAME      = "MegaEvents";
 
     private static String capitalize(String s) {
         return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1);

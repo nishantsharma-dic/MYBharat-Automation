@@ -41,4 +41,12 @@
         </classes>
     </test>
 
+    <!-- Mega Event Flow: Upload Photos → Logout → Create Mega Event (own browser session) -->
+    <test name="Mega Event Upload + Create" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.megaevent.MegaEventPhotoUploadTest"/>
+            <class name="com.mybharat.tests.megaevent.MegaEventTest"/>
+        </classes>
+    </test>
+
 </suite>

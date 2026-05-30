@@ -48,7 +48,7 @@ public class MegaEventPhotoUploadTest extends BaseTest {
 
     // Excel: mega event names (pick LAST created event)
     private static final String EVENT_EXCEL      = "resources/Create_MegaEvent_" + capitalize(ENV) + ".xlsx";
-    private static final String EVENT_SHEET      = "ELP_Users";
+    private static final String EVENT_SHEET      = "MegaEvents";
 
     private static String capitalize(String s) {
         return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1);

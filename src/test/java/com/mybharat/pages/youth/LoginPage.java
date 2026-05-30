@@ -33,7 +33,7 @@ public class LoginPage extends BasePage {
     private static final Logger log = LogManager.getLogger(LoginPage.class);
 
     private final ConfigReader config = new ConfigReader();
-    private static final int LONG_WAIT = 15;
+    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 30;
 
     private String loginEmail;
 
@@ -214,7 +214,7 @@ public class LoginPage extends BasePage {
         log.info("Fetching OTP from Yopmail for: {}", loginEmail);
 
         // Wait for OTP email to arrive before opening Yopmail
-        safeSleep(2000);
+        safeSleep(5000);
 
         // Open new tab for Yopmail
         driver.switchTo().newWindow(WindowType.TAB);
