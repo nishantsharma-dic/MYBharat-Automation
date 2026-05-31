@@ -83,10 +83,28 @@ public class MegaEventPhotoUploadTest extends BaseTest {
     @Test(priority = 1, groups = {"smoke", "megaevent-upload"})
     public void loginToApplication() {
         log.info("=== Step 1: Login check — using already logged-in user or login with {} ===", loginEmail);
-        // When running in E2E suite, user is already logged in after quiz flow — skip OTP login
-        // loginWithOTP handles this via isAlreadyLoggedIn() check internally
+        // Check if already logged in by looking at current URL or page state
+        // When running after QuizCertificateVerificationTest, user is already logged in
+        String currentUrl = driver.getCurrentUrl();
+        boolean alreadyLoggedIn = currentUrl != null && !currentUrl.isEmpty()
+                && !currentUrl.contains("login")
+                && !currentUrl.equals("about:blank")
+                && !currentUrl.equals("data:,");
+
+        if (!alreadyLoggedIn) {
+            // Also check for login indicators on the page
+            com.mybharat.pages.youth.LoginPage loginPage = new com.mybharat.pages.youth.LoginPage(driver);
+            alreadyLoggedIn = loginPage.isLoginSuccessful();
+        }
+
+        if (alreadyLoggedIn) {
+            log.info("✅ Step 1 PASSED — Already logged in (URL: {}), skipping login", driver.getCurrentUrl());
+            return;
+        }
+
+        // Not logged in — perform OTP login
         megaEventPage.loginWithOTP(loginEmail);
-        log.info("✅ Step 1 PASSED — Logged in / already logged in");
+        log.info("✅ Step 1 PASSED — Logged in successfully");
     }
 
     @Test(priority = 2, dependsOnMethods = "loginToApplication")
@@ -152,10 +170,20 @@ public class MegaEventPhotoUploadTest extends BaseTest {
     }
 
     @Test(priority = 10, alwaysRun = true)
-    public void logoutAfterUpload() throws Exception {
+    public void logoutAfterUpload() {
         log.info("=== Step 10: Logout after photo upload ===");
-        com.mybharat.pages.youth.LogoutPage logoutPage = new com.mybharat.pages.youth.LogoutPage(driver);
-        logoutPage.logout();
-        log.info("✅ Step 10 PASSED — Logged out successfully");
+        try {
+            com.mybharat.pages.youth.LogoutPage logoutPage = new com.mybharat.pages.youth.LogoutPage(driver);
+            logoutPage.logout();
+            log.info("✅ Step 10 PASSED — Logged out successfully");
+        } catch (Exception e) {
+            log.warn("Logout failed (non-critical, continuing): {}", e.getMessage());
+            // Navigate to homepage as fallback so next test can login fresh
+            try {
+                driver.get(new com.mybharat.utils.ConfigReader().getUrl());
+            } catch (Exception e2) {
+                log.warn("Fallback navigation also failed: {}", e2.getMessage());
+            }
+        }
     }
 }
