@@ -37,8 +37,9 @@ public class MegaEventTest extends BaseTest {
     // Excel paths — environment-aware
     private static final String ENV            = System.getProperty("env", "beta");
     private static final String USER_EXCEL     = "resources/Partner_" + ENV + ".xlsx";
+    private static final String USER_SHEET     = "ELP_Users";  // Partner Excel sheet name
     private static final String EVENT_OUT_EXCEL = "resources/Create_MegaEvent_" + capitalize(ENV) + ".xlsx";
-    private static final String SHEET_NAME     = "MegaEvents";
+    private static final String EVENT_SHEET    = "MegaEvents"; // Output Excel sheet name
 
     private static String capitalize(String s) {
         return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1);
@@ -51,11 +52,11 @@ public class MegaEventTest extends BaseTest {
     public void initPages() {
         megaEventPage = new MegaEventPage(driver);
 
-        List<String> emails = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 0);
+        List<String> emails = ExcelUtils.readColumn(USER_EXCEL, USER_SHEET, 0);
         Assert.assertFalse(emails.isEmpty(), USER_EXCEL + " must have at least one email");
         loginEmail = emails.get(emails.size() - 1);
 
-        List<String> passwords = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 1);
+        List<String> passwords = ExcelUtils.readColumn(USER_EXCEL, USER_SHEET, 1);
         loginPassword = (passwords.size() >= emails.size()) ? passwords.get(passwords.size() - 1) : null;
 
         log.info("[SETUP] Login email: {}, hasPassword: {}", loginEmail, loginPassword != null);
@@ -138,7 +139,7 @@ public class MegaEventTest extends BaseTest {
         Assert.assertTrue(isActive, "Published event should appear in listing");
 
         // Save event name to Excel
-        ExcelUtils.appendValue(EVENT_OUT_EXCEL, SHEET_NAME, eventName);
+        ExcelUtils.appendValue(EVENT_OUT_EXCEL, EVENT_SHEET, eventName);
         log.info("✅ publishMegaEvent PASSED — Event '{}' created and saved to Excel", eventName);
     }
 }
