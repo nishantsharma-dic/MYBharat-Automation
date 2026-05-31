@@ -18,13 +18,14 @@ import com.mybharat.pages.megaevent.MegaEventPage;
 import com.mybharat.utils.ExcelUtils;
 
 /**
- * MegaEventTest - Creates a Mega Event end-to-end.
+ * MegaEventTest - Creates and publishes a Mega Event end-to-end.
  *
- * Flow: Login → Profile → View Org → Select Org → Mega Event → Create → Fill Form → Save → Publish
+ * Single test method: publishMegaEvent
+ * Flow: Login (Partner) → Navigate to Org → Mega Event menu → Create form
+ *       → Upload images → Fill details/dates → Save → Publish → Verify → Save to Excel
  *
- * Environment: Prod (mybharat.gov.in)
- * User: read from resources/create_mega_user_prod.xlsx (Sheet1, col 0)
- * Event name saved to: resources/Create_Mega_Event_prod1.xlsx (Sheet1, col 0)
+ * Run standalone:
+ *   mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-megaevent.xml"
  */
 @Listeners(TestListeners.class)
 public class MegaEventTest extends BaseTest {
@@ -33,11 +34,11 @@ public class MegaEventTest extends BaseTest {
     private MegaEventPage megaEventPage;
     private final Faker faker = new Faker();
 
-    // Excel paths (relative to project root) — environment-aware
-    private static final String ENV = System.getProperty("env", "beta");
-    private static final String USER_EXCEL      = "resources/Partner_" + ENV + ".xlsx";
+    // Excel paths — environment-aware
+    private static final String ENV            = System.getProperty("env", "beta");
+    private static final String USER_EXCEL     = "resources/Partner_" + ENV + ".xlsx";
     private static final String EVENT_OUT_EXCEL = "resources/Create_MegaEvent_" + capitalize(ENV) + ".xlsx";
-    private static final String SHEET_NAME      = "MegaEvents";
+    private static final String SHEET_NAME     = "MegaEvents";
 
     private static String capitalize(String s) {
         return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1);
@@ -45,146 +46,99 @@ public class MegaEventTest extends BaseTest {
 
     private String loginEmail;
     private String loginPassword;
-    private String eventName;  // generated in fillEventDetails, saved after publish
 
     @BeforeClass(alwaysRun = true)
     public void initPages() {
         megaEventPage = new MegaEventPage(driver);
 
-        // Read login email from Partner_prod.xlsx (last entry = mega event user)
         List<String> emails = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 0);
-        Assert.assertFalse(emails.isEmpty(), "Partner_prod.xlsx must have at least one email");
-        loginEmail = emails.get(emails.size() - 1); // Last user = mega event creator
+        Assert.assertFalse(emails.isEmpty(), USER_EXCEL + " must have at least one email");
+        loginEmail = emails.get(emails.size() - 1);
 
-        // Read password (column 1) if available
         List<String> passwords = ExcelUtils.readColumn(USER_EXCEL, SHEET_NAME, 1);
         loginPassword = (passwords.size() >= emails.size()) ? passwords.get(passwords.size() - 1) : null;
 
         log.info("[SETUP] Login email: {}, hasPassword: {}", loginEmail, loginPassword != null);
     }
 
-    @Test(priority = 1, groups = {"smoke", "megaevent"})
-    public void loginToApplication() throws Exception {
+    /**
+     * Single test: Create and publish a new Mega Event.
+     * Appears as one test case in ExtentReport.
+     */
+    @Test(groups = {"smoke", "megaevent"},
+          description = "Create and publish a new Mega Event (Partner user)")
+    public void publishMegaEvent() throws Exception {
+        String eventName = "Seeva See Seekhen";
+
+        // Step 1: Login as Partner
         log.info("Step 1: Login — {}", loginEmail);
         com.mybharat.pages.youth.LoginPage loginPage = new com.mybharat.pages.youth.LoginPage(driver);
         loginPage.login(loginEmail, loginPassword);
-        log.info("✅ Login successful");
-    }
+        log.info("Logged in as: {}", loginEmail);
 
-    @Test(priority = 2, groups = {"smoke", "megaevent"}, dependsOnMethods = "loginToApplication")
-    public void navigateToOrganization() {
-        log.info("Step 2-4: Navigate to Organization");
+        // Step 2: Navigate to Organization
+        log.info("Step 2: Navigate to Organization");
         megaEventPage.navigateToProfile();
         megaEventPage.clickViewOrganization();
-        megaEventPage.selectOrganization(null);  // selects first available org
-        log.info("✅ Organization entered");
-    }
+        megaEventPage.selectOrganization(null);
 
-    @Test(priority = 3, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToOrganization")
-    public void navigateToMegaEvent() {
-        log.info("Step 5-6: Navigate to Mega Event and Create");
+        // Step 3: Navigate to Mega Event and Create
+        log.info("Step 3: Navigate to Mega Event → Create");
         megaEventPage.clickMegaEventMenu();
         megaEventPage.clickCreateMegaEvent();
-        log.info("✅ Create Mega Event form loaded");
-    }
 
-    @Test(priority = 4, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void uploadImages() {
-        log.info("Step 7a: Upload Banner and Logo");
+        // Step 4: Upload banner and logo
+        log.info("Step 4: Upload banner and logo");
         megaEventPage.uploadBanner();
         megaEventPage.uploadLogo();
-        log.info("✅ Images uploaded");
-    }
 
-    @Test(priority = 5, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void fillEventDetails() {
-        log.info("Step 7b: Fill Event Name and About");
-        eventName = "Seeva See Seekhen";
-        String aboutText = "This mega event is created via automation testing. " + faker.lorem().sentence(10);
-
+        // Step 5: Fill event name and about
+        log.info("Step 5: Fill event details — '{}'", eventName);
         megaEventPage.enterEventName(eventName);
-        megaEventPage.enterAbout(aboutText);
-        log.info("✅ Event details filled: {}", eventName);
-    }
+        megaEventPage.enterAbout("This mega event is created via automation testing. " + faker.lorem().sentence(10));
 
-    @Test(priority = 6, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void fillEventDates() {
-        log.info("Step 7c: Fill Event Dates");
-        // Past dates (event already happened)
+        // Step 6: Fill event dates (past dates)
+        log.info("Step 6: Fill event dates");
         LocalDate startDate = LocalDate.now().minusDays(14);
-        LocalDate endDate = LocalDate.now().minusDays(7);
+        LocalDate endDate   = LocalDate.now().minusDays(7);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        megaEventPage.fillEventDates(startDate.format(fmt), "09:00", endDate.format(fmt), "18:00");
 
-        megaEventPage.fillEventDates(
-                startDate.format(fmt), "09:00",
-                endDate.format(fmt), "18:00"
-        );
-        log.info("✅ Event dates filled");
-    }
+        // Step 7: Fill inclusion dates
+        log.info("Step 7: Fill inclusion dates");
+        megaEventPage.fillInclusionDates(startDate.format(fmt), "09:00", endDate.format(fmt), "18:00");
 
-    @Test(priority = 7, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void fillInclusionDates() {
-        log.info("Step 7d: Fill Inclusion Dates");
-        // Past dates
-        LocalDate startDate = LocalDate.now().minusDays(14);
-        LocalDate endDate = LocalDate.now().minusDays(7);
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-        megaEventPage.fillInclusionDates(
-                startDate.format(fmt), "09:00",
-                endDate.format(fmt), "18:00"
-        );
-        log.info("✅ Inclusion dates filled");
-    }
-
-    @Test(priority = 8, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void selectCheckboxes() {
-        log.info("Step 7e: Select checkboxes");
+        // Step 8: Select checkboxes
+        log.info("Step 8: Select checkboxes");
         megaEventPage.checkVolunteerOpportunity();
         megaEventPage.checkExperientialLearning();
-        log.info("✅ Checkboxes selected");
-    }
 
-    @Test(priority = 9, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void selectDropdowns() {
-        log.info("Step 7f: Select dropdowns");
+        // Step 9: Select dropdowns
+        log.info("Step 9: Select dropdowns");
         megaEventPage.selectSpecialization();
         megaEventPage.selectMedium();
         megaEventPage.selectFunctionalCategory();
-        log.info("✅ Dropdowns selected");
-    }
 
-    @Test(priority = 10, groups = {"smoke", "megaevent"}, dependsOnMethods = "navigateToMegaEvent")
-    public void selectLocation() {
-        log.info("Step 7g: Select Event Location");
+        // Step 10: Select location
+        log.info("Step 10: Select location");
         megaEventPage.selectState();
         megaEventPage.selectDistrict();
-        log.info("✅ Location selected");
-    }
 
-    @Test(priority = 11, groups = {"smoke", "megaevent"}, dependsOnMethods = "selectLocation")
-    public void saveEvent() {
-        log.info("Step 8: Save Mega Event");
+        // Step 11: Save
+        log.info("Step 11: Save Mega Event");
         megaEventPage.clickSave();
-        log.info("✅ Mega Event saved — on preview page");
-    }
 
-    @Test(priority = 12, groups = {"smoke", "megaevent"}, dependsOnMethods = "saveEvent")
-    public void publishEvent() {
-        log.info("Step 9: Publish Mega Event (green tick)");
+        // Step 12: Publish
+        log.info("Step 12: Publish Mega Event");
         megaEventPage.publishMegaEvent();
-        log.info("✅ Mega Event published");
-    }
 
-    @Test(priority = 13, groups = {"smoke", "megaevent"}, dependsOnMethods = "publishEvent")
-    public void verifyActiveTab() {
-        log.info("Step 10: Verify event in Active tab");
+        // Step 13: Verify in Past tab
+        log.info("Step 13: Verify event in Past tab");
         boolean isActive = megaEventPage.isEventInActiveTab();
-        Assert.assertTrue(isActive, "Published event should appear in Active tab");
-        log.info("✅ Event verified in Active tab");
+        Assert.assertTrue(isActive, "Published event should appear in listing");
 
-        // Save created event name to Excel
+        // Save event name to Excel
         ExcelUtils.appendValue(EVENT_OUT_EXCEL, SHEET_NAME, eventName);
-        log.info("✅ Event name saved to Excel: {} → {}", EVENT_OUT_EXCEL, eventName);
+        log.info("✅ publishMegaEvent PASSED — Event '{}' created and saved to Excel", eventName);
     }
 }

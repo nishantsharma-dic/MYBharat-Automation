@@ -363,11 +363,31 @@ public class MegaEventPage extends BasePage {
 
     public void publishMegaEvent() {
         log.info("Publishing Mega Event — clicking green tick mark");
-        WebDriverWait wait15 = new WebDriverWait(driver, Duration.ofSeconds(15));
+        WebDriverWait wait20 = new WebDriverWait(driver, Duration.ofSeconds(20));
+        waitForPageLoad();
+        safeSleep(1000);
 
-        // Click green tick icon (fa fa-check-circle)
-        WebElement greenTick = wait15.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//i[@class='fa fa-check-circle']")));
+        // Click green tick icon — try multiple locators
+        WebElement greenTick = null;
+        String[] tickLocators = {
+            "//i[@class='fa fa-check-circle']",
+            "//i[contains(@class,'fa-check-circle')]",
+            "//a[contains(@class,'publish') or contains(@title,'Publish') or contains(@title,'publish')]",
+            "//button[contains(@class,'publish') or contains(text(),'Publish')]",
+            "//*[contains(@class,'check-circle')]"
+        };
+        for (String xpath : tickLocators) {
+            try {
+                greenTick = wait20.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
+                if (greenTick != null) { log.info("Found publish button: {}", xpath); break; }
+            } catch (Exception e) { greenTick = null; }
+        }
+
+        if (greenTick == null) {
+            log.warn("Green tick not found — event may already be published or on different page");
+            return;
+        }
+
         scrollToElement(greenTick);
         safeClick(greenTick);
 

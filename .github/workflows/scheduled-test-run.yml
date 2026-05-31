@@ -302,16 +302,16 @@ jobs:
                   <tr style="background: #f9f9f9;">
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Mega Event</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">uploadPhotos + createMegaEvent</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">Youth uploads photos/video → Logout → Partner creates Mega Event</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">uploadPhoto + publishMegaEvent</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Upload photos/video to Mega Event &amp; Create + Publish new Mega Event</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s11 }} / ${{ steps.details.outputs.s12 }}</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">Pal</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ (steps.details.outputs.s11 == '✅ PASS' && steps.details.outputs.s12 == '✅ PASS') && '✅ PASS' || '❌ FAIL' }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
                   </tr>
                 </table>
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Public Pages → Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Mega Event Upload → Create Mega Event
+                  Public Pages → Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Mega Event (Upload Photos + Create Event)
                 </p>
 
                 <!-- View Report Button -->
