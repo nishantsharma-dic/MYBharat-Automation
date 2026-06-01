@@ -14,8 +14,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 
 import com.mybharat.utils.ConfigReader;
 
@@ -24,8 +24,10 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 /**
  * BaseTest - All test classes extend this.
  * 
- * Browser starts ONCE at suite level and is shared across all test classes.
- * This allows sequential test classes to run on the SAME browser session.
+ * Browser lifecycle is per TestNG &lt;test&gt; block:
+ *   - Each &lt;test&gt; in the XML gets its own browser instance.
+ *   - All classes within the SAME &lt;test&gt; share the same browser session.
+ *   - This supports parallel="tests" where each &lt;test&gt; runs in its own thread.
  * 
  * Usage:
  *   mvn test -Denv=beta -Dbrowser=chrome
@@ -35,36 +37,71 @@ public class BaseTest {
 
     private static final Logger log = LogManager.getLogger(BaseTest.class);
 
-    /** Shared driver across all test classes in the suite */
-    protected static WebDriver driver;
+    /** Thread-local driver — each <test> block gets its own driver instance */
+    private static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
     protected static ConfigReader config;
 
-    /** Thread-local driver so Listeners can access it for screenshots */
-    public static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
+    /** Accessible driver for child classes — populated from ThreadLocal */
+    protected WebDriver driver;
 
-    @BeforeSuite(alwaysRun = true)
+    /** Public accessor for listeners/utilities to get the current thread's driver */
+    public static final ThreadLocal<WebDriver> driverTL = driverThreadLocal;
+
+    @BeforeTest(alwaysRun = true)
     public void setUp() {
         config = new ConfigReader();
         String browserName = System.getProperty("browser", config.getProperty("browser"));
-        log.info("Starting browser: {} | Environment: {}", browserName, config.getEnv());
+        log.info("Starting browser: {} | Environment: {} | Thread: {}",
+                browserName, config.getEnv(), Thread.currentThread().getName());
 
-        driver = createDriver(browserName);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().window().maximize();
-        driverThreadLocal.set(driver);
+        WebDriver newDriver = createDriver(browserName);
+        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        newDriver.manage().window().maximize();
+        driverThreadLocal.set(newDriver);
+        this.driver = newDriver;
     }
 
-    @AfterSuite(alwaysRun = true)
+    @AfterTest(alwaysRun = true)
     public void tearDown() {
         boolean closeBrowser = Boolean.parseBoolean(System.getProperty("closeBrowser", "true"));
-        if (driver != null && closeBrowser) {
-            log.info("Closing browser");
-            driver.quit();
-            driver = null;
+        WebDriver currentDriver = driverThreadLocal.get();
+        if (currentDriver != null && closeBrowser) {
+            log.info("Closing browser | Thread: {}", Thread.currentThread().getName());
+            currentDriver.quit();
             driverThreadLocal.remove();
+            this.driver = null;
         } else {
             log.info("Browser left open (closeBrowser=false)");
         }
+    }
+
+    /**
+     * Sync the driver field from ThreadLocal for each class in the test block.
+     * This runs before child class @BeforeClass methods.
+     */
+    @org.testng.annotations.BeforeClass(alwaysRun = true)
+    public void syncDriver() {
+        if (this.driver == null) {
+            this.driver = driverThreadLocal.get();
+            if (this.driver != null) {
+                log.info("Driver synced from ThreadLocal for: {} | Thread: {}",
+                        this.getClass().getSimpleName(), Thread.currentThread().getName());
+            } else {
+                log.error("Driver is NULL in ThreadLocal for: {} | Thread: {}",
+                        this.getClass().getSimpleName(), Thread.currentThread().getName());
+            }
+        }
+    }
+
+    /**
+     * Ensure the driver field is set from ThreadLocal for classes that initialize
+     * after the @BeforeTest has already run (all classes in the same <test> block).
+     */
+    protected WebDriver getDriver() {
+        if (this.driver == null) {
+            this.driver = driverThreadLocal.get();
+        }
+        return this.driver;
     }
 
     /**
@@ -73,14 +110,16 @@ public class BaseTest {
     protected void openApp() {
         String url = config.getProperty("url");
         log.info("Opening URL: {}", url);
-        driver.get(url);
+        getDriver().get(url);
     }
 
     /**
      * Take a screenshot and return the file path.
      */
     public String takeScreenshot(String testName) throws IOException {
-        File source = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        WebDriver d = getDriver();
+        if (d == null) return null;
+        File source = ((TakesScreenshot) d).getScreenshotAs(OutputType.FILE);
         String path = System.getProperty("user.dir") + "/reports/" + testName + ".png";
         FileUtils.copyFile(source, new File(path));
         return path;

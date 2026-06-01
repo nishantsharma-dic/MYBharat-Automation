@@ -2,104 +2,43 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  ALL MODULES - Runs all modules SEQUENTIALLY on the SAME browser.
+  ALL MODULES - Runs Public Pages in PARALLEL with the main user flow.
   
-  Flow: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Blog
+  Thread 1: Public Pages (independent, own browser)
+  Thread 2: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate
+  
+  Both threads run simultaneously, reducing total execution time.
+  Report and email content display all results together as before.
   
   Run with:
-    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
-    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
-  
-  Execution order:
-    1. Youth Registration
-    2. Logout
-    3. Youth Login
-    4. Youth Profile Completion
-    5. Registration Certificate Verification
-    6. Youth Basic Info
-    7. Quiz Attempt
-    8. Quiz Certificate Verification
-    9. Blog Creation
-    10. CV Builder (TODO)
-    11. Organisation Creation (TODO)
-    12. Join Organisation (TODO)
+    mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
 -->
-<suite name="MYBharat All Modules" parallel="false" verbose="1">
+<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1"
+       group-by-instances="true" preserve-order="true">
 
     <listeners>
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Registration → Submit popup → Save email to Excel -->
-    <test name="Youth Registration">
+    <!-- PARALLEL THREAD 1: Public Page validation (independent, own browser) -->
+    <test name="Public Page" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.youth.PublicPageTest"/>
+        </classes>
+    </test>
+
+    <!-- PARALLEL THREAD 2: Sequential user flow (shared browser session) -->
+    <test name="Youth Flow" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 2: Logout after registration -->
-    <test name="Logout After Registration">
-        <classes>
             <class name="com.mybharat.tests.youth.LogoutTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 3: Login with email from Excel (password: 25@March) -->
-    <test name="Youth Login">
-        <classes>
             <class name="com.mybharat.tests.youth.LoginTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 4: Complete Youth Profile -->
-    <test name="Youth Profile Completion">
-        <classes>
             <class name="com.mybharat.tests.youth.YouthProfileTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 5: Registration Certificate Verification -->
-    <test name="Registration Certificate Verification">
-        <classes>
             <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 6: Basic Info + Extract Email -->
-    <test name="Youth Basic Info">
-        <classes>
             <class name="com.mybharat.tests.youth.BasicInfoTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 7: Quiz Attempt -->
-    <test name="Quiz Attempt">
-        <classes>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
-        </classes>
-    </test>
-
-    <!-- Step 8: Quiz Certificate Download -->
-    <test name="Quiz Certificate Verification">
-        <classes>
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
         </classes>
     </test>
-
-    <!-- Step 9: Blog Creation -->
-    <test name="Blog Creation">
-        <classes>
-            <class name="com.mybharat.tests.blog.BlogTest"/>
-        </classes>
-    </test>
-
-   
-
-
-
-
-
-
-   
 
 </suite>

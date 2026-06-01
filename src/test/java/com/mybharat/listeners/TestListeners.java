@@ -112,7 +112,7 @@ public class TestListeners implements ITestListener {
         }
 
         // Capture screenshot
-        WebDriver driver = BaseTest.driverThreadLocal.get();
+        WebDriver driver = BaseTest.driverTL.get();
         if (driver != null) {
             try {
                 String screenshotPath = captureScreenshot(driver, result.getMethod().getMethodName());
