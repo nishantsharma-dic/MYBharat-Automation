@@ -40,7 +40,16 @@ jobs:
             PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
             FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
             SKIPPED=$(echo "$LINE" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
-            TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            RAW_TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            # Mega Event has 2 methods (uploadPhoto + publishMegaEvent) but counts as 1 test case
+            if grep -q 'name="uploadPhoto"' "$REPORT_FILE" 2>/dev/null && grep -q 'name="publishMegaEvent"' "$REPORT_FILE" 2>/dev/null; then
+              TOTAL=$((RAW_TOTAL - 1))
+              if ! grep -A2 'name="uploadPhoto"' "$REPORT_FILE" | grep -q 'status="FAIL"' && ! grep -A2 'name="publishMegaEvent"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+                PASSED=$((${PASSED:-0} - 1))
+              fi
+            else
+              TOTAL=$RAW_TOTAL
+            fi
           else
             TOTAL="N/A"
             PASSED="N/A"
@@ -115,6 +124,17 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+
+          # Mega Event: combined status (PASS only when both uploadPhoto AND publishMegaEvent pass)
+          ME_UPLOAD=$(get_status 'uploadPhoto')
+          ME_CREATE=$(get_status 'publishMegaEvent')
+          if [ "$ME_UPLOAD" = "✅ PASS" ] && [ "$ME_CREATE" = "✅ PASS" ]; then
+            echo "s_mega=✅ PASS" >> $GITHUB_OUTPUT
+          elif [ "$ME_UPLOAD" = "⏭ SKIP" ] && [ "$ME_CREATE" = "⏭ SKIP" ]; then
+            echo "s_mega=⏭ SKIP" >> $GITHUB_OUTPUT
+          else
+            echo "s_mega=❌ FAIL" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload ExtentReport as artifact
         if: always()
@@ -296,12 +316,19 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s9 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
                   </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Mega Event</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">uploadPhoto + publishMegaEvent</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Upload photos/video to Mega Event &amp; Create + Publish new Mega Event</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s_mega }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
+                  </tr>
                 </table>
-
-                <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Download Quiz Certificate
+                  Public Pages → Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Mega Event (Upload Photos + Create Event)
                 </p>
 
                 <!-- View Report Button -->
