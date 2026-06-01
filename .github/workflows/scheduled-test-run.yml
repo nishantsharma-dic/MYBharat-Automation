@@ -41,6 +41,9 @@ jobs:
             FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
             SKIPPED=$(echo "$LINE" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
             TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            # Adjust count to match email table rows (verifyUserInDatabase is bundled with Registration)
+            TOTAL=$((TOTAL - 1))
+            PASSED=$((${PASSED:-0} - 1))
           else
             TOTAL="N/A"
             PASSED="N/A"
