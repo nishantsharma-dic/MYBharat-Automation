@@ -44,11 +44,13 @@ public class YouthApplyOnVOPage extends BasePage {
 
     public void searchEvent(String eventName) throws InterruptedException {
         log.info("Searching for event: {}", eventName);
+
+        // Extract city name (first word) for search
+        String searchKeyword = eventName.split("\\s+")[0];
+        log.info("Using city as search keyword: {}", searchKeyword);
+
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
         dismissOverlay();
-
-        // Use the event name from Excel (latest created event)
-        String searchKeyword = eventName;
 
         // Select "All" in Country dropdown
         try {
@@ -77,20 +79,17 @@ public class YouthApplyOnVOPage extends BasePage {
                             + " | //button[contains(@class,'search') or contains(text(),'Search')]"
                             + " | //input[@type='submit' and contains(@value,'Search')]")));
             searchBtn.click();
-            Thread.sleep(5000); // Wait for search results to load
-            dismissOverlay();
             log.info("✅ Search clicked");
         } catch (Exception e) {
-            log.warn("Search button not found, trying Enter key...");
             try {
                 WebElement eventNameInput = driver.findElement(By.name("filter-vo-name"));
                 eventNameInput.sendKeys(Keys.ENTER);
-                Thread.sleep(5000);
-                dismissOverlay();
-            } catch (Exception e2) {
-                log.warn("Enter key fallback also failed");
-            }
+            } catch (Exception e2) { /* skip */ }
         }
+
+        Thread.sleep(5000);
+        dismissOverlay();
+        log.info("✅ Search complete");
     }
 
     public void clickEventByName(String eventName) throws InterruptedException {

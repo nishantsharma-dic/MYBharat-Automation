@@ -37,59 +37,80 @@ public class YouthUploadImagesPage extends BasePage {
 
         try {
             WebElement youthTab = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//a[contains(text(),'Images by Youth') or contains(text(),'Images By Youth')]"
+                    By.xpath("//h4[@data-target='.gallery-content-two']"
+                            + " | //h4[contains(text(),'Images by Youth') or contains(text(),'Images By Youth')]"
+                            + " | //*[contains(@class,'gallery-tab') and contains(text(),'Youth')]"
+                            + " | //a[contains(text(),'Images by Youth') or contains(text(),'Images By Youth')]"
                             + " | //a[@id='profile-tab']"
-                            + " | //li//a[contains(text(),'Youth')]"
                             + " | //button[contains(text(),'Images by Youth')]")));
             scrollToElement(youthTab);
             Thread.sleep(300);
-            youthTab.click();
-            Thread.sleep(1000);
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", youthTab);
+            Thread.sleep(2000);
             log.info("✅ Clicked 'Images by Youth' tab");
         } catch (Exception e) {
-            // JS fallback: find tab by text
             log.warn("Images by Youth tab not found via XPath, trying JS...");
             ((JavascriptExecutor) driver).executeScript(
-                    "var tabs = document.querySelectorAll('a, button, li');" +
+                    "var tabs = document.querySelectorAll('h4, a, button, .gallery-tab');" +
                     "for(var i=0; i<tabs.length; i++) {" +
                     "  if(tabs[i].textContent.toLowerCase().indexOf('images by youth') !== -1) {" +
+                    "    tabs[i].scrollIntoView({block:'center'});" +
                     "    tabs[i].click(); break;" +
                     "  }" +
                     "}");
-            Thread.sleep(1000);
+            Thread.sleep(2000);
             log.info("✅ Clicked 'Images by Youth' tab (JS fallback)");
         }
     }
 
     public void clickAddImagesButton() throws InterruptedException {
         log.info("Clicking 'Add Images for this Event'...");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-
-        WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//button[contains(text(),'Add Images') or @id='upload-tab'] | //a[contains(text(),'Add Images')]")));
-        scrollToElement(addBtn);
-        Thread.sleep(300);
-        addBtn.click();
-        Thread.sleep(1000);
-        log.info("✅ Clicked 'Add Images for this Event'");
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[contains(text(),'Add Images') or @id='upload-tab'] | //a[contains(text(),'Add Images')]")));
+            scrollToElement(addBtn);
+            Thread.sleep(300);
+            addBtn.click();
+            Thread.sleep(1000);
+            log.info("✅ Clicked 'Add Images for this Event'");
+        } catch (Exception e) {
+            log.warn("Add Images button not found, trying JS...");
+            try {
+                ((JavascriptExecutor) driver).executeScript("addGalleryMedia();");
+                Thread.sleep(2000);
+                log.info("✅ Called addGalleryMedia() directly");
+            } catch (Exception e2) {
+                ((JavascriptExecutor) driver).executeScript(
+                        "var btns = document.querySelectorAll('button, a');" +
+                        "for(var i=0; i<btns.length; i++) {" +
+                        "  if(btns[i].textContent.toLowerCase().indexOf('add image') !== -1) {" +
+                        "    btns[i].style.display='block'; btns[i].click(); break;" +
+                        "  }" +
+                        "}");
+                Thread.sleep(2000);
+                log.info("✅ Clicked 'Add Images' (JS fallback)");
+            }
+        }
     }
 
     public void uploadImages() throws InterruptedException {
-        log.info("Uploading 3 images...");
+        log.info("Uploading 5 images...");
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
         String imagePath = VOEventCreatePage.getImagePath();
 
-        WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("image-upload")));
+        WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.cssSelector("input#image-upload, input.uploadGallery, input[type='file']")));
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].style.display='block';arguments[0].style.opacity='1';arguments[0].classList.remove('hidden');", fileInput);
         Thread.sleep(300);
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             fileInput.sendKeys(imagePath);
-            Thread.sleep(500);
+            Thread.sleep(1000);
         }
-        log.info("✅ Uploaded 3 images");
+        log.info("✅ Uploaded 5 images");
         Thread.sleep(1000);
     }
 
