@@ -124,8 +124,17 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
-          echo "s11=$(get_status 'uploadPhoto')" >> $GITHUB_OUTPUT
-          echo "s12=$(get_status 'publishMegaEvent')" >> $GITHUB_OUTPUT
+
+          # Mega Event: combined status (PASS only when both uploadPhoto AND publishMegaEvent pass)
+          ME_UPLOAD=$(get_status 'uploadPhoto')
+          ME_CREATE=$(get_status 'publishMegaEvent')
+          if [ "$ME_UPLOAD" = "✅ PASS" ] && [ "$ME_CREATE" = "✅ PASS" ]; then
+            echo "s_mega=✅ PASS" >> $GITHUB_OUTPUT
+          elif [ "$ME_UPLOAD" = "⏭ SKIP" ] && [ "$ME_CREATE" = "⏭ SKIP" ]; then
+            echo "s_mega=⏭ SKIP" >> $GITHUB_OUTPUT
+          else
+            echo "s_mega=❌ FAIL" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload ExtentReport as artifact
         if: always()
@@ -313,7 +322,7 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee;">uploadPhoto + publishMegaEvent</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Upload photos/video to Mega Event &amp; Create + Publish new Mega Event</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ (steps.details.outputs.s11 == '✅ PASS' && steps.details.outputs.s12 == '✅ PASS') && '✅ PASS' || '❌ FAIL' }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s_mega }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
                   </tr>
                 </table>
