@@ -40,7 +40,16 @@ jobs:
             PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
             FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
             SKIPPED=$(echo "$LINE" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
-            TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            RAW_TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            # Mega Event has 2 methods (uploadPhoto + publishMegaEvent) but counts as 1 test case
+            if grep -q 'name="uploadPhoto"' "$REPORT_FILE" 2>/dev/null && grep -q 'name="publishMegaEvent"' "$REPORT_FILE" 2>/dev/null; then
+              TOTAL=$((RAW_TOTAL - 1))
+              if ! grep -A2 'name="uploadPhoto"' "$REPORT_FILE" | grep -q 'status="FAIL"' && ! grep -A2 'name="publishMegaEvent"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+                PASSED=$((${PASSED:-0} - 1))
+              fi
+            else
+              TOTAL=$RAW_TOTAL
+            fi
           else
             TOTAL="N/A"
             PASSED="N/A"
@@ -115,9 +124,8 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
-          echo "s10=$(get_status 'loginToApplication')" >> $GITHUB_OUTPUT
-          echo "s11=$(get_status 'submitUpload')" >> $GITHUB_OUTPUT
-          echo "s12=$(get_status 'verifyActiveTab')" >> $GITHUB_OUTPUT
+          echo "s11=$(get_status 'uploadPhoto')" >> $GITHUB_OUTPUT
+          echo "s12=$(get_status 'publishMegaEvent')" >> $GITHUB_OUTPUT
 
       - name: Upload ExtentReport as artifact
         if: always()
