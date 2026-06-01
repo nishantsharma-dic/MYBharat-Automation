@@ -308,7 +308,7 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee;">Create blog and verify Pending status in profile</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s10 }}</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">Nishant</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Sonali</td>
                   </tr>
                 </table>
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
