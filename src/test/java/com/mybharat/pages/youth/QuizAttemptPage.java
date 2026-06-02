@@ -441,7 +441,7 @@ public class QuizAttemptPage extends BasePage {
         JavascriptExecutor js = (JavascriptExecutor) driver;
 
         // Wait for certificate modal/download button to appear
-        Thread.sleep(3000);
+        Thread.sleep(2000);
 
         // Click Download button
         try {
@@ -451,20 +451,21 @@ public class QuizAttemptPage extends BasePage {
             Thread.sleep(500);
             js.executeScript("arguments[0].click();", downloadBtn);
             System.out.println("✅ Quiz certificate download clicked");
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (Exception e) {
             System.out.println("⚠ Download button not found: " + e.getMessage());
         }
 
-        // Close the certificate modal
+        // Close the certificate modal (short timeout — it's optional)
         try {
-            WebElement closeModal = qWait.until(
-                    ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='modal-close']")));
+            WebElement closeModal = new WebDriverWait(driver, Duration.ofSeconds(3)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath(
+                            "//span[@class='modal-close'] | //button[contains(@class,'close')] | //i[@class='fa fa-times']")));
             js.executeScript("arguments[0].click();", closeModal);
             System.out.println("✅ Quiz certificate modal closed");
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (Exception e) {
-            System.out.println("⚠ Modal close button not found: " + e.getMessage());
+            System.out.println("⚠ Modal close not needed — continuing");
         }
     }
 }

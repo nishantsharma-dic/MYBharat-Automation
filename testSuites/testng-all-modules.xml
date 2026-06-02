@@ -38,6 +38,8 @@
             <class name="com.mybharat.tests.youth.BasicInfoTest"/>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
+            <!-- Step 9: Blog Creation (user already logged in) -->
+            <class name="com.mybharat.tests.blog.BlogTest"/>
         </classes>
     </test>
 

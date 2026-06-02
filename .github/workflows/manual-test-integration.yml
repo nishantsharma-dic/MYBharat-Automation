@@ -72,6 +72,9 @@ jobs:
             PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
             FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
             TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            # Adjust count to match email table rows (verifyUserInDatabase is bundled with Registration)
+            TOTAL=$((TOTAL - 1))
+            PASSED=$((${PASSED:-0} - 1))
           else
             TOTAL="N/A"
             PASSED="N/A"
@@ -153,6 +156,7 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+          echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
 
       - name: Send test email to QA lead (personal only)
         if: always()
@@ -297,10 +301,19 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s9 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
                   </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Blog</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">writeAndPublishBlog</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Create blog and verify Pending status in profile</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s10 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Sonali</td>
+                  </tr>
                 </table>
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Download Quiz Certificate
+                  Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Blog Creation
                 </p>
                 <div style="text-align: center; margin: 25px 0;">
                   <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background: #160363; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Detailed Report & Logs</a>

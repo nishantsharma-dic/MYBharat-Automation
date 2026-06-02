@@ -50,4 +50,11 @@
         </classes>
     </test>
 
+    <!-- Step 5: Blog Creation (user already logged in) -->
+    <test name="Blog Creation">
+        <classes>
+            <class name="com.mybharat.tests.blog.BlogTest"/>
+        </classes>
+    </test>
+
 </suite>

@@ -49,3 +49,4 @@ screenshots/
 # Environment secrets (NEVER push these)
 # ========================
 *.env
+bin/
