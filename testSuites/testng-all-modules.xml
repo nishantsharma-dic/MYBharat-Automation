@@ -5,10 +5,10 @@
   ALL MODULES - Runs Public Pages in PARALLEL with the main user flow.
   
   Thread 1: Public Pages (independent, own browser)
-  Thread 2: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate
+  Thread 2: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Blog
   
-  Both threads run simultaneously, reducing total execution time.
-  Report and email content display all results together as before.
+  Total: 11 test cases in email report
+  Both threads run simultaneously, reducing total execution time (~8 min).
   
   Run with:
     mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
