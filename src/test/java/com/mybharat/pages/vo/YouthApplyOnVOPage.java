@@ -295,7 +295,29 @@ public class YouthApplyOnVOPage extends BasePage {
 
         log.info("Found {} VO cards on page", cards.size());
 
-        for (int i = 0; i < cards.size() && i < 5; i++) {
+        for (int i = 0; i < Math.min(cards.size(), 5); i++) {
+            // Re-fetch cards each iteration to avoid stale elements
+            if (i > 0) {
+                @SuppressWarnings("unchecked")
+                List<WebElement> refreshedCards = (List<WebElement>) ((JavascriptExecutor) driver).executeScript(
+                        "var results = [];" +
+                        "var all = document.querySelectorAll('a');" +
+                        "for(var j=0; j<all.length; j++) {" +
+                        "  var h = (all[j].href || '').toLowerCase();" +
+                        "  var rect = all[j].getBoundingClientRect();" +
+                        "  if(rect.width < 50 || rect.height < 50) continue;" +
+                        "  if(h.indexOf('facebook') !== -1 || h.indexOf('twitter') !== -1 || h.indexOf('sharer') !== -1) continue;" +
+                        "  if(h.indexOf('event') !== -1 || h.indexOf('volunteer') !== -1 || h.indexOf('detail') !== -1) {" +
+                        "    if(h.indexOf('#') !== h.length-1) results.push(all[j]);" +
+                        "  }" +
+                        "}" +
+                        "return results;");
+                if (refreshedCards != null && !refreshedCards.isEmpty()) {
+                    cards = refreshedCards;
+                }
+                if (i >= cards.size()) break;
+            }
+
             WebElement card = cards.get(i);
             String href = card.getAttribute("href");
             log.info("Trying VO card {} — href: {}", i + 1, href);

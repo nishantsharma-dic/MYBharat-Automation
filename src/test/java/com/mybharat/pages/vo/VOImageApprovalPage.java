@@ -183,6 +183,28 @@ public class VOImageApprovalPage extends BasePage {
         } catch (Exception e) {
             log.warn("Search button not found: {}", e.getMessage());
         }
+
+        // Check if "No records" — if so, click Reset button
+        try {
+            List<WebElement> noRecords = driver.findElements(
+                    By.xpath("//*[contains(text(),'No records') or contains(text(),'No Records') or contains(text(),'No data')]"));
+            if (!noRecords.isEmpty()) {
+                log.warn("No records found for '{}'. Clicking Reset...", eventName);
+                try {
+                    WebElement resetBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                            ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//button[normalize-space()='Reset']"
+                                            + " | //a[normalize-space()='Reset']"
+                                            + " | //input[@type='button' and @value='Reset']")));
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", resetBtn);
+                    Thread.sleep(3000);
+                    dismissOverlay();
+                    log.info("✅ Clicked Reset — showing all records");
+                } catch (Exception e2) {
+                    log.warn("Reset button not found: {}", e2.getMessage());
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     // -------------------------------------------------------------------------
