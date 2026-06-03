@@ -481,7 +481,7 @@ public class CreateYouthClubPage extends BasePage {
     // MEMBERSHIP — Search + Add 6 members
     // =========================================================================
 
-    public void addMembers(String[] emails) {
+    public int addMembers(String[] emails) {
         log.info("Adding {} members", emails.length);
         // Roles: Do NOT use the Nodal Designation role (President is taken by creator)
         // Only assign: General Secretary(1), Treasurer(1), Member(rest)
@@ -597,13 +597,12 @@ public class CreateYouthClubPage extends BasePage {
                     // NOW click Send OTP
                     jsClick(sendOtp);
                     log.info("  Send OTP clicked for member {}", i + 1);
-                    safeSleep(8000); // Wait for OTP email to arrive
+                    safeSleep(5000); // Initial wait for email delivery via AWS SES
 
                     String otp = "";
                     for (int otpAttempt = 1; otpAttempt <= 8; otpAttempt++) {
-                        try {
-                            org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
-                                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+                        try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
+                                org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
 
                             // Get inbox
                             org.apache.hc.client5.http.classic.methods.HttpPost listReq =
@@ -636,8 +635,6 @@ public class CreateYouthClubPage extends BasePage {
                             com.fasterxml.jackson.databind.JsonNode msg = mapper.readTree(msgResp).path("data").path("message");
                             String body = msg.has("html") && !msg.get("html").isNull()
                                     ? msg.get("html").asText() : msg.has("data") ? msg.get("data").asText() : "";
-
-                            httpClient.close();
 
                             if (!body.isEmpty()) {
                                 // Extract OTP — try multiple patterns
@@ -723,6 +720,7 @@ public class CreateYouthClubPage extends BasePage {
             roleIndex++;
         }
         log.info("✅ {} members added", addedCount);
+        return addedCount;
     }
 
     // =========================================================================

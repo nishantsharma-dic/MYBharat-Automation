@@ -204,7 +204,8 @@ public class CreateYouthClubTest extends BaseTest {
         }
 
         String[] emails = memberEmails.toArray(new String[0]);
-        createOrgPage.addMembers(emails);
+        int addedCount = createOrgPage.addMembers(emails);
+        Assert.assertTrue(addedCount >= 6, "Only " + addedCount + "/6 members added and verified");
     }
 
     @Test(priority = 13, dependsOnMethods = "step8_address", retryAnalyzer = Retry.class)
@@ -324,24 +325,11 @@ public class CreateYouthClubTest extends BaseTest {
     }
 
     // =========================================================================
-    // STEP 19: Members already OTP-verified during addMembers() — no action needed
-    // All 5 required members were verified via OTP in step12_membership
-    // SuperAdmin Approve button is now enabled
+    // STEP 19: SuperAdmin login and approve the Youth Club
     // =========================================================================
 
     @Test(priority = 19, dependsOnMethods = "step18_logoutAfterCreate", retryAnalyzer = Retry.class)
-    public void step19_membersAlreadyVerified() throws Exception {
-        log.info("═══ Members 1-5 already OTP-verified during membership step ═══");
-        log.info("═══ SuperAdmin Approve button is now enabled ═══");
-        // No action needed — proceed to SuperAdmin approval
-    }
-
-    // =========================================================================
-    // STEP 20: SuperAdmin login and approve the Youth Club
-    // =========================================================================
-
-    @Test(priority = 20, dependsOnMethods = "step19_membersAlreadyVerified", retryAnalyzer = Retry.class)
-    public void step20_superAdminApprove() throws Exception {
+    public void step19_superAdminApprove() throws Exception {
         log.info("═══ SuperAdmin: Approve Youth Club ═══");
 
         com.mybharat.pages.superadmin.SuperAdminLoginPage superAdminLogin =

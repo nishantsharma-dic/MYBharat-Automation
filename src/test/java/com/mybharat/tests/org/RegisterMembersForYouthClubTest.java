@@ -70,13 +70,10 @@ public class RegisterMembersForYouthClubTest {
         registeredEmails.clear();
 
         // Read last rohank number from Youth_<env>.xlsx "YouthClubMembers" sheet
-        startNumber = getLastrohankNumber() + 1;
+        startNumber = getLastRohankNumber() + 1;
         log.info("═══ Registering {} fresh members for Youth Club ═══", MEMBER_COUNT);
         log.info("═══ Email: rohank{}..rohank{}{} ═══", startNumber, startNumber + MEMBER_COUNT - 1, EMAIL_DOMAIN);
     }
-
-    /** Lock to serialize Yopmail access (avoids CAPTCHA from parallel hits) */
-    private static final Object YOPMAIL_LOCK = new Object();
 
     // =========================================================================
     // BATCH 1: Register first 3 members in parallel (Yopmail serialized)
@@ -106,7 +103,7 @@ public class RegisterMembersForYouthClubTest {
         }
 
         for (Thread t : threads) {
-            t.join();
+            t.join(300000);
         }
 
         log.info("═══ BATCH 1 COMPLETE: {}/3 registered ═══", 3 - batchErrors.size());
@@ -141,7 +138,7 @@ public class RegisterMembersForYouthClubTest {
         }
 
         for (Thread t : threads) {
-            t.join();
+            t.join(300000);
         }
 
         log.info("═══ BATCH 2 COMPLETE: {}/3 registered ═══", 3 - batchErrors.size());
@@ -392,7 +389,7 @@ public class RegisterMembersForYouthClubTest {
     // HELPERS
     // =========================================================================
 
-    private int getLastrohankNumber() {
+    private int getLastRohankNumber() {
         String env = config.getEnv();
         String filePath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
