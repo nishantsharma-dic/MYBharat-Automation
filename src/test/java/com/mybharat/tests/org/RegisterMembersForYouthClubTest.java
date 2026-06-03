@@ -7,8 +7,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,7 +40,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  * RegisterMembersForYouthClubTest — Registers 6 fresh youth users for Youth Club membership.
  *
  * Strategy: 3 parallel browsers first, then 3 more parallel browsers.
- * Email: nnnyouth{N}@yopmail.com (N auto-increments from last used number in Excel)
+ * Email: rohank{N}@yopmail.com (N auto-increments from last used number in Excel)
  * OTP Fetch: Yopmail browser tab with synchronized lock (one at a time to avoid CAPTCHA)
  *
  * Saves registered emails to:
@@ -56,12 +54,12 @@ public class RegisterMembersForYouthClubTest {
 
     private static final Logger log = LogManager.getLogger(RegisterMembersForYouthClubTest.class);
     private static final int MEMBER_COUNT = 6;
-    private static final String EMAIL_DOMAIN = "@yopmail.com";
+    private static final String EMAIL_DOMAIN = "@maildrop.cc";
 
     /** Thread-safe list to collect registered emails from all parallel threads */
     private static final CopyOnWriteArrayList<String> registeredEmails = new CopyOnWriteArrayList<>();
 
-    /** Starting number for nnnyouth emails (read from Excel in @BeforeClass) */
+    /** Starting number for rohank emails (read from Excel in @BeforeClass) */
     private static int startNumber = 1;
 
     private final ConfigReader config = new ConfigReader();
@@ -71,10 +69,10 @@ public class RegisterMembersForYouthClubTest {
         WebDriverManager.chromedriver().setup();
         registeredEmails.clear();
 
-        // Read last nnnyouth number from Youth_<env>.xlsx "YouthClubMembers" sheet
-        startNumber = getLastNnnyouthNumber() + 1;
+        // Read last rohank number from Youth_<env>.xlsx "YouthClubMembers" sheet
+        startNumber = getLastrohankNumber() + 1;
         log.info("═══ Registering {} fresh members for Youth Club ═══", MEMBER_COUNT);
-        log.info("═══ Email: nnnyouth{}..nnnyouth{}{} ═══", startNumber, startNumber + MEMBER_COUNT - 1, EMAIL_DOMAIN);
+        log.info("═══ Email: rohank{}..rohank{}{} ═══", startNumber, startNumber + MEMBER_COUNT - 1, EMAIL_DOMAIN);
     }
 
     /** Lock to serialize Yopmail access (avoids CAPTCHA from parallel hits) */
@@ -92,7 +90,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 0; i < 3; i++) {
             int memberNum = startNumber + i;
-            String email = "nnnyouth" + memberNum + EMAIL_DOMAIN;
+            String email = "rohank" + memberNum + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -127,7 +125,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 3; i < 6; i++) {
             int memberNum = startNumber + i;
-            String email = "nnnyouth" + memberNum + EMAIL_DOMAIN;
+            String email = "rohank" + memberNum + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -244,12 +242,16 @@ public class RegisterMembersForYouthClubTest {
 
             WebElement getOtpBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.cssSelector("button.generate_otp")));
+
+            // BEFORE clicking Get OTP — record current inbox count
+            int prevInboxCount = getMaildropInboxCount(email.split("@")[0]);
+
             getOtpBtn.click();
             safeSleep(2000);
-            log.info("[Member {}] OTP requested for: {}", memberNum, email);
+            log.info("[Member {}] OTP requested for: {} (prevCount={})", memberNum, email, prevInboxCount);
 
-            // Step 3: Fetch OTP from Yopmail (synchronized — one at a time to avoid CAPTCHA)
-            String otp = fetchOTPFromYopmail(driver, email, memberNum);
+            // Step 3: Fetch OTP — wait for NEW message (count > prevCount)
+            String otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
             log.info("[Member {}] OTP fetched: {}", memberNum, otp);
 
             // Step 4: Enter OTP and verify
@@ -287,129 +289,121 @@ public class RegisterMembersForYouthClubTest {
     }
 
     // =========================================================================
-    // YOPMAIL OTP FETCH — Synchronized (one at a time to avoid CAPTCHA)
+    // MAILDROP API — STABLE OTP FETCH
     // =========================================================================
 
     /**
-     * Fetch OTP from Yopmail using browser tab.
-     * Synchronized so only one thread accesses Yopmail at a time (prevents CAPTCHA).
-     * Page load + form fill happens in parallel, only Yopmail access is serialized.
+     * Get current inbox message count for a mailbox.
      */
-    private String fetchOTPFromYopmail(WebDriver driver, String email, int memberNum) throws InterruptedException {
-        // Wait for OTP email to arrive before acquiring lock
-        safeSleep(5000);
-
-        synchronized (YOPMAIL_LOCK) {
-            log.info("[Member {}] Yopmail lock acquired — fetching OTP for: {}", memberNum, email);
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-            String emailPrefix = email.split("@")[0];
-
-            // Open Yopmail in new tab
-            driver.switchTo().newWindow(WindowType.TAB);
-            driver.get(config.getDummyEmailUrl());
-            safeSleep(2000);
-
-            // Dismiss cookie/ad popup if present
-            try {
-                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
-                        "var p=document.getElementById('r_parent');if(p)p.style.display='none';" +
-                        "var c=document.querySelector('.r_popup');if(c)c.style.display='none';");
-            } catch (Exception e) { /* no popup */ }
-            safeSleep(500);
-
-            // Enter email and go
-            WebElement inbox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login")));
-            inbox.clear();
-            inbox.sendKeys(emailPrefix);
-            driver.findElement(By.cssSelector(".material-icons-outlined.f36")).click();
-            safeSleep(3000);
-
-            // Dismiss popup again after navigation
-            try {
-                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
-                        "var p=document.getElementById('r_parent');if(p)p.style.display='none';");
-            } catch (Exception e) { /* ignore */ }
-            safeSleep(500);
-
-            // Click refresh with JS (avoids element intercept)
-            try {
-                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
-                        "document.getElementById('refresh').click();");
-            } catch (Exception e) { /* ignore */ }
-            safeSleep(2000);
-
-            // Extract OTP — with retry
-            String otp = "";
-            for (int attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    driver.switchTo().defaultContent();
-                    java.util.List<WebElement> frames = driver.findElements(By.id("ifmail"));
-                    if (frames.isEmpty()) {
-                        log.warn("[Member {}] ifmail frame not found (attempt {}/3) — refreshing", memberNum, attempt);
-                        try {
-                            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
-                                    "document.getElementById('refresh').click();");
-                        } catch (Exception e) { driver.navigate().refresh(); }
-                        safeSleep(3000);
-                        continue;
-                    }
-
-                    driver.switchTo().frame("ifmail");
-                    WebElement otpElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                            By.xpath("//p[contains(text(),'Your one-time password (OTP) for registering on My')]")));
-                    String otpText = otpElement.getText();
-                    otp = otpText.split("\\. This")[0].trim().split(" is ")[1].trim();
-                    break;
-                } catch (Exception e) {
-                    try {
-                        WebElement body = driver.findElement(By.tagName("body"));
-                        Matcher matcher = Pattern.compile("\\b(\\d{4,6})\\b").matcher(body.getText());
-                        if (matcher.find()) { otp = matcher.group(1); break; }
-                    } catch (Exception e2) { /* ignore */ }
-
-                    if (attempt < 3) {
-                        driver.switchTo().defaultContent();
-                        safeSleep(3000);
-                        try {
-                            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
-                                    "document.getElementById('refresh').click();");
-                        } catch (Exception ex) { /* ignore */ }
-                        safeSleep(2000);
-                    }
-                }
-            }
-
-            // Close Yopmail tab and switch back
-            driver.switchTo().defaultContent();
-            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
-            if (tabs.size() > 1) {
-                driver.switchTo().window(tabs.get(1)).close();
-                driver.switchTo().window(tabs.get(0));
-            }
-            safeSleep(1000);
-
-            if (otp.isEmpty()) throw new RuntimeException("Could not extract OTP for member " + memberNum);
-            log.info("[Member {}] OTP: {} — releasing lock", memberNum, otp);
-            return otp;
+    private int getMaildropInboxCount(String mailbox) {
+        try {
+            org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
+                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+            org.apache.hc.client5.http.classic.methods.HttpPost req =
+                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+            req.setHeader("Content-Type", "application/json");
+            req.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                    "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
+            String resp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                    client.execute(req).getEntity());
+            client.close();
+            return new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readTree(resp).path("data").path("inbox").size();
+        } catch (Exception e) {
+            return 0;
         }
+    }
+
+    /**
+     * Fetch OTP from Maildrop API — STABLE version.
+     * Waits until a NEW message arrives (inbox count > prevCount), then reads it.
+     * Extracts OTP from <strong>XXXXXX</strong> in HTML.
+     */
+    private String fetchOTPFromMaildrop(WebDriver driver, String email, int memberNum, int prevInboxCount) throws Exception {
+        String mailbox = email.split("@")[0];
+        log.info("[Member {}] Waiting for NEW OTP email (prevCount={})", memberNum, prevInboxCount);
+
+        // Wait for new email to arrive (poll every 3 seconds, max 45 seconds)
+        safeSleep(5000); // initial wait
+
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        for (int attempt = 1; attempt <= 12; attempt++) {
+            try {
+                org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
+                        org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+
+                // Check inbox count
+                org.apache.hc.client5.http.classic.methods.HttpPost listReq =
+                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                listReq.setHeader("Content-Type", "application/json");
+                listReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                        "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
+                String listResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                        client.execute(listReq).getEntity());
+
+                com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
+                int currentCount = inbox.size();
+
+                if (currentCount <= prevInboxCount) {
+                    log.info("[Member {}] Waiting for new email (attempt {}/12, count={}/{})",
+                            memberNum, attempt, currentCount, prevInboxCount);
+                    client.close();
+                    safeSleep(3000);
+                    continue;
+                }
+
+                // NEW message arrived! Get the newest one (index 0 = most recent in Maildrop)
+                String newMsgId = inbox.get(0).get("id").asText();
+                log.info("[Member {}] New message detected: id={}", memberNum, newMsgId);
+
+                // Fetch message HTML
+                org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
+                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                msgReq.setHeader("Content-Type", "application/json");
+                msgReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                        "{\"query\":\"{ message(mailbox:\\\"" + mailbox + "\\\", id:\\\"" + newMsgId + "\\\") { id html } }\"}"));
+                String msgResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                        client.execute(msgReq).getEntity());
+                client.close();
+
+                String html = mapper.readTree(msgResp).path("data").path("message").path("html").asText();
+
+                // Extract OTP from <strong>XXXXXX</strong>
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(html);
+                if (m.find()) {
+                    String otp = m.group(1);
+                    log.info("[Member {}] ✅ OTP: {}", memberNum, otp);
+                    return otp;
+                }
+
+                log.warn("[Member {}] OTP pattern not found in new message HTML", memberNum);
+                safeSleep(3000);
+
+            } catch (Exception e) {
+                log.warn("[Member {}] API error (attempt {}/12): {}", memberNum, attempt, e.getMessage());
+                safeSleep(3000);
+            }
+        }
+        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived)");
     }
 
     // =========================================================================
     // HELPERS
     // =========================================================================
 
-    private int getLastNnnyouthNumber() {
+    private int getLastrohankNumber() {
         String env = config.getEnv();
         String filePath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
 
         File file = new File(filePath);
-        if (!file.exists()) return 0;
+        if (!file.exists()) return 90000;
 
         try (FileInputStream fis = new FileInputStream(file);
              Workbook wb = new XSSFWorkbook(fis)) {
             Sheet sheet = wb.getSheet("YouthClubMembers");
-            if (sheet == null) return 0;
+            if (sheet == null) return 90000;
 
             int maxNum = 0;
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -418,16 +412,22 @@ public class RegisterMembersForYouthClubTest {
                 String email = row.getCell(0).getCellType() == CellType.STRING
                         ? row.getCell(0).getStringCellValue().trim()
                         : row.getCell(0).toString().trim();
-                // Extract number from nnnyouth{N}@yopmail.com
-                if (email.startsWith("nnnyouth") && email.contains("@")) {
+                // Extract number from rohank{N}@maildrop.cc
+                if (email.startsWith("rohank") && email.contains("@")) {
                     try {
-                        String numStr = email.replace("nnnyouth", "").split("@")[0];
+                        String numStr = email.replace("rohank", "").split("@")[0];
                         int num = Integer.parseInt(numStr);
                         if (num > maxNum) maxNum = num;
                     } catch (NumberFormatException e) { /* skip */ }
                 }
             }
-            log.info("Last nnnyouth number in Excel: {}", maxNum);
+
+            // If no rohank entries found, start from 90000
+            if (maxNum == 0) {
+                maxNum = 90000;
+            }
+
+            log.info("Last rohank number in Excel: {}", maxNum);
             return maxNum;
         } catch (Exception e) {
             log.warn("Could not read YouthClubMembers sheet: {}", e.getMessage());

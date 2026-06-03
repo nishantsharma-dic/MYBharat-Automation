@@ -574,79 +574,90 @@ public class CreateYouthClubPage extends BasePage {
                     // Scroll specifically to the Send OTP element
                     js.executeScript("arguments[0].scrollIntoView({block:'center',behavior:'instant'});", sendOtp);
                     safeSleep(500);
+
+                    // BEFORE clicking Send OTP — capture current inbox count
+                    String mailbox = email.split("@")[0];
+                    int prevCount = 0;
+                    try {
+                        org.apache.hc.client5.http.impl.classic.CloseableHttpClient preClient =
+                                org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+                        org.apache.hc.client5.http.classic.methods.HttpPost preReq =
+                                new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                        preReq.setHeader("Content-Type", "application/json");
+                        preReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                                "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
+                        String preResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                                preClient.execute(preReq).getEntity());
+                        prevCount = new com.fasterxml.jackson.databind.ObjectMapper()
+                                .readTree(preResp).path("data").path("inbox").size();
+                        preClient.close();
+                    } catch (Exception preEx) { /* ignore */ }
+                    log.info("  prevCount={} for {} — NOW clicking Send OTP", prevCount, mailbox);
+
+                    // NOW click Send OTP
                     jsClick(sendOtp);
                     log.info("  Send OTP clicked for member {}", i + 1);
-                    safeSleep(5000); // Wait for OTP email
+                    safeSleep(8000); // Wait for OTP email to arrive
 
-                    // Open Yopmail in new tab, get OTP
-                    String mainWindow = driver.getWindowHandle();
-                    driver.switchTo().newWindow(org.openqa.selenium.WindowType.TAB);
-                    driver.get("https://yopmail.com/en/");
-                    safeSleep(1000);
-
-                    WebElement inbox = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                            ExpectedConditions.visibilityOfElementLocated(By.id("login")));
-                    inbox.clear();
-                    inbox.sendKeys(email.split("@")[0]);
-
-                    // Dismiss Google Ads overlay on Yopmail before clicking go button
-                    try {
-                        ((JavascriptExecutor) driver).executeScript(
-                                "document.querySelectorAll('iframe[id*=\"aswift\"], iframe[id*=\"google_ads\"], div[id*=\"ad\"]').forEach(function(el){el.style.display='none';});" +
-                                "var p=document.getElementById('r_parent');if(p)p.style.display='none';");
-                    } catch (Exception adEx) { /* ignore */ }
-                    safeSleep(500);
-
-                    // Click Go button via JS to avoid intercept
-                    try {
-                        ((JavascriptExecutor) driver).executeScript(
-                                "document.querySelector('.material-icons-outlined.f36').click();");
-                    } catch (Exception goEx) {
-                        driver.findElement(By.cssSelector(".material-icons-outlined.f36")).click();
-                    }
-                    safeSleep(3000);
-
-                    // Dismiss Google Ads overlay before clicking refresh
-                    try {
-                        ((JavascriptExecutor) driver).executeScript(
-                                "document.querySelectorAll('iframe[id*=\"aswift\"], iframe[id*=\"google_ads\"]').forEach(function(el){el.style.display='none';});" +
-                                "var p=document.getElementById('r_parent');if(p)p.style.display='none';");
-                    } catch (Exception adEx) { /* ignore */ }
-                    safeSleep(500);
-
-                    // Click refresh via JS to avoid element intercept
-                    try {
-                        ((JavascriptExecutor) driver).executeScript("document.getElementById('refresh').click();");
-                    } catch (Exception er) { /* ignore */ }
-                    safeSleep(3000);
-
-                    // Extract OTP from email — look for exactly 6-digit number
-                    driver.switchTo().frame("ifmail");
                     String otp = "";
-                    try {
-                        WebElement body = driver.findElement(By.tagName("body"));
-                        String bodyText = body.getText();
-                        // First try: find 6-digit OTP specifically
-                        java.util.regex.Matcher matcher6 = java.util.regex.Pattern.compile("\\b(\\d{6})\\b").matcher(bodyText);
-                        if (matcher6.find()) {
-                            otp = matcher6.group(1);
-                        } else {
-                            // Fallback: 4-6 digit number
-                            java.util.regex.Matcher matcherAll = java.util.regex.Pattern.compile("\\b(\\d{4,6})\\b").matcher(bodyText);
-                            if (matcherAll.find()) otp = matcherAll.group(1);
-                        }
-                    } catch (Exception e3) { /* ignore */ }
-                    log.info("  OTP extracted: {}", otp);
+                    for (int otpAttempt = 1; otpAttempt <= 8; otpAttempt++) {
+                        try {
+                            org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
+                                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
 
-                    // Close Yopmail tab, switch back
-                    driver.switchTo().defaultContent();
-                    for (String handle : driver.getWindowHandles()) {
-                        if (!handle.equals(mainWindow)) {
-                            driver.switchTo().window(handle).close();
+                            // Get inbox
+                            org.apache.hc.client5.http.classic.methods.HttpPost listReq =
+                                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                            listReq.setHeader("Content-Type", "application/json");
+                            listReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                                    "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id subject date } }\"}"));
+                            String listResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                                    httpClient.execute(listReq).getEntity());
+
+                            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                            com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
+
+                            if (inbox.size() <= prevCount) {
+                                log.info("  No NEW email yet for {} (attempt {}/8, count={})", mailbox, otpAttempt, inbox.size());
+                                safeSleep(3000);
+                                continue;
+                            }
+
+                            // Get the NEWEST message — try index 0 first (Maildrop may return newest first)
+                            String msgId = inbox.get(0).get("id").asText();
+                            org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
+                                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                            msgReq.setHeader("Content-Type", "application/json");
+                            msgReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                                    "{\"query\":\"{ message(mailbox:\\\"" + mailbox + "\\\", id:\\\"" + msgId + "\\\") { id html data } }\"}"));
+                            String msgResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                                    httpClient.execute(msgReq).getEntity());
+
+                            com.fasterxml.jackson.databind.JsonNode msg = mapper.readTree(msgResp).path("data").path("message");
+                            String body = msg.has("html") && !msg.get("html").isNull()
+                                    ? msg.get("html").asText() : msg.has("data") ? msg.get("data").asText() : "";
+
+                            httpClient.close();
+
+                            if (!body.isEmpty()) {
+                                // Extract OTP — try multiple patterns
+                                // Pattern 1: "Your OTP: XXXXXX" (member verification format)
+                                java.util.regex.Matcher mYourOtp = java.util.regex.Pattern.compile("Your OTP:\\s*(\\d{6})").matcher(body);
+                                if (mYourOtp.find()) { otp = mYourOtp.group(1); break; }
+                                // Pattern 2: "<strong>XXXXXX</strong>" (registration format)
+                                java.util.regex.Matcher mStrong = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(body);
+                                if (mStrong.find()) { otp = mStrong.group(1); break; }
+                                // Pattern 3: "OTP is XXXXXX" or "is XXXXXX"
+                                java.util.regex.Matcher mIs = java.util.regex.Pattern.compile("(?:OTP|is)\\s+(?:<[^>]+>)*(\\d{6})").matcher(body);
+                                if (mIs.find()) { otp = mIs.group(1); break; }
+                            }
+                            safeSleep(3000);
+                        } catch (Exception apiEx) {
+                            log.warn("  Maildrop API error (attempt {}/8): {}", otpAttempt, apiEx.getMessage());
+                            safeSleep(3000);
                         }
                     }
-                    driver.switchTo().window(mainWindow);
-                    safeSleep(1000);
+                    log.info("  OTP extracted via Maildrop API: {}", otp);
 
                     // Enter OTP in the OTP field (last one)
                     if (!otp.isEmpty()) {

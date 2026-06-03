@@ -161,7 +161,7 @@ public class CreateYouthClubTest extends BaseTest {
         String env = cfg.getEnv();
 
         // Read fresh members from Youth_<env>.xlsx "YouthClubMembers" sheet
-        // Only pick the 6 most recently registered (highest nnnyouth numbers)
+        // Only pick the 6 most recently registered (highest rohank numbers)
         String youthPath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
 
@@ -169,15 +169,15 @@ public class CreateYouthClubTest extends BaseTest {
              Workbook wb = new XSSFWorkbook(fis)) {
             Sheet sheet = wb.getSheet("YouthClubMembers");
             if (sheet != null) {
-                // Collect all nnnyouth emails with their numbers
+                // Collect all rohank emails with their numbers
                 java.util.TreeMap<Integer, String> emailsByNumber = new java.util.TreeMap<>();
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row == null || row.getCell(0) == null) continue;
                     String email = row.getCell(0).getStringCellValue().trim();
-                    if (email.startsWith("nnnyouth") && email.contains("@")) {
+                    if (email.startsWith("rohank") && email.contains("@")) {
                         try {
-                            int num = Integer.parseInt(email.replace("nnnyouth", "").split("@")[0]);
+                            int num = Integer.parseInt(email.replace("rohank", "").split("@")[0]);
                             emailsByNumber.put(num, email);
                         } catch (NumberFormatException e) { /* skip */ }
                     }
@@ -192,7 +192,7 @@ public class CreateYouthClubTest extends BaseTest {
                         memberEmails.add(email);
                     }
                 }
-                log.info("Read {} fresh member emails (newest nnnyouth numbers)", memberEmails.size());
+                log.info("Read {} fresh member emails (newest rohank numbers)", memberEmails.size());
             }
         } catch (Exception e) {
             log.warn("YouthClubMembers sheet not found: {}", e.getMessage());
@@ -200,7 +200,7 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Ensure enough emails
         while (memberEmails.size() < 10) {
-            memberEmails.add("nnnyouth" + (memberEmails.size() + 100) + "@yopmail.com");
+            memberEmails.add("rohank" + (memberEmails.size() + 100) + "@yopmail.com");
         }
 
         String[] emails = memberEmails.toArray(new String[0]);
