@@ -70,6 +70,9 @@ public class VOLoginPage extends BasePage {
         fetchOTPFromYopmail(loginEmail);
         clickVerifyOTP();
 
+        // Handle "Confirm your participation in youth club" popup if present
+        dismissYouthClubInvitationPopup();
+
         log.info("✅ VO Login successful for: {}", loginEmail);
     }
 
@@ -101,6 +104,26 @@ public class VOLoginPage extends BasePage {
             safeSleep(300);
         } catch (Exception e) {
             // No popup — continue
+        }
+    }
+
+    /**
+     * Dismiss "Confirm your participation in youth club as a member" popup.
+     * Clicks "Accept" if present; if not found, ignores silently.
+     * This popup appears intermittently after login for some users.
+     */
+    private void dismissYouthClubInvitationPopup() {
+        try {
+            WebElement acceptBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[normalize-space()='Accept']"
+                                    + " | //button[contains(text(),'Accept')]")));
+            acceptBtn.click();
+            log.info("✅ Youth Club invitation popup accepted");
+            safeSleep(1000);
+        } catch (Exception e) {
+            // Popup not present — continue normally
+            log.info("No Youth Club invitation popup — continuing");
         }
     }
 
