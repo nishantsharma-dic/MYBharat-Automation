@@ -57,7 +57,7 @@ public class BlogAdminPage extends BasePage {
     private String youthWindowHandle;
     private String adminWindowHandle;
 
-    // Locators - Login
+    // Locators - Login (React frontend)
     private static final By SIGN_IN_BUTTON = By.xpath("//span[normalize-space()='Sign In']");
     private static final By LOGIN_WITH_PASSWORD = By.xpath("//span[@id='login_with_pwd']");
     private static final By USERNAME_INPUT = By.xpath("//input[@id='username']");
@@ -65,11 +65,15 @@ public class BlogAdminPage extends BasePage {
     private static final By CONSENT_CHECKBOX = By.cssSelector("#consentCheck2");
     private static final By LOGIN_BUTTON = By.xpath("//button[@id='signInButton']");
 
-    // Locators - Logout (user menu)
+    // Locators - Logout (user menu on React frontend)
     private static final By USER_MENU_BUTTON = By.cssSelector("button[class='flex items-center gap-3 cursor-pointer']");
     private static final By LOGOUT_BUTTON = By.xpath("(//button[@class='flex items-center gap-3 w-full text-left px-5 py-1 text-[15px] text-[#184c5c] hover:bg-gray-100 transition cursor-pointer'])[1]");
 
-    // Locators - Admin Dashboard
+    // Locators - Login As User (/settings/loginas_user)
+    private static final By LOGIN_AS_USER_USERNAME = By.xpath("//input[@id='username']");
+    private static final By LOGIN_AS_USER_SUBMIT = By.xpath("//input[@value='Submit']");
+
+    // Locators - Admin Side Menu
     private static final By NEWSLETTER_BLOGS_MENU = By.xpath("//a[@title='Newsletter and Blogs']");
     private static final By APPROVE_BUTTON = By.xpath("//button[normalize-space()='Approve'] | //button[normalize-space()='Publish']");
     private static final By APPROVED_TAB = By.xpath("//button[normalize-space()='Approved']");
@@ -90,7 +94,8 @@ public class BlogAdminPage extends BasePage {
     }
 
     /**
-     * Login as admin with password credentials.
+     * Login as admin with password credentials via the React frontend.
+     * After login, navigates to /settings/loginas_user to impersonate the blog verifier.
      */
     public void loginAsAdmin() throws InterruptedException {
         String env = System.getProperty("env", "beta");
@@ -162,8 +167,51 @@ public class BlogAdminPage extends BasePage {
         WebElement loginBtn = longWait.until(ExpectedConditions.elementToBeClickable(LOGIN_BUTTON));
         jsClick(loginBtn);
         waitForPageLoad();
-        Thread.sleep(500);
+        Thread.sleep(2000);
         log.info("✅ Admin logged in successfully");
+
+        // Now navigate to Login As User page and impersonate the blog verifier
+        loginAsUser();
+    }
+
+    /**
+     * Navigate to /settings/loginas_user and impersonate the blog verifier user.
+     * Beta: jykmqows@gmail.com
+     * Prod: pankaj.dhamija@gov.in1
+     */
+    private void loginAsUser() throws InterruptedException {
+        String env = System.getProperty("env", "beta");
+        String loginAsUserUrl;
+        String impersonateEmail;
+
+        if (env.equals("prod")) {
+            loginAsUserUrl = "https://mybharat.gov.in/settings/loginas_user";
+            impersonateEmail = "pankaj.dhamija@gov.in1";
+        } else {
+            loginAsUserUrl = "https://yuva-beta.mybharats.in/settings/loginas_user";
+            impersonateEmail = "jykmqows@gmail.com";
+        }
+
+        log.info("Navigating to Login As User: {}", loginAsUserUrl);
+        driver.get(loginAsUserUrl);
+        waitForPageLoad();
+        Thread.sleep(3000); // Allow extra time for the admin panel page to fully render
+
+        // Enter the impersonation email
+        WebDriverWait extendedWait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        WebElement usernameField = extendedWait.until(ExpectedConditions.visibilityOfElementLocated(LOGIN_AS_USER_USERNAME));
+        usernameField.clear();
+        usernameField.sendKeys(impersonateEmail);
+        log.info("Entered impersonation email: {}", impersonateEmail);
+        Thread.sleep(300);
+
+        // Click Submit (form uses AJAX — will redirect on success)
+        WebElement submitBtn = extendedWait.until(ExpectedConditions.elementToBeClickable(LOGIN_AS_USER_SUBMIT));
+        jsClick(submitBtn);
+        Thread.sleep(3000); // Wait for AJAX + cookie set + redirect
+        waitForPageLoad();
+        Thread.sleep(1000);
+        log.info("✅ Logged in as user: {}", impersonateEmail);
     }
 
     /**
