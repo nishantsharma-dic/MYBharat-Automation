@@ -334,12 +334,14 @@ public class BlogAdminPage extends BasePage {
     }
 
     /**
-     * Switch to youth account: logout current session.
+     * Switch to youth account: clear session completely for fresh youth login.
      */
     public void switchToYouthWindow() throws InterruptedException {
-        log.info("Switching to youth account (logging out)...");
-        performLogout();
-        log.info("Logged out");
+        log.info("Switching to youth account (clearing session)...");
+        // Clear all cookies to remove any admin/partner session from "login as user"
+        driver.manage().deleteAllCookies();
+        Thread.sleep(500);
+        log.info("Session cleared");
     }
 
     /**
