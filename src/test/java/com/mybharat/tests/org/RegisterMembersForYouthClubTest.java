@@ -452,11 +452,16 @@ public class RegisterMembersForYouthClubTest {
         WebElement firstName = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("firstname")));
         scrollToElement(driver, firstName);
         firstName.clear();
-        firstName.sendKeys(faker.name().firstName());
+        // Ensure min 4 chars, no special characters/symbols
+        String fName = faker.name().firstName().replaceAll("[^a-zA-Z]", "");
+        if (fName.length() < 4) fName = fName + "test";
+        firstName.sendKeys(fName);
 
         WebElement lastName = driver.findElement(By.id("lastname"));
         lastName.clear();
-        lastName.sendKeys(faker.name().lastName());
+        String lName = faker.name().lastName().replaceAll("[^a-zA-Z]", "");
+        if (lName.length() < 4) lName = lName + "user";
+        lastName.sendKeys(lName);
 
         driver.findElement(By.id("dobDD")).sendKeys(String.valueOf(faker.number().numberBetween(1, 28)));
         driver.findElement(By.id("dobMM")).sendKeys(String.valueOf(faker.number().numberBetween(1, 12)));

@@ -56,7 +56,7 @@ public class CreateYouthClubTest extends BaseTest {
         logoutPage = new LogoutPage(driver);
         createOrgPage = new CreateYouthClubPage(driver);
 
-        // Read a RANDOM user from Youth_<env>.xlsx UserData sheet for login (OTP)
+        // Read last user from Youth_<env>.xlsx UserData sheet for login (OTP)
         ConfigReader cfg = new ConfigReader();
         String env = cfg.getEnv();
         String youthPath = System.getProperty("user.dir") + File.separator
@@ -65,21 +65,12 @@ public class CreateYouthClubTest extends BaseTest {
              Workbook wb = new XSSFWorkbook(fis)) {
             Sheet sheet = wb.getSheet("UserData");
             if (sheet == null) sheet = wb.getSheetAt(0);
-            int lastRow = sheet.getLastRowNum();
-            // Pick a random row (skip header row 0)
-            int randomRow = lastRow > 1
-                    ? 1 + new java.util.Random().nextInt(lastRow)
-                    : lastRow;
-            Row row = sheet.getRow(randomRow);
-            // Fallback to last row if random row is null
-            if (row == null || row.getCell(0) == null) {
-                row = sheet.getRow(lastRow);
-            }
+            Row row = sheet.getRow(sheet.getLastRowNum());
             loginEmail = row.getCell(0).getStringCellValue().trim();
         } catch (Exception e) {
             throw new RuntimeException("Failed to read Youth_" + env + ".xlsx: " + e.getMessage(), e);
         }
-        log.info("[SETUP] Login email (random): {}", loginEmail);
+        log.info("[SETUP] Login email: {}", loginEmail);
     }
 
     @Test(priority = 1, retryAnalyzer = Retry.class)
