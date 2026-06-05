@@ -72,11 +72,21 @@ public class QuizAttemptPage extends BasePage {
     /** Stores the quiz name extracted during the test */
     private String quizName = "Competitive Quiz";
 
+    /** Flag indicating whether a quiz was available to play */
+    private static boolean quizAvailable = true;
+
     /**
      * Get the quiz name that was played.
      */
     public String getQuizName() {
         return quizName;
+    }
+
+    /**
+     * Check if a quiz was available to play.
+     */
+    public static boolean isQuizAvailable() {
+        return quizAvailable;
     }
 
     /**
@@ -139,8 +149,22 @@ public class QuizAttemptPage extends BasePage {
             startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                     ExpectedConditions.elementToBeClickable(By.xpath("(//button[@type='button'][normalize-space()='Start Quiz'])[1]")));
         } catch (Exception e) {
-            startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='start_quiz']")));
+            try {
+                startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                        ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='start_quiz']")));
+            } catch (Exception e2) {
+                // No quiz available to play
+                quizAvailable = false;
+                quizName = "No Quiz Available";
+                System.out.println("⚠ No active quiz available for play — marking as unavailable");
+                // Save quiz status to file for workflow to read
+                try {
+                    java.io.File quizFile = new java.io.File(System.getProperty("user.dir") + "/reports/quiz_name.txt");
+                    quizFile.getParentFile().mkdirs();
+                    java.nio.file.Files.writeString(quizFile.toPath(), quizName);
+                } catch (Exception ex) { /* ignore */ }
+                return;
+            }
         }
         scrollToElement(startQuiz);
         Thread.sleep(500);

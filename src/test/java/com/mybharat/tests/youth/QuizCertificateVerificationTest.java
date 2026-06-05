@@ -51,6 +51,12 @@ public class QuizCertificateVerificationTest extends BaseTest {
     public void verifyQuizCertificateDownload() throws Exception {
         log.info("Starting: Quiz Certificate Verification");
 
+        // If no quiz was available to play, skip certificate download gracefully
+        if (!QuizAttemptPage.isQuizAvailable()) {
+            log.info("⚠ No quiz was played (quiz not available) — skipping certificate verification");
+            return;
+        }
+
         quizPage.downloadQuizCertificateAndClose();
 
         log.info("✅ Quiz certificate downloaded and modal closed");

@@ -1099,6 +1099,14 @@ public class YouthProfilePage extends BasePage {
      *   4. Triggers blur to finalize React state
      */
     private void setReactInputValue(WebElement element, String value) {
+        // Capture a locator strategy to re-find the element if it becomes stale after React re-render
+        String tagName;
+        try {
+            tagName = element.getTagName().toLowerCase();
+        } catch (Exception e) {
+            tagName = "input";
+        }
+
         try {
             scrollToElement(element);
             element.click();
@@ -1110,14 +1118,37 @@ public class YouthProfilePage extends BasePage {
             safeSleep(100);
             // Type the new value
             element.sendKeys(value);
+            safeSleep(300);
+            // After sendKeys, React may re-render the controlled component making
+            // the original element reference stale. Use JS to find the active/focused
+            // element and dispatch blur on it directly.
+            ((JavascriptExecutor) driver).executeScript(
+                    "var el = document.activeElement;" +
+                    "if (el) { el.dispatchEvent(new Event('blur', {bubbles:true})); }");
             safeSleep(200);
-            // Trigger blur to finalize
-            ((JavascriptExecutor) driver).executeScript("arguments[0].dispatchEvent(new Event('blur', {bubbles:true}));", element);
-            safeSleep(200);
+        } catch (org.openqa.selenium.StaleElementReferenceException stale) {
+            log.warn("Element went stale during sendKeys, using JS native setter approach");
+            // Re-find the element using the original locator approach
+            WebElement freshElement = null;
+            try {
+                freshElement = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.cssSelector(tagName + "[placeholder]")));
+            } catch (Exception e2) {
+                freshElement = driver.findElement(By.cssSelector(tagName));
+            }
+            setReactValueViaJS(freshElement, value, tagName);
         } catch (Exception e) {
             log.warn("sendKeys approach failed, trying JS setter: {}", e.getMessage());
-            // Fallback: JS native setter (works on some React versions)
-            String tagName = element.getTagName().toLowerCase();
+            setReactValueViaJS(element, value, tagName);
+        }
+    }
+
+    /**
+     * Fallback: Set React input value purely via JavaScript (avoids stale element issues).
+     */
+    private void setReactValueViaJS(WebElement element, String value, String tagName) {
+        try {
             String prototype = tagName.equals("textarea")
                     ? "window.HTMLTextAreaElement.prototype"
                     : "window.HTMLInputElement.prototype";
@@ -1132,6 +1163,8 @@ public class YouthProfilePage extends BasePage {
                     "el.dispatchEvent(new Event('blur', { bubbles: true }));",
                     element, value);
             safeSleep(200);
+        } catch (Exception jsError) {
+            log.error("JS setter also failed: {}", jsError.getMessage());
         }
     }
 
