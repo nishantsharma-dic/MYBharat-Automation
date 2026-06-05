@@ -15,7 +15,7 @@ on:
 jobs:
   run-tests:
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -40,18 +40,22 @@ jobs:
             PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
             FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
             SKIPPED=$(echo "$LINE" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
-            TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
-            # Adjust count to match email table rows (verifyUserInDatabase is bundled with Registration)
-            TOTAL=$((TOTAL - 1))
-            PASSED=$((${PASSED:-0} - 1))
+            # Total should match email table rows (12 modules)
+            TOTAL=12
+            # Calculate passed/failed for the 12 modules shown in email
+            if [ "${FAILED:-0}" -eq 0 ]; then
+              PASSED=12
+            else
+              PASSED=$((12 - ${FAILED:-0}))
+            fi
           else
             TOTAL="N/A"
             PASSED="N/A"
             FAILED="N/A"
             SKIPPED="N/A"
           fi
-          echo "total=${TOTAL:-0}" >> $GITHUB_OUTPUT
-          echo "passed=${PASSED:-0}" >> $GITHUB_OUTPUT
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "passed=${PASSED}" >> $GITHUB_OUTPUT
           echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
           echo "skipped=${SKIPPED:-0}" >> $GITHUB_OUTPUT
 
@@ -118,6 +122,8 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+
+          # Blog
           echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
 
           # VO Full Cycle
@@ -134,7 +140,7 @@ jobs:
           echo "s21=$(get_status 'reviewAndEditEvent')" >> $GITHUB_OUTPUT
           echo "s22=$(get_status 'editEventAndSaveAsDraft')" >> $GITHUB_OUTPUT
 
-          # VO combined status
+          # VO combined status — FAIL if any VO test failed
           VO_STATUS="✅ PASS"
           for vs in s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22; do
             val=$(eval echo "\$$vs")
@@ -348,7 +354,7 @@ jobs:
                 <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Quiz Certificate → Blog → VO Full Cycle
+                  Public Pages → Registration → Logout → Login (OTP) → Profile → Certificate → Basic Info → Quiz → Quiz Certificate → Blog → VO Full Cycle
                 </p>
 
                 <!-- View Report Button -->

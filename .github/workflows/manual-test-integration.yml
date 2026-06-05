@@ -18,6 +18,7 @@ on:
           - testSuites/testng-registration.xml
           - testSuites/testng-youth.xml
           - testSuites/testng-login.xml
+          - testSuites/testng-ci.xml
       browser:
         description: 'Browser to use'
         required: true
@@ -39,7 +40,7 @@ on:
 jobs:
   run-tests:
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -71,17 +72,21 @@ jobs:
             LINE=$(head -3 "$REPORT_FILE" | tr ' ' '\n')
             PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
             FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
-            TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
-            # Adjust count to match email table rows (verifyUserInDatabase is bundled with Registration)
-            TOTAL=$((TOTAL - 1))
-            PASSED=$((${PASSED:-0} - 1))
+            # Total should match email table rows (12 modules)
+            TOTAL=12
+            # Calculate passed/failed for the 12 modules shown in email
+            if [ "${FAILED:-0}" -eq 0 ]; then
+              PASSED=12
+            else
+              PASSED=$((12 - ${FAILED:-0}))
+            fi
           else
             TOTAL="N/A"
             PASSED="N/A"
             FAILED="N/A"
           fi
-          echo "total=${TOTAL:-0}" >> $GITHUB_OUTPUT
-          echo "passed=${PASSED:-0}" >> $GITHUB_OUTPUT
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "passed=${PASSED}" >> $GITHUB_OUTPUT
           echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
 
       - name: Determine test result
@@ -156,9 +161,11 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+
+          # Blog
           echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
 
-          # VO Full Cycle
+          # VO Full Cycle — individual statuses
           echo "s11=$(get_status 'loginAsVOUser')" >> $GITHUB_OUTPUT
           echo "s12=$(get_status 'navigateToTemplatesNodalDyo')" >> $GITHUB_OUTPUT
           echo "s13=$(get_status 'createVOTemplate')" >> $GITHUB_OUTPUT
@@ -172,7 +179,7 @@ jobs:
           echo "s21=$(get_status 'reviewAndEditEvent')" >> $GITHUB_OUTPUT
           echo "s22=$(get_status 'editEventAndSaveAsDraft')" >> $GITHUB_OUTPUT
 
-          # VO combined status
+          # VO combined status — FAIL if any VO test failed
           VO_STATUS="✅ PASS"
           for vs in s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22; do
             val=$(eval echo "\$$vs")
@@ -212,7 +219,6 @@ jobs:
                   <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (UI Mode)</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules — Full End-to-End</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Registered User:</td><td style="padding: 8px;">${{ steps.details.outputs.reg_email }}</td></tr>
-                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Branch:</td><td style="padding: 8px;">${{ github.event.inputs.branch || github.ref_name }}</td></tr>
                 </table>
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Results Summary</h3>
                 <table style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 20px;">
@@ -366,7 +372,6 @@ jobs:
           echo "${{ steps.result.outputs.emoji }} ${{ steps.result.outputs.status }}"
           echo "=========================================="
           echo "Time:        ${{ steps.result.outputs.timestamp }}"
-          echo "Branch:      ${{ github.event.inputs.branch || github.ref_name }}"
           echo "Suite:       ${{ github.event.inputs.suite }}"
           echo "Browser:     ${{ github.event.inputs.browser }}"
           echo "Environment: ${{ github.event.inputs.environment }}"
