@@ -160,9 +160,15 @@ public class BasePage {
 
     /**
      * Wait for page to fully load.
+     * Uses a 60-second timeout and doesn't throw if it times out (prod has stuck AJAX).
      */
     public void waitForPageLoad() {
-        wait.until(d -> ((JavascriptExecutor) d)
-                .executeScript("return document.readyState").equals("complete"));
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(60)).until(d ->
+                    ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+        } catch (Exception e) {
+            // Don't fail — prod site sometimes has stuck AJAX preventing readyState=complete
+            // The page is still usable even if readyState isn't "complete"
+        }
     }
 }

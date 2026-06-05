@@ -6,9 +6,9 @@
   ║               MY BHARAT - ALL MODULES E2E SUITE                     ║
   ╠══════════════════════════════════════════════════════════════════════╣
   ║                                                                     ║
-  ║  Execution Mode: PARALLEL (2 threads)                               ║
-  ║  Total Test Cases: 11 (as reported in email)                        ║
-  ║  Approx Duration: ~8 minutes                                        ║
+  ║  Execution Mode: PARALLEL (3 threads)                               ║
+  ║  Total Test Cases: 12 (as reported in email)                        ║
+  ║  Approx Duration: ~10 minutes                                       ║
   ║                                                                     ║
   ║  Thread 1 (Public Pages):                                           ║
   ║    - Validates all header menus, org sections, footer links         ║
@@ -20,6 +20,11 @@
   ║    → Blog Creation                                                  ║
   ║    - All steps share the SAME browser session (user stays logged in)║
   ║                                                                     ║
+  ║  Thread 3 (VO Full Cycle):                                          ║
+  ║    - Org Login → Template → Create Event → Youth Apply              ║
+  ║    → Image Approval → Edit Event                                    ║
+  ║    - Independent browser session                                    ║
+  ║                                                                     ║
   ║  CI/CD:                                                             ║
   ║    - Scheduled: Runs daily on main branch (email to seniors)        ║
   ║    - Manual: Trigger from Actions tab on integration branch         ║
@@ -30,7 +35,7 @@
   ║                                                                     ║
   ╚══════════════════════════════════════════════════════════════════════╝
 -->
-<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1"
+<suite name="MYBharat All Modules" parallel="tests" thread-count="3" verbose="1"
        group-by-instances="true" preserve-order="true">
 
     <listeners>
@@ -78,6 +83,40 @@
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
             <!-- Step 9: Navigate to /blogs/, create blog, verify Pending status in My Blogs -->
             <class name="com.mybharat.tests.blog.BlogTest"/>
+        </classes>
+    </test>
+
+    <!--
+      THREAD 3: VO Full Cycle (independent browser, single session)
+      - Org user logs in → Creates template → Creates event
+      - Youth logs in → Applies on event → Uploads images
+      - Org logs back in → Approves images → Edits event
+      - Developer: Alamgeer / Manoj
+    -->
+    <test name="VO Full Cycle" preserve-order="true">
+        <classes>
+            <!-- Step 1: Login as VO organization user -->
+            <class name="com.mybharat.tests.vo.VOLoginTest"/>
+            <!-- Step 2: Navigate to Templates and select Nodal/DYO -->
+            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
+            <!-- Step 3: Create a new VO template -->
+            <class name="com.mybharat.tests.vo.VOCreateTest"/>
+            <!-- Step 4: Navigate to Add Event page -->
+            <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
+            <!-- Step 5: Create a new VO event -->
+            <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
+            <!-- Step 6: Login as youth user (new session) -->
+            <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
+            <!-- Step 7: Youth applies on the VO event -->
+            <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
+            <!-- Step 8: Youth logs out -->
+            <class name="com.mybharat.tests.vo.VOYouthLogoutTest"/>
+            <!-- Step 9: Org user logs back in -->
+            <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
+            <!-- Step 10: Review and approve uploaded images -->
+            <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
+            <!-- Step 11: Edit event and save as draft -->
+            <class name="com.mybharat.tests.vo.VOEventEditTest"/>
         </classes>
     </test>
 

@@ -120,6 +120,31 @@ jobs:
           echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
           echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
 
+          # VO Full Cycle
+          echo "s11=$(get_status 'loginAsVOUser')" >> $GITHUB_OUTPUT
+          echo "s12=$(get_status 'navigateToTemplatesNodalDyo')" >> $GITHUB_OUTPUT
+          echo "s13=$(get_status 'createVOTemplate')" >> $GITHUB_OUTPUT
+          echo "s14=$(get_status 'navigateToAddEvent')" >> $GITHUB_OUTPUT
+          echo "s15=$(get_status 'createVOEvent')" >> $GITHUB_OUTPUT
+          echo "s16=$(get_status 'loginAsYouthUser')" >> $GITHUB_OUTPUT
+          echo "s17=$(get_status 'applyOnVOEvent')" >> $GITHUB_OUTPUT
+          echo "s18=$(get_status 'uploadImagesForEvent')" >> $GITHUB_OUTPUT
+          echo "s19=$(get_status 'logoutYouthUser')" >> $GITHUB_OUTPUT
+          echo "s20=$(get_status 'loginAsOrgUserAgain')" >> $GITHUB_OUTPUT
+          echo "s21=$(get_status 'reviewAndEditEvent')" >> $GITHUB_OUTPUT
+          echo "s22=$(get_status 'editEventAndSaveAsDraft')" >> $GITHUB_OUTPUT
+
+          # VO combined status
+          VO_STATUS="✅ PASS"
+          for vs in s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22; do
+            val=$(eval echo "\$$vs")
+            if echo "$val" | grep -q "FAIL"; then
+              VO_STATUS="❌ FAIL"
+              break
+            fi
+          done
+          echo "vo_status=$VO_STATUS" >> $GITHUB_OUTPUT
+
       - name: Upload ExtentReport as artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -309,12 +334,21 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s10 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Sonali</td>
                   </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">12</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">VO Full Cycle</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">voFullCycle</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Org Login → Template → Event → Youth Apply → Approval → Edit → Save Draft</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.vo_status }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
+                  </tr>
                 </table>
 
                 <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Quiz Certificate → Blog Creation
+                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Quiz Certificate → Blog → VO Full Cycle
                 </p>
 
                 <!-- View Report Button -->

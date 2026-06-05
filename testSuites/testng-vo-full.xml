@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  ============================================================
+  VO Module Suite — Full End-to-End Cycle (Single Browser Session)
+  ============================================================
+  Purpose: Runs the complete Volunteer Organization (VO) lifecycle:
+           Org Login → Template → Event Creation → Youth Applies →
+           Org Approves Images → Org Edits Event
+
+  Important: All classes share ONE browser session (parallel="false").
+             The test simulates a multi-actor flow:
+             - Organization user creates the event
+             - Youth user applies and uploads images
+             - Organization user approves and edits
+
+  Flow:
+    ── ORG SIDE: CREATE ──
+    Step 1:  Org Login — Login as VO organization user
+    Step 2:  Template — Navigate to Templates → Select Nodal/DYO
+    Step 3:  Create VO — Fill template form and create VO
+    Step 4:  Navigate — Go to Add Event page
+    Step 5:  Create Event — Fill event form, upload images, publish
+
+    ── YOUTH SIDE: APPLY ──
+    Step 6:  Youth Login — Login as youth user (new session)
+    Step 7:  Apply — Search and apply on the VO event
+    Step 8:  Youth Logout — Logout youth after applying
+
+    ── ORG SIDE: APPROVE + EDIT ──
+    Step 9:  Org Login Again — Re-login as organization user
+    Step 10: Image Approval — Review uploaded images, approve/reject
+    Step 11: Edit Event — Edit event details and save as draft
+
+  Prerequisites:
+    - resources/VO_prod.xlsx must contain valid org credentials
+    - resources/Event_Name.xlsx for event naming
+    - resources/Template_Counter.txt for unique template names
+    - UploadImages/ must contain event1.jpeg, event2.jpg, Userpic.jpeg
+
+  Run with:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-vo-full.xml
+    mvn test -Denv=beta -Dbrowser=headless -Dsurefire.suiteXmlFiles=testSuites/testng-vo-full.xml
+
+  Team: QA Team | Developer: Manoj Kumar / Alamgeer
+  ============================================================
+-->
+<suite name="VO Full E2E Flow" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="VO Full Cycle" preserve-order="true">
+        <classes>
+            <!-- ═══ ORG SIDE: CREATE ═══ -->
+            <!-- Step 1: Login as VO organization user -->
+            <class name="com.mybharat.tests.vo.VOLoginTest"/>
+            <!-- Step 2: Navigate to Templates and select Nodal/DYO -->
+            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
+            <!-- Step 3: Create a new VO template -->
+            <class name="com.mybharat.tests.vo.VOCreateTest"/>
+            <!-- Step 4: Navigate to Add Event page -->
+            <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
+            <!-- Step 5: Create and publish a new VO event -->
+            <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
+
+            <!-- ═══ YOUTH SIDE: APPLY ═══ -->
+            <!-- Step 6: Login as youth user -->
+            <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
+            <!-- Step 7: Search and apply on the VO event, upload images -->
+            <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
+            <!-- Step 8: Logout youth user -->
+            <class name="com.mybharat.tests.vo.VOYouthLogoutTest"/>
+
+            <!-- ═══ ORG SIDE: APPROVE + EDIT ═══ -->
+            <!-- Step 9: Re-login as organization user -->
+            <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
+            <!-- Step 10: Review and approve/reject uploaded images -->
+            <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
+            <!-- Step 11: Edit event and save as draft -->
+            <class name="com.mybharat.tests.vo.VOEventEditTest"/>
+        </classes>
+    </test>
+
+</suite>
