@@ -1,30 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-
-<!--
-  Youth Club Module — Register Members (3+3 parallel) + Create Organization + Member Accept
-  
-  Step 1: Register 6 fresh youth users (batch of 3 + batch of 3)
-  Step 2: Login → Create Youth Club → Save to Partner Excel → Logout
-  Step 3: Login as 2nd member → Accept invite popup → Logout
-  
-  Run:
-    mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-youthclub.xml"
--->
 <suite name="Youth Club Module" parallel="false" verbose="1">
 
     <listeners>
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- Step 1: Register 6 fresh members (3 parallel + 3 parallel) -->
     <test name="Register Members for Youth Club">
         <classes>
             <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
         </classes>
     </test>
 
-    <!-- Step 2+3: Create Youth Club + Member Accept -->
     <test name="Create Youth Club Organization">
         <classes>
             <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
