@@ -13,16 +13,36 @@ import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.youth.LoginPage;
 
 /**
- * LoginTest - Logs in using OTP with the email saved during registration.
- * 
- * Flow: Navigate → Sign In → Enter email (from Excel) → Consent → Send OTP
- *       → Fetch OTP from Yopmail → Enter OTP → Verify OTP → Login success
- * 
- * This test runs AFTER YouthRegistrationTest (which saves email to Excel and logs out).
+ * LoginTest - End-to-end test for OTP-based user login on MYBharat.
+ *
+ * Purpose: Verifies that a previously registered user can log in using their email
+ *          and OTP verification. Reads the email from the Excel file saved during
+ *          registration, sends OTP, retrieves it from Yopmail, and completes login.
+ *
+ * Prerequisites: RegistrationTest must have run first (saves email to Youth_{env}.xlsx).
+ *                This test runs AFTER LogoutTest in the testng-youth.xml suite.
+ *
+ * Flow:
+ *   1. Navigate to home page
+ *   2. Close popup if present
+ *   3. Click "Sign In"
+ *   4. Enter email (read from Excel — most recent registration)
+ *   5. Check consent checkbox
+ *   6. Click Login (sends OTP)
+ *   7. Open Yopmail → fetch OTP → enter OTP
+ *   8. Click Verify OTP
+ *   9. Assert login was successful (user menu visible or URL indicates logged-in state)
+ *
  * After this test, the user is logged in and ready for Profile and Quiz tests.
- * 
+ *
  * Run:
- *   mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
+ *   mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-login.xml
+ *
+ * Dependencies: BaseTest, LoginPage, TestListeners
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see LoginPage
+ * @see RegistrationTest
  */
 @Listeners(TestListeners.class)
 public class LoginTest extends BaseTest {

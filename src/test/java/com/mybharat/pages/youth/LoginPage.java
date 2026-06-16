@@ -21,12 +21,40 @@ import com.mybharat.pages.BasePage;
 import com.mybharat.utils.ConfigReader;
 
 /**
- * LoginPage - Handles the Youth OTP-based login flow on MYBharat.
+ * LoginPage - Page Object for the Youth OTP-based login flow on MYBharat.
  *
- * Flow: Home → Close popup → Click Sign In → Enter email (from Excel)
- *       → Consent → Click Login (Send OTP) → Fetch OTP from Yopmail → Enter OTP → Verify
+ * Purpose: Handles the complete login flow using OTP verification. Reads the most
+ *          recently registered email from an environment-specific Excel file, sends
+ *          an OTP, retrieves it from Yopmail (disposable email service), and verifies it.
  *
- * Uses the same Yopmail approach as registration for OTP retrieval.
+ * Flow:
+ *   1. navigateToHomePage()    — opens the MYBharat home page
+ *   2. closePopupIfPresent()   — dismisses quiz/announcement popup
+ *   3. clickSignIn()           — clicks the "Sign In" link
+ *   4. enterEmailForOTPLogin() — reads email from Excel, enters in login form
+ *   5. clickConsentCheckbox()  — checks the terms consent checkbox
+ *   6. clickLoginToSendOTP()   — clicks Login button to trigger OTP delivery
+ *   7. fetchOTPFromYopmail()   — opens Yopmail in new tab, extracts OTP, enters it
+ *   8. clickVerifyOTP()        — submits OTP for verification
+ *   9. isLoginSuccessful()     — validates login by checking post-login UI elements
+ *
+ * Data Source: Youth_beta.xlsx or Youth_prod.xlsx (last row = most recent registration)
+ * OTP Source: Yopmail.com (disposable email inbox)
+ *
+ * Key Methods:
+ *   - performLogin()          — convenience method that runs the full login flow
+ *   - getLastRegisteredEmail() — returns the email used for login
+ *   - isLoginSuccessful()     — multi-strategy login verification (menu button, dropdown, URL)
+ *
+ * Environment:
+ *   Beta: https://yuva-beta.mybharats.in
+ *   Prod: https://mybharat.gov.in
+ *
+ * Dependencies: BasePage, ConfigReader, Apache POI (Excel), Yopmail
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see RegistrationPage
+ * @see LoginTest
  */
 public class LoginPage extends BasePage {
 

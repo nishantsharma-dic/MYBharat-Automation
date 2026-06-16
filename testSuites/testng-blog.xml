@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║                    BLOG MODULE - STANDALONE SUITE                    ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║                                                                     ║
+  ║  Purpose: Test blog creation flow independently                     ║
+  ║  Prerequisites: A registered user must exist in Youth_beta/prod.xlsx║
+  ║                                                                     ║
+  ║  Flow:                                                              ║
+  ║    1. Login with last email from Youth_beta/Youth_prod.xlsx (OTP)   ║
+  ║    2. Navigate to /blogs/ page                                      ║
+  ║    3. Click "Write a Blog"                                          ║
+  ║    4. Fill: Title, Category, Cover Image, Description, Author Bio   ║
+  ║    5. Preview → Post                                                ║
+  ║    6. Verify blog appears in My Blogs with "Pending" status         ║
+  ║                                                                     ║
+  ║  Note: Login and Blog run in SAME browser (single <test> block)     ║
+  ║  Note: Admin approval flow is commented out (to be enabled later)   ║
+  ║                                                                     ║
+  ║  Run:                                                               ║
+  ║    mvn test -Denv=beta -Dbrowser=chrome                             ║
+  ║      -Dsurefire.suiteXmlFiles=testSuites/testng-blog.xml            ║
+  ║      -DcloseBrowser=false                                           ║
+  ║                                                                     ║
+  ║    mvn test -Denv=prod -Dbrowser=chrome                             ║
+  ║      -Dsurefire.suiteXmlFiles=testSuites/testng-blog.xml            ║
+  ║      -DcloseBrowser=false                                           ║
+  ║                                                                     ║
+  ║  Developer: Sonali                                                  ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+-->
+<suite name="Blog Module Suite" parallel="none" verbose="1" preserve-order="true">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="Blog Flow" preserve-order="true">
+        <classes>
+            <!-- Login with last registered user (reads from Youth_beta/Youth_prod.xlsx) -->
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+            <!-- Create blog + verify Pending status (no popup handling needed - login handles it) -->
+            <class name="com.mybharat.tests.blog.BlogTest"/>
+        </classes>
+    </test>
+
+</suite>

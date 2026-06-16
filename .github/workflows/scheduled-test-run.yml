@@ -15,7 +15,7 @@ on:
 jobs:
   run-tests:
     runs-on: self-hosted
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -36,11 +36,23 @@ jobs:
         run: |
           REPORT_FILE="target/surefire-reports/testng-results.xml"
           if [ -f "$REPORT_FILE" ]; then
-            LINE=$(head -3 "$REPORT_FILE" | tr ' ' '\n')
-            PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
-            FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
-            SKIPPED=$(echo "$LINE" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
-            TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
+            # Count exactly the 13 test methods shown in the email table
+            TRACKED_METHODS="publicPages registerIndianYouth verifyUserInDatabase logoutUser loginWithOTP completeYouthProfile verifyRegistrationCertificateDownload clickBasicInfoAndExtractEmail attemptCompetitiveQuiz verifyQuizCertificateDownload writeAndPublishBlog step15_submit step19_superAdminApprove"
+            PASSED=0
+            FAILED=0
+            SKIPPED=0
+            for method in $TRACKED_METHODS; do
+              if grep -q "name=\"$method\"" "$REPORT_FILE" 2>/dev/null; then
+                if grep -A2 "name=\"$method\"" "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+                  FAILED=$((FAILED + 1))
+                else
+                  PASSED=$((PASSED + 1))
+                fi
+              else
+                SKIPPED=$((SKIPPED + 1))
+              fi
+            done
+            TOTAL=$((PASSED + FAILED))
           else
             TOTAL="N/A"
             PASSED="N/A"
@@ -88,6 +100,14 @@ jobs:
           fi
           echo "quiz_name=${QUIZ_NAME}" >> $GITHUB_OUTPUT
 
+          # Check if quiz was available
+          if [ "$QUIZ_NAME" = "No Quiz Available" ]; then
+            QUIZ_AVAILABLE="false"
+          else
+            QUIZ_AVAILABLE="true"
+          fi
+          echo "quiz_available=${QUIZ_AVAILABLE}" >> $GITHUB_OUTPUT
+
           # Parse individual test results from TestNG XML
           REPORT_FILE="target/surefire-reports/testng-results.xml"
           get_status() {
@@ -113,8 +133,17 @@ jobs:
           echo "s5=$(get_status 'completeYouthProfile')" >> $GITHUB_OUTPUT
           echo "s6=$(get_status 'verifyRegistrationCertificateDownload')" >> $GITHUB_OUTPUT
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
-          echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
-          echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+          # Quiz: show special status if no quiz was available
+          if [ "$QUIZ_AVAILABLE" = "false" ]; then
+            echo "s8=⚠️ No Quiz Available" >> $GITHUB_OUTPUT
+            echo "s9=⚠️ No Quiz Available" >> $GITHUB_OUTPUT
+          else
+            echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
+            echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+          fi
+          echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
+          echo "s11=$(get_status 'step15_submit')" >> $GITHUB_OUTPUT
+          echo "s12=$(get_status 'step19_superAdminApprove')" >> $GITHUB_OUTPUT
 
       - name: Upload ExtentReport as artifact
         if: always()
@@ -296,12 +325,39 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s9 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
                   </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Blog</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">writeAndPublishBlog</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Create blog and verify Pending status in profile</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s10 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Sonali</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">12</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Youth Club</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">createYouthClub</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Register 6 members + Create Youth Club + Verify members</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s11 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">13</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Youth Club Approve</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">approveYouthClub</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Login SuperAdmin and approve Youth Club</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s12 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
                 </table>
 
                 <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Download Quiz Certificate
+                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Quiz Certificate → Blog Creation → Create Youth Club → Approve Youth Club
                 </p>
 
                 <!-- View Report Button -->

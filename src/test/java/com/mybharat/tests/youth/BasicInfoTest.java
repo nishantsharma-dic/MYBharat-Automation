@@ -12,9 +12,27 @@ import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.youth.YouthProfilePage;
 
 /**
- * YouthBasicInfoTest - Clicks Basic Info tab and extracts email.
- * 
- * Runs after certificate download on the SAME browser session.
+ * BasicInfoTest - Test for the Basic Info tab in the youth profile.
+ *
+ * Purpose: Navigates to the "Basic Info" tab on the React profile page and extracts
+ *          the registered email from the form field for verification purposes.
+ *
+ * Prerequisites: User is already logged in (runs after certificate download in the
+ *                same browser session within the testng-youth.xml suite).
+ *
+ * Flow:
+ *   1. Navigate to Basic Info tab (closes any open modals first)
+ *   2. Extract email from the user_email input field
+ *   3. Log the extracted email for verification
+ *
+ * Key Methods:
+ *   - clickBasicInfoAndExtractEmail() — navigates to tab and reads email field
+ *
+ * Dependencies: BaseTest, YouthProfilePage, TestListeners
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see YouthProfilePage
+ * @see YouthProfileTest
  */
 @Listeners(TestListeners.class)
 public class BasicInfoTest extends BaseTest {

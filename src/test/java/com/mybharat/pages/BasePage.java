@@ -14,10 +14,34 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * BasePage - Parent class for all Page Objects.
- * Contains common utility methods: waits, scrolls, clicks.
- * 
- * Every page object extends this class.
+ * BasePage - Abstract parent class for all Page Object Model (POM) classes.
+ *
+ * Purpose: Provides reusable Selenium utility methods (waits, clicks, scrolls, form helpers)
+ *          so that individual page classes focus only on their page-specific logic.
+ *
+ * Key Methods:
+ *   - waitForVisible()    — explicit wait until element is visible
+ *   - waitForClickable()  — explicit wait until element is clickable
+ *   - waitForInvisible()  — explicit wait until element disappears
+ *   - safeClick()         — click with JS fallback if regular click fails
+ *   - jsClick()           — force-click via JavaScript executor
+ *   - scrollToElement()   — smooth scroll element into viewport center
+ *   - scrollPage()        — scroll by pixel offset
+ *   - clearAndType()      — clear a field and type text
+ *   - safeType()          — type with JS fallback for stubborn input fields
+ *   - selectDropdown()    — wraps native &lt;select&gt; with Selenium Select
+ *   - randomMobileNumber() — generates a random 10-digit Indian mobile number
+ *   - waitForPageLoad()   — waits until document.readyState is "complete"
+ *
+ * CI Mode: When -DciMode=true is passed, timeout is increased from 25s to 45s
+ *          to accommodate slower remote CI runners.
+ *
+ * Dependencies: Selenium WebDriver, PageFactory, WebDriverWait
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see LandingPage
+ * @see LoginPage
+ * @see RegistrationPage
  */
 public class BasePage {
 

@@ -17,36 +17,56 @@
 ```
 src/test/java/com/mybharat/
 ├── base/
-│   └── BaseTest.java              ← Browser setup/teardown. ALL test classes extend this.
+│   └── BaseTest.java              ← ThreadLocal WebDriver, @BeforeTest/@AfterTest (parallel support)
 ├── listeners/
-│   ├── TestListeners.java         ← Auto-generates HTML report + screenshot on failure
-│   └── Retry.java                 ← Retries failed tests 2 times (handles flaky elements)
+│   ├── TestListeners.java         ← ExtentReport + screenshot on failure
+│   └── Retry.java                 ← Retries failed tests 1 time (handles flaky elements)
 ├── pages/
 │   ├── BasePage.java              ← Common methods: waits, clicks, scrolls, form helpers
 │   ├── LandingPage.java           ← App home page actions
-│   └── youth/                     ← Module-specific page objects
-│       ├── RegistrationPage.java
-│       ├── PublicProfilePage.java
-│       └── PlayQuizPage.java
+│   ├── youth/                     ← Youth module page objects
+│   │   ├── LoginPage.java         ← OTP + Password login
+│   │   ├── LogoutPage.java        ← Multi-portal logout (React + PHP)
+│   │   ├── RegistrationPage.java
+│   │   ├── YouthProfilePage.java
+│   │   ├── PublicPage.java        ← Public pages validation
+│   │   └── QuizAttemptPage.java   ← Dynamic question count support
+│   └── blog/                      ← Blog module page objects
+│       ├── BlogPage.java
+│       └── BlogAdminPage.java
 ├── tests/
-│   └── youth/                     ← Module-specific test classes
-│       └── YouthRegistrationTest.java
+│   ├── youth/                     ← Youth module tests
+│   │   ├── RegistrationTest.java
+│   │   ├── LogoutTest.java
+│   │   ├── LoginTest.java
+│   │   ├── YouthProfileTest.java
+│   │   ├── BasicInfoTest.java
+│   │   ├── QuizAttemptTest.java
+│   │   ├── QuizCertificateVerificationTest.java
+│   │   ├── RegistrationCertificateVerificationTest.java
+│   │   └── PublicPageTest.java
+│   └── blog/
+│       └── BlogTest.java
 └── utils/
     ├── ConfigReader.java          ← Reads environment config (beta/prod)
     ├── ExtentReportManager.java   ← HTML report configuration
     └── RedashClient.java          ← DB verification via Redash API
 
-src/test/resources/
-├── config-beta.properties         ← Beta environment URLs & settings
-├── config-prod.properties         ← Production environment URLs & settings
-├── log4j.properties               ← Logging config
-└── log4j2.xml                     ← Logging config (XML format)
+resources/
+├── Youth_beta.xlsx                ← Registered user emails (beta)
+├── Youth_prod.xlsx                ← Registered user emails (prod)
+├── Partner_beta.xlsx              ← ELP/Partner admin emails (beta)
+└── Partner_prod.xlsx              ← ELP/Partner admin emails (prod)
 
 testSuites/
-├── testng-youth.xml               ← Run Youth module only
-└── testng-all-modules.xml         ← Run ALL modules sequentially (one click)
-
-testng.xml                         ← Default suite (smoke tests only)
+├── testng-all-modules.xml         ← Full E2E (parallel: Public Pages + Youth Flow)
+├── testng-youth.xml               ← Youth flow only
+├── testng-registration.xml        ← Registration only
+├── testng-registration-quiz.xml   ← Registration + Quiz
+├── testng-public-page.xml         ← Public pages only
+├── testng-login.xml               ← Login only
+├── testng-blog.xml                ← Blog (Login + Create + Verify)
+└── testng-registration-bulk.xml   ← 10 parallel registrations
 ```
 
 ### Key Concepts
@@ -417,14 +437,26 @@ git push --force-with-lease origin your-feature-branch
 
 ---
 
-## Team Contacts
+## Team
 
-| Role | Name | Responsibility |
-|------|------|----------------|
-| Lead | Nishant | Framework, code review, merge to main |
-| Member 2 | TBD | Module: Login, CV Builder |
-| Member 3 | TBD | Module: Organisation Creation |
-| Member 4 | TBD | Module: Join Organisation |
+### Developers (Built the features)
+
+| Name | Modules Developed |
+|------|-------------------|
+| Tejas | Registration, Login, Logout |
+| Alamgeer | Profile, Certificate, Basic Info |
+| Uvais | Quiz, Quiz Certificate |
+| Sonali | Blog |
+| Prashant/Hariom | Public Pages |
+
+### Testers (Automation script writers)
+
+| Role | Name | Automation Modules |
+|------|------|-------------------|
+| Lead | Nishant Sharma | Framework, CI/CD, Registration, Login, Quiz, ELP Cycle, Blog, Certificate |
+| Tester | Nishant Pal | Mega Event, Nodal Registration, Join Partner, Youth Club |
+| Tester | Manoj Kumar | Public Pages, Profile, Basic Info, VO Cycle, CV Builder, Public Profile, NCS, Health & Fitness |
+| Tester | Mohit Kumar | Essay (Create/Play/Evaluate), Mentor/Mentee |
 
 ---
 

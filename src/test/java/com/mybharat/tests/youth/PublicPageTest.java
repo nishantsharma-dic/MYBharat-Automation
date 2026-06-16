@@ -16,18 +16,29 @@ import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.youth.PublicPage;
 
 /**
- * PublicPageTest - Complete Public Page validation in ONE test method.
+ * PublicPageTest - Comprehensive end-to-end test for all public-facing pages on MYBharat.
+ *
+ * Purpose: Validates every publicly accessible navigation path — header menus (top-level
+ *          and dropdowns), organization section cards with filtering, and footer links.
+ *          All validations run in a SINGLE @Test method so it appears as 1 test case in reports.
  *
  * Validates:
- *   - Header menus: Youth, Quiz & Essay, Resources (Voices, Blogs, Newsletters, Other),
+ *   - Header menus: Youth, Quiz &amp; Essay, Resources (Voices, Blogs, Newsletters, Other),
  *     Events (Experiential Learning, VFB, Mega Events, VBYLD-2026), Podcast, VVVP 2026
  *   - Organization section: Government, Knowledge Institutions, Not for Profits, For Profits
- *   - Footer: Important Links, Useful Links, Powered By
+ *     (including org link clicks, View More, State/District filtering)
+ *   - Footer: Important Links, Useful Links, Powered By (Digital India logo, DIC text)
  *
- * All checks run inside ONE @Test method so it appears as 1 test case in the report.
+ * Test Strategy: Each navigation returns to homepage before the next check. Failures are
+ *                collected and reported as a summary at the end.
  *
  * Run:
  *   mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-public-page.xml"
+ *
+ * Dependencies: BaseTest, PublicPage, TestListeners
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see PublicPage
  */
 @Listeners(TestListeners.class)
 public class PublicPageTest extends BaseTest {

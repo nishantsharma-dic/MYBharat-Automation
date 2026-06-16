@@ -16,7 +16,35 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import com.mybharat.utils.ConfigReader;import com.mybharat.pages.BasePage;
 
 /**
- * PlayQuizPage - Handles quiz registration and answering all questions.
+ * QuizAttemptPage - Page Object for quiz registration, attempt, and submission on MYBharat.
+ *
+ * Purpose: Navigates to the Quiz &amp; Essay section, starts a quiz, answers all questions
+ *          with random selections, submits the quiz, provides feedback, and optionally
+ *          downloads the quiz certificate.
+ *
+ * Flow:
+ *   1. startQuiz()                    — navigates to quiz section, selects a quiz, fills
+ *                                       details form, selects language, starts the quiz
+ *   2. attemptAllQuestionsAndSubmit() — loops through all questions, selects random
+ *                                       answers, clicks Next/Save, then submits
+ *   3. downloadQuizCertificateAndClose() — clicks Download, verifies, closes modal
+ *
+ * Key Methods:
+ *   - startQuiz()                    — full quiz initialization flow
+ *   - attemptAllQuestionsAndSubmit() — dynamic question answering (any question count)
+ *   - downloadQuizCertificateAndClose() — certificate download and modal cleanup
+ *   - getQuizName()                  — returns the quiz name that was played
+ *
+ * Dynamic Question Detection: Does not hardcode question count — detects the last
+ *                             question by absence of Next button or presence of Submit.
+ *
+ * Quiz Name Persistence: Saves quiz name to reports/quiz_name.txt for CI workflow reference.
+ *
+ * Dependencies: BasePage, ConfigReader, Selenium WebDriverWait
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see QuizAttemptTest
+ * @see QuizCertificateVerificationTest
  */
 public class QuizAttemptPage extends BasePage {
 
@@ -44,11 +72,21 @@ public class QuizAttemptPage extends BasePage {
     /** Stores the quiz name extracted during the test */
     private String quizName = "Competitive Quiz";
 
+    /** Flag indicating whether a quiz was available to play */
+    private static boolean quizAvailable = true;
+
     /**
      * Get the quiz name that was played.
      */
     public String getQuizName() {
         return quizName;
+    }
+
+    /**
+     * Check if a quiz was available to play.
+     */
+    public static boolean isQuizAvailable() {
+        return quizAvailable;
     }
 
     /**
@@ -111,8 +149,22 @@ public class QuizAttemptPage extends BasePage {
             startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                     ExpectedConditions.elementToBeClickable(By.xpath("(//button[@type='button'][normalize-space()='Start Quiz'])[1]")));
         } catch (Exception e) {
-            startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='start_quiz']")));
+            try {
+                startQuiz = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                        ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='start_quiz']")));
+            } catch (Exception e2) {
+                // No quiz available to play
+                quizAvailable = false;
+                quizName = "No Quiz Available";
+                System.out.println("⚠ No active quiz available for play — marking as unavailable");
+                // Save quiz status to file for workflow to read
+                try {
+                    java.io.File quizFile = new java.io.File(System.getProperty("user.dir") + "/reports/quiz_name.txt");
+                    quizFile.getParentFile().mkdirs();
+                    java.nio.file.Files.writeString(quizFile.toPath(), quizName);
+                } catch (Exception ex) { /* ignore */ }
+                return;
+            }
         }
         scrollToElement(startQuiz);
         Thread.sleep(500);
@@ -294,17 +346,18 @@ public class QuizAttemptPage extends BasePage {
     }
 
     /**
-     * Attempt all 20 questions with random answers and submit.
+     * Attempt all questions with random answers and submit.
+     * Dynamically detects the number of questions (works for 10, 15, 20, 25 or any count).
      */
     public void attemptAllQuestionsAndSubmit() throws Exception {
         WebDriverWait qWait = new WebDriverWait(driver, Duration.ofSeconds(30));
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        int totalQuestions = 20;
+        int maxQuestions = 30; // safety limit
 
         Thread.sleep(3000);
         waitForPageLoad();
 
-        for (int q = 1; q <= totalQuestions; q++) {
+        for (int q = 1; q <= maxQuestions; q++) {
             System.out.println("Answering question " + q);
             Thread.sleep(1000); // Wait for question to fully load
             waitForPageLoad();
@@ -337,15 +390,37 @@ public class QuizAttemptPage extends BasePage {
                 jsClick(selected);
             }
 
-            // Click Next (except for last question)
-            if (q < totalQuestions) {
-                clickNextButton(qWait, js);
-                Thread.sleep(1500); // Wait for next question to load
+            // Try to click Next — if Next button is not found, we're on the last question
+            if (!clickNextIfAvailable(qWait, js)) {
+                System.out.println("No Next button found after question " + q + " — this is the last question");
+                break;
             }
+            Thread.sleep(1500); // Wait for next question to load
         }
 
         // Submit quiz
         submitQuiz(qWait, js);
+    }
+
+    /**
+     * Try to click the Next button. Returns false if Next button is not found (last question).
+     */
+    private boolean clickNextIfAvailable(WebDriverWait qWait, JavascriptExecutor js) {
+        String[] selectors = {"//button[@id='save_button']", "//button[contains(text(),'Next')]"};
+        for (String selector : selectors) {
+            try {
+                WebElement btn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.elementToBeClickable(By.xpath(selector)));
+                // Check if this is actually a Next/Save button and not the Submit button
+                String btnText = btn.getText().trim().toLowerCase();
+                if (btnText.contains("submit")) {
+                    return false; // It's the submit button, not next
+                }
+                js.executeScript("arguments[0].click();", btn);
+                return true;
+            } catch (Exception e) { /* try next selector */ }
+        }
+        return false; // No Next button found — last question
     }
 
     // -------------------------------------------------------------------------
@@ -380,17 +455,6 @@ public class QuizAttemptPage extends BasePage {
             } catch (Exception e) { /* try next */ }
         }
         return List.of();
-    }
-
-    private void clickNextButton(WebDriverWait qWait, JavascriptExecutor js) {
-        String[] selectors = {"//button[@id='save_button']", "//button[contains(text(),'Next')]"};
-        for (String selector : selectors) {
-            try {
-                WebElement btn = qWait.until(ExpectedConditions.elementToBeClickable(By.xpath(selector)));
-                js.executeScript("arguments[0].click();", btn);
-                return;
-            } catch (Exception e) { /* try next */ }
-        }
     }
 
     private void submitQuiz(WebDriverWait qWait, JavascriptExecutor js) throws Exception {
@@ -429,7 +493,7 @@ public class QuizAttemptPage extends BasePage {
         JavascriptExecutor js = (JavascriptExecutor) driver;
 
         // Wait for certificate modal/download button to appear
-        Thread.sleep(3000);
+        Thread.sleep(2000);
 
         // Click Download button
         try {
@@ -439,20 +503,21 @@ public class QuizAttemptPage extends BasePage {
             Thread.sleep(500);
             js.executeScript("arguments[0].click();", downloadBtn);
             System.out.println("✅ Quiz certificate download clicked");
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (Exception e) {
             System.out.println("⚠ Download button not found: " + e.getMessage());
         }
 
-        // Close the certificate modal
+        // Close the certificate modal (short timeout — it's optional)
         try {
-            WebElement closeModal = qWait.until(
-                    ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='modal-close']")));
+            WebElement closeModal = new WebDriverWait(driver, Duration.ofSeconds(3)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath(
+                            "//span[@class='modal-close'] | //button[contains(@class,'close')] | //i[@class='fa fa-times']")));
             js.executeScript("arguments[0].click();", closeModal);
             System.out.println("✅ Quiz certificate modal closed");
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (Exception e) {
-            System.out.println("⚠ Modal close button not found: " + e.getMessage());
+            System.out.println("⚠ Modal close not needed — continuing");
         }
     }
 }

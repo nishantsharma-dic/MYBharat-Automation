@@ -22,16 +22,43 @@ import com.mybharat.utils.ConfigReader;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 /**
- * BaseTest - All test classes extend this.
- * 
- * Browser lifecycle is per TestNG &lt;test&gt; block:
- *   - Each &lt;test&gt; in the XML gets its own browser instance.
+ * BaseTest - Base class for all test classes in the MY Bharat automation framework.
+ *
+ * Purpose: Manages browser lifecycle (setup/teardown) and provides common test utilities
+ *          such as screenshot capture, driver syncing, and application URL navigation.
+ *
+ * Flow:
+ *   1. @BeforeTest: Reads config → creates WebDriver (Chrome/Firefox/Headless) → sets timeouts
+ *   2. @BeforeClass: Syncs the ThreadLocal driver to the child class's driver field
+ *   3. Test methods run (in child classes)
+ *   4. @AfterTest: Quits browser unless -DcloseBrowser=false is set
+ *
+ * Browser Lifecycle:
+ *   - Each &lt;test&gt; block in the TestNG XML gets its own browser instance (ThreadLocal).
  *   - All classes within the SAME &lt;test&gt; share the same browser session.
  *   - This supports parallel="tests" where each &lt;test&gt; runs in its own thread.
- * 
+ *
+ * Environment: Controlled by -Denv (beta/prod) and -Dbrowser (chrome/headless/firefox/firefox-headless)
+ *
+ * Key Methods:
+ *   - setUp()          — creates browser instance, loads config
+ *   - tearDown()       — quits browser (unless closeBrowser=false)
+ *   - syncDriver()     — ensures child classes have access to the shared driver
+ *   - getDriver()      — returns the current thread's WebDriver
+ *   - openApp()        — navigates to the configured application URL
+ *   - takeScreenshot() — captures screenshot and saves to reports/ folder
+ *   - createDriver()   — factory method for Chrome/Firefox/Headless browser creation
+ *
+ * Dependencies: ConfigReader, WebDriverManager (bonigarcia), Selenium WebDriver
+ * Developer: Nishant Sharma (QA Team)
+ *
  * Usage:
  *   mvn test -Denv=beta -Dbrowser=chrome
  *   mvn test -Denv=prod -Dbrowser=firefox
+ *   mvn test -Denv=beta -Dbrowser=headless -DcloseBrowser=false
+ *
+ * @see ConfigReader
+ * @see TestListeners
  */
 public class BaseTest {
 

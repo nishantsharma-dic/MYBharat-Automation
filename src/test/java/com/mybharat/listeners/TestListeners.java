@@ -24,16 +24,35 @@ import com.mybharat.base.BaseTest;
 import com.mybharat.utils.ExtentReportManager;
 
 /**
- * TestListeners - Integrates TestNG with ExtentReports.
- * 
- * Provides detailed reporting:
- * - Test name with description
- * - Category/module assignment
- * - Step-by-step execution details
- * - Screenshots on failure
- * - Execution time
- * 
- * Team: QA Team | Tester: Nishant Sharma | Project: MY Bharat
+ * TestListeners - TestNG ITestListener that integrates with ExtentReports for rich HTML reporting.
+ *
+ * Purpose: Captures test lifecycle events (start, pass, fail, skip) and logs them to
+ *          ExtentReports with screenshots, timing, categorization, and color-coded labels.
+ *
+ * Flow:
+ *   1. onTestStart   → creates ExtentTest entry, assigns category/author, logs metadata
+ *   2. onTestSuccess → marks PASS with green label, logs duration
+ *   3. onTestFailure → marks FAIL with red label, captures screenshot, logs exception
+ *   4. onTestSkipped → marks SKIP with orange label (tracks for retry removal)
+ *   5. onFinish      → flushes report to HTML file (reports/index.html)
+ *
+ * Key Methods:
+ *   - onTestStart()    — initializes ExtentTest with description, category, author
+ *   - onTestSuccess()  — logs pass status with execution time
+ *   - onTestFailure()  — logs failure with screenshot and exception details
+ *   - onTestSkipped()  — tracks skipped tests; removes them if retry passes
+ *   - getExtentTest()  — static accessor for page classes to log intermediate steps
+ *   - getModuleFromClass() — derives module category from test class name
+ *
+ * Retry Handling: When a test is retried (via Retry analyzer), the skipped entry is
+ *                 removed from the report so only the final result appears.
+ *
+ * Dependencies: ExtentReports, BaseTest (for driver access), Selenium TakesScreenshot
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see ExtentReportManager
+ * @see Retry
+ * @see BaseTest
  */
 public class TestListeners implements ITestListener {
 

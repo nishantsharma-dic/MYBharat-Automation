@@ -2,17 +2,38 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  ALL MODULES - Runs 3 parallel threads for maximum efficiency.
-  
-  Thread 1: Public Pages (independent, own browser)
-  Thread 2: Registration → Logout → Login → Profile → Certificate → Basic Info → Quiz → Quiz Certificate
-  Thread 3: Youth Club (Register Members → Create → Add 6 Members with OTP → Submit → SuperAdmin Approve)
-  
-  All 3 threads run simultaneously, reducing total execution time.
-  Report and email content display all results together.
-  
-  Run with:
-    mvn test "-Denv=prod" "-Dbrowser=chrome" "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║               MY BHARAT - ALL MODULES E2E SUITE                     ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║                                                                     ║
+  ║  Execution Mode: PARALLEL (3 threads)                               ║
+  ║  Total Test Cases: 13 (as reported in email)                        ║
+  ║  Approx Duration: ~10 minutes                                       ║
+  ║                                                                     ║
+  ║  Thread 1 (Public Pages):                                           ║
+  ║    - Validates all header menus, org sections, footer links         ║
+  ║    - Runs independently with its own browser                        ║
+  ║                                                                     ║
+  ║  Thread 2 (Youth Flow):                                             ║
+  ║    - Registration → Logout → Login (OTP) → Profile Completion       ║
+  ║    → Registration Certificate → Basic Info → Quiz → Quiz Cert       ║
+  ║    → Blog Creation                                                  ║
+  ║    - All steps share the SAME browser session (user stays logged in)║
+  ║                                                                     ║
+  ║  Thread 3 (Youth Club):                                             ║
+  ║    - Register 6 Members → Create Youth Club → Add Members with OTP  ║
+  ║    → Submit → SuperAdmin Approve                                    ║
+  ║    - Own browser instance                                           ║
+  ║                                                                     ║
+  ║  CI/CD:                                                             ║
+  ║    - Scheduled: Runs daily on main branch (email to seniors)        ║
+  ║    - Manual: Trigger from Actions tab on integration branch         ║
+  ║                                                                     ║
+  ║  Run:                                                               ║
+  ║    mvn test "-Denv=prod" "-Dbrowser=chrome"                         ║
+  ║      "-Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml"   ║
+  ║                                                                     ║
+  ╚══════════════════════════════════════════════════════════════════════╝
 -->
 <suite name="MYBharat All Modules" parallel="tests" thread-count="3" verbose="1"
        group-by-instances="true" preserve-order="true">
@@ -21,24 +42,47 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- PARALLEL THREAD 1: Public Page validation (independent, own browser) -->
+    <!--
+      THREAD 1: Public Page Validation
+      - Own browser instance (does not interfere with Thread 2)
+      - Validates: Header menus (Youth, Quiz, Resources, Events, Podcast, VVVP)
+      - Validates: Org sections (Government, Knowledge, Not-for-Profit, For-Profit)
+      - Validates: Footer links (Mega Events, EL, VFB, About, Privacy, Resources, Support, Sitemap, Feedback)
+      - Validates: Digital India logo + DIC text
+      - Developer: Prashant / Hariom
+    -->
     <test name="Public Page" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.PublicPageTest"/>
         </classes>
     </test>
 
-    <!-- PARALLEL THREAD 2: Sequential user flow (shared browser session) -->
+    <!--
+      THREAD 2: Sequential Youth Flow (shared browser session)
+      - All classes run in ORDER on the SAME browser (user stays logged in throughout)
+      - preserve-order="true" + group-by-instances="true" ensures sequential execution
+      - Each class gets the driver via ThreadLocal (BaseTest.syncDriver)
+    -->
     <test name="Youth Flow" preserve-order="true">
         <classes>
+            <!-- Step 1: Register new Indian youth (saves email to Youth_beta/Youth_prod.xlsx) -->
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
+            <!-- Step 2: Logout after registration -->
             <class name="com.mybharat.tests.youth.LogoutTest"/>
+            <!-- Step 3: Login with OTP (reads last email from Excel, fetches OTP from Yopmail) -->
             <class name="com.mybharat.tests.youth.LoginTest"/>
+            <!-- Step 4: Complete youth profile (photo, about, education, language, work exp, tools) -->
             <class name="com.mybharat.tests.youth.YouthProfileTest"/>
+            <!-- Step 5: Download registration certificate PNG from profile -->
             <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
+            <!-- Step 6: Click Basic Info tab and verify email is displayed -->
             <class name="com.mybharat.tests.youth.BasicInfoTest"/>
+            <!-- Step 7: Play quiz (dynamic question count - works for 10/15/20/25 questions) -->
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
+            <!-- Step 8: Download quiz certificate after completion -->
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
+            <!-- Step 9: Navigate to /blogs/, create blog, verify Pending status in My Blogs -->
+            <class name="com.mybharat.tests.blog.BlogTest"/>
         </classes>
     </test>
 

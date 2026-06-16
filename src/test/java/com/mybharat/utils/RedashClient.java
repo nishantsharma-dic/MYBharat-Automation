@@ -18,16 +18,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * RedashClient - Fetches query results from Redash for DB verification.
- * 
- * Usage in tests:
- *   List<Map<String, String>> results = RedashClient.getQueryResult(baseUrl, queryId, apiKey);
- *   // Verify user exists in DB after registration
- * 
- * Pass credentials via system properties (never hardcode):
+ * RedashClient - HTTP client for querying the Redash analytics API.
+ *
+ * Purpose: Fetches query results from a Redash instance to verify that test data
+ *          (e.g., newly registered users) exists in the backend database. Used for
+ *          post-registration verification in the test pipeline.
+ *
+ * Key Methods:
+ *   - getQueryResult(baseUrl, queryId, apiKey) — executes a Redash query and returns
+ *     results as a list of column-value maps
+ *   - isUserInDatabase(email, results, column) — checks if a specific email exists
+ *     in the query results
+ *
+ * API Endpoint Pattern: GET {baseUrl}/api/queries/{queryId}/results.json?api_key={apiKey}
+ *
+ * Credential Handling: All credentials are passed via system properties (never hardcoded):
  *   -DredashBaseUrl=https://dash-beta.mybharats.in
  *   -DredashQueryId=63
- *   -DredashApiKey=your-key
+ *   -DredashApiKey=your-api-key
+ *
+ * Dependencies: Apache HttpClient 5, Jackson ObjectMapper, Log4j2
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see RegistrationTest
  */
 public class RedashClient {
 

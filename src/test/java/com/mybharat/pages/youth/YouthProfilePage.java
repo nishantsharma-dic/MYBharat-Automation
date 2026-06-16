@@ -24,10 +24,13 @@ import com.mybharat.pages.BasePage;
 import com.mybharat.utils.ConfigReader;
 
 /**
- * YouthProfilePage - Handles the NEW React-based Youth profile completion flow.
- * 
- * The profile has been migrated from Angular/PHP to React 19 + Tailwind + react-select.
- * 
+ * YouthProfilePage - Page Object for the NEW React-based Youth profile completion flow.
+ *
+ * Purpose: Handles the complete youth profile form on the React 19 + Tailwind profile page.
+ *          Fills all accordion sections (About, Area of Interest, Education, Sports,
+ *          Languages, Professional Summary, Work Experience, Tools) using react-select
+ *          dropdowns, text inputs, and file uploads.
+ *
  * Page Structure:
  *   - ProfileBanner (top banner with camera upload)
  *   - UserInfoCard (photo, name, MBP ID, share, badge)
@@ -35,14 +38,38 @@ import com.mybharat.utils.ConfigReader;
  *   - Tabs: "About" | "Basic Info" | "Reward Points"
  *   - About tab contains accordion sections: About, Area of Interest, Education,
  *     Sports, Languages, Professional Summary, Work Experience, Tools, Certifications
- * 
- * Key differences from old UI:
+ *
+ * Key Differences from Old UI:
  *   - No element IDs on form fields (use name attrs, placeholders, text content)
- *   - react-select for multi-select dropdowns (custom DOM, not native select)
+ *   - react-select for multi-select dropdowns (custom DOM, not native &lt;select&gt;)
  *   - Accordion sections expand/collapse with +/- icons
  *   - SectionWrapper with Edit (pencil) or Add (+) icons
  *   - Buttons identified by text content (Save, Update, Cancel)
  *   - Toast notifications via react-toastify
+ *
+ * Key Methods:
+ *   - completeYouthProfile()       — orchestrates filling all sections end-to-end
+ *   - navigateToProfilePage()      — opens /youth-profile URL
+ *   - navigateToBasicInfo()        — clicks the Basic Info tab
+ *   - extractEmailFromProfile()    — reads email from the Basic Info form
+ *   - uploadProfilePhoto()         — uploads a random image via hidden file input
+ *   - fillAboutSection()           — fills the About textarea
+ *   - addAreaOfInterest()          — selects interests via react-select
+ *   - addEducationQualification()  — fills education form (type, state, district, school)
+ *   - addLanguage()                — selects language via react-select
+ *   - fillProfessionalSummary()    — fills summary textarea and skills
+ *   - addWorkExperience()          — fills job title, company, dates
+ *   - fillToolsSection()           — enters tools and video/social links
+ *
+ * Environment:
+ *   Beta: https://yuva-beta.mybharats.in/youth-profile
+ *   Prod: https://mybharat.gov.in/youth-profile
+ *
+ * Dependencies: BasePage, ConfigReader, Apache POI (Excel), Selenium WebDriverWait
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see YouthProfileTest
+ * @see BasicInfoTest
  */
 public class YouthProfilePage extends BasePage {
 
@@ -265,7 +292,20 @@ public class YouthProfilePage extends BasePage {
 
         if (textarea != null && textarea.isDisplayed()) {
             scrollToElement(textarea);
-            setReactInputValue(textarea, "Automated testing profile. Passionate about technology and innovation.");
+            String[] aboutTexts = {
+                "Final year B.Tech student passionate about sustainable development and rural education. "
+                    + "I enjoy working with local communities to organize awareness campaigns on health and hygiene.",
+                "Aspiring civil servant with keen interest in public policy and governance. "
+                    + "Currently volunteering with district administration on youth engagement programs.",
+                "Creative arts enthusiast pursuing BA in English Literature. Love writing, photography, "
+                    + "and conducting storytelling workshops for underprivileged children.",
+                "Commerce graduate with hands-on experience in event management and fundraising. "
+                    + "Organized multiple blood donation drives and tree plantation campaigns in my city.",
+                "Engineering student with a knack for problem solving and community service. "
+                    + "Active member of NSS unit, participated in Swachh Bharat and flood relief initiatives."
+            };
+            String selectedAbout = aboutTexts[new java.util.Random().nextInt(aboutTexts.length)];
+            setReactInputValue(textarea, selectedAbout);
             clickSaveOrUpdateInSection("About");
             waitForToastOrTimeout();
             log.info("✅ About section saved");
@@ -370,7 +410,15 @@ public class YouthProfilePage extends BasePage {
 
         if (textarea != null) {
             scrollToElement(textarea);
-            setReactInputValue(textarea, "Experienced in automation testing with Selenium, Java, and TestNG.");
+            String[] summaries = {
+                "Motivated individual with experience in event coordination, volunteer management, and community outreach programs.",
+                "Detail-oriented graduate skilled in research, data analysis, and content creation for social media campaigns.",
+                "Proactive team player with strong communication skills and experience in NGO project coordination.",
+                "Self-driven individual with background in digital marketing, graphic design, and youth mentorship programs.",
+                "Resourceful professional with hands-on experience in stakeholder engagement and program implementation."
+            };
+            String selectedSummary = summaries[new java.util.Random().nextInt(summaries.length)];
+            setReactInputValue(textarea, selectedSummary);
             log.info("Professional Summary textarea filled");
         } else {
             log.warn("Professional Summary textarea not found");
@@ -597,7 +645,9 @@ public class YouthProfilePage extends BasePage {
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Enter job title']")));
             scrollToElement(jobTitleInput);
-            typeInReactInput(jobTitleInput, "Software Test Engineer");
+            String[] jobTitles = {"Content Writer", "Social Media Executive", "Program Coordinator",
+                    "Research Intern", "Event Manager", "Graphic Designer", "Data Analyst"};
+            typeInReactInput(jobTitleInput, jobTitles[new java.util.Random().nextInt(jobTitles.length)]);
         } catch (Exception e) {
             log.warn("Job title input not found: {}", e.getMessage());
             savePageSourceForDebug("work_exp_form_missing");
@@ -607,7 +657,9 @@ public class YouthProfilePage extends BasePage {
         try {
             WebElement companyInput = driver.findElement(
                     By.xpath("//input[@placeholder='Enter company name']"));
-            typeInReactInput(companyInput, "ABC Technologies Pvt Ltd");
+            String[] companies = {"Tata Consultancy Services", "Infosys Foundation", "Wipro Cares",
+                    "Bharti Foundation", "Reliance Industries Ltd", "Mahindra Group", "HCL Technologies"};
+            typeInReactInput(companyInput, companies[new java.util.Random().nextInt(companies.length)]);
         } catch (Exception e) {
             log.warn("Company input not found");
         }
@@ -693,7 +745,14 @@ public class YouthProfilePage extends BasePage {
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Add tools (comma separated)']")));
             scrollToElement(toolsInput);
-            typeInReactInput(toolsInput, "Selenium, Java, TestNG, Maven, Git, Jenkins, Docker");
+            String[] toolSets = {
+                "Canva, MS Office, Google Workspace, WordPress, Figma",
+                "Python, MS Excel, Tableau, Google Analytics, PowerPoint",
+                "Adobe Photoshop, Premiere Pro, After Effects, Canva, Notion",
+                "React, HTML, CSS, JavaScript, VS Code, GitHub",
+                "AutoCAD, SolidWorks, MATLAB, MS Project, Excel"
+            };
+            typeInReactInput(toolsInput, toolSets[new java.util.Random().nextInt(toolSets.length)]);
         } catch (Exception e) {
             log.warn("Tools input not found: {}", e.getMessage());
         }
@@ -1040,6 +1099,14 @@ public class YouthProfilePage extends BasePage {
      *   4. Triggers blur to finalize React state
      */
     private void setReactInputValue(WebElement element, String value) {
+        // Capture a locator strategy to re-find the element if it becomes stale after React re-render
+        String tagName;
+        try {
+            tagName = element.getTagName().toLowerCase();
+        } catch (Exception e) {
+            tagName = "input";
+        }
+
         try {
             scrollToElement(element);
             element.click();
@@ -1051,14 +1118,37 @@ public class YouthProfilePage extends BasePage {
             safeSleep(100);
             // Type the new value
             element.sendKeys(value);
+            safeSleep(300);
+            // After sendKeys, React may re-render the controlled component making
+            // the original element reference stale. Use JS to find the active/focused
+            // element and dispatch blur on it directly.
+            ((JavascriptExecutor) driver).executeScript(
+                    "var el = document.activeElement;" +
+                    "if (el) { el.dispatchEvent(new Event('blur', {bubbles:true})); }");
             safeSleep(200);
-            // Trigger blur to finalize
-            ((JavascriptExecutor) driver).executeScript("arguments[0].dispatchEvent(new Event('blur', {bubbles:true}));", element);
-            safeSleep(200);
+        } catch (org.openqa.selenium.StaleElementReferenceException stale) {
+            log.warn("Element went stale during sendKeys, using JS native setter approach");
+            // Re-find the element using the original locator approach
+            WebElement freshElement = null;
+            try {
+                freshElement = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.cssSelector(tagName + "[placeholder]")));
+            } catch (Exception e2) {
+                freshElement = driver.findElement(By.cssSelector(tagName));
+            }
+            setReactValueViaJS(freshElement, value, tagName);
         } catch (Exception e) {
             log.warn("sendKeys approach failed, trying JS setter: {}", e.getMessage());
-            // Fallback: JS native setter (works on some React versions)
-            String tagName = element.getTagName().toLowerCase();
+            setReactValueViaJS(element, value, tagName);
+        }
+    }
+
+    /**
+     * Fallback: Set React input value purely via JavaScript (avoids stale element issues).
+     */
+    private void setReactValueViaJS(WebElement element, String value, String tagName) {
+        try {
             String prototype = tagName.equals("textarea")
                     ? "window.HTMLTextAreaElement.prototype"
                     : "window.HTMLInputElement.prototype";
@@ -1073,6 +1163,8 @@ public class YouthProfilePage extends BasePage {
                     "el.dispatchEvent(new Event('blur', { bubbles: true }));",
                     element, value);
             safeSleep(200);
+        } catch (Exception jsError) {
+            log.error("JS setter also failed: {}", jsError.getMessage());
         }
     }
 

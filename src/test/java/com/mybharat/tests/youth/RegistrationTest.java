@@ -18,12 +18,37 @@ import com.mybharat.pages.youth.RegistrationPage;
 import com.mybharat.utils.RedashClient;
 
 /**
- * YouthRegistrationTest - Registers a new Indian youth user.
- * 
- * Flow: Open app → Register → Verify OTP → Fill form → Submit → Verify in DB
- * 
+ * RegistrationTest - End-to-end test for new Indian youth registration on MYBharat.
+ *
+ * Purpose: Registers a new Indian youth user with a randomly generated email,
+ *          fills the complete registration form, submits it, saves the email to Excel,
+ *          and optionally verifies the user exists in the database via Redash API.
+ *
+ * Flow:
+ *   1. registerIndianYouth():
+ *      - Open app → close popup → click "Register for Indian"
+ *      - Enter generated @yopmail.com email → Request OTP
+ *      - Open Yopmail in new tab → fetch OTP → verify OTP
+ *      - Fill registration form (name, DOB, gender, location, education, sport)
+ *      - Submit form → handle confirmation popup
+ *      - Save email to Youth_{env}.xlsx for subsequent login tests
+ *
+ *   2. verifyUserInDatabase() (optional):
+ *      - Queries Redash API to confirm user exists in the backend database
+ *      - Requires -DredashBaseUrl, -DredashQueryId, -DredashApiKey system properties
+ *      - Skipped gracefully if credentials not provided
+ *
+ * Static Field: registeredEmail — accessible by subsequent test classes in the same JVM
+ *
  * Run:
- *   mvn test -Denv=prod -Dbrowser=firefox
+ *   mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-registration.xml
+ *
+ * Dependencies: BaseTest, LandingPage, RegistrationPage, RedashClient, TestListeners
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see RegistrationPage
+ * @see LandingPage
+ * @see RedashClient
  */
 @Listeners(TestListeners.class)
 public class RegistrationTest extends BaseTest {

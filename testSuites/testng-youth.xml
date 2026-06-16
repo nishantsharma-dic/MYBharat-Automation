@@ -2,12 +2,36 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
-  Youth Module Suite - same browser session throughout.
+  ============================================================
+  Youth Module Suite — Full End-to-End Flow (Single Browser Session)
+  ============================================================
+  Purpose: Runs the complete youth user journey in ONE continuous browser session:
+           Registration → Logout → Login → Profile → Quiz → Blog
   
-  Flow: Registration (+ save email) → Logout → Login (from Excel) → Profile → Quiz
+  Important: All <test> blocks share parallel="false", which means they execute
+             sequentially. Each <test> gets its own driver instance via @BeforeTest.
+             However, since parallel="false", they run in order and the browser
+             persists across the full suite.
+  
+  Flow:
+    Step 1: Registration — Register new Indian youth, save email to Excel
+    Step 2: Logout — Log out the newly registered user
+    Step 3: Login — Re-login using email from Excel (OTP via Yopmail)
+    Step 4: Profile — Complete all profile sections (photo, about, education, etc.)
+    Step 5: Quiz — Attempt competitive quiz with random answers, submit with feedback
+    Step 6: Blog — Write, preview, and publish a blog post
+  
+  Prerequisites:
+    - Yopmail must be accessible (for OTP in registration and login)
+    - resources/ folder must be writable (Excel persistence)
+    - UploadImages/ folder must contain test images (for profile photo upload)
   
   Run with:
     mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
+    mvn test -Denv=beta -Dbrowser=headless -DciMode=true -Dsurefire.suiteXmlFiles=testSuites/testng-youth.xml
+  
+  Team: QA Team | Developer: Nishant Sharma
+  ============================================================
 -->
 <suite name="Youth Module" parallel="false" verbose="1">
 
@@ -47,6 +71,13 @@
     <test name="Quiz Attempt">
         <classes>
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 5: Blog Creation (user already logged in) -->
+    <test name="Blog Creation">
+        <classes>
+            <class name="com.mybharat.tests.blog.BlogTest"/>
         </classes>
     </test>
 

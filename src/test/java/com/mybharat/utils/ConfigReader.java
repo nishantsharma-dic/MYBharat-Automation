@@ -8,12 +8,34 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * ConfigReader - Loads environment-specific properties.
- * 
- * Reads from: src/test/resources/config-{env}.properties
- * Default env: beta
- * 
+ * ConfigReader - Environment-specific configuration loader for the test framework.
+ *
+ * Purpose: Loads properties from config-{env}.properties files located in
+ *          src/test/resources/. Provides typed accessors for common properties
+ *          (URL, browser, password, dummy email URL).
+ *
+ * Configuration Files:
+ *   - config-beta.properties → Beta environment (https://yuva-beta.mybharats.in)
+ *   - config-prod.properties → Production environment (https://mybharat.gov.in)
+ *
+ * Key Methods:
+ *   - getProperty(key)   — returns any property value by key
+ *   - getEnv()           — returns current environment name (beta/prod)
+ *   - getUrl()           — returns the base application URL
+ *   - getDummyEmailUrl() — returns the Yopmail URL for OTP retrieval
+ *   - getPassword()      — returns the default test password
+ *
+ * Usage:
+ *   ConfigReader config = new ConfigReader(); // reads based on -Denv system property
+ *   String url = config.getUrl();
+ *
  * Override at runtime: mvn test -Denv=prod
+ * Default environment: beta
+ *
+ * Dependencies: Java Properties, Log4j2
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see BaseTest
  */
 public class ConfigReader {
 

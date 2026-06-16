@@ -14,12 +14,29 @@ import com.mybharat.pages.youth.RegistrationCertificateVerificationPage;
 
 /**
  * RegistrationCertificateVerificationTest - Verifies registration certificate download.
- * 
- * Runs on the SAME browser session after YouthProfileTest.
- * The user is already logged in and on the profile page.
- * The certificate is in the "My Certifications" section on the About tab.
- * 
- * Flow: Scroll to certifications → Click card → Modal opens → Download PNG → Close modal
+ *
+ * Purpose: After profile completion, verifies that the user can download their
+ *          registration certificate from the "My Certifications" section on the
+ *          React profile page.
+ *
+ * Prerequisites: Runs on the SAME browser session after YouthProfileTest.
+ *                User is logged in and on (or navigatable to) the profile page.
+ *
+ * Flow:
+ *   1. Navigate to profile page → scroll to My Certifications section
+ *   2. Click the "Registration Certificate" card → modal opens
+ *   3. Click "Download PNG" → wait for file in downloads/ folder
+ *   4. Assert file was downloaded successfully
+ *   5. Close modal
+ *
+ * Key Methods:
+ *   - verifyRegistrationCertificateDownload() — full download and verification flow
+ *
+ * Dependencies: BaseTest, RegistrationCertificateVerificationPage, TestListeners
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see RegistrationCertificateVerificationPage
+ * @see YouthProfileTest
  */
 @Listeners(TestListeners.class)
 public class RegistrationCertificateVerificationTest extends BaseTest {

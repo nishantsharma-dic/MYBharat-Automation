@@ -18,9 +18,36 @@ import com.mybharat.pages.BasePage;
 import com.mybharat.utils.ConfigReader;
 
 /**
- * RegistrationPage - Handles the Youth registration form.
- * 
- * Flow: Enter email → Get OTP → Verify OTP → Fill form → Submit
+ * RegistrationPage - Page Object for the Youth registration form on MYBharat.
+ *
+ * Purpose: Handles the complete new user registration flow — from entering email and
+ *          verifying OTP to filling personal/education/location details and submitting.
+ *          Uses JavaFaker for randomized test data and Yopmail for OTP retrieval.
+ *
+ * Flow:
+ *   1. enterEmailAndRequestOTP() — enters generated @yopmail.com email, clicks Get OTP
+ *   2. fetchAndVerifyOTP()       — opens Yopmail in new tab, extracts OTP, enters and verifies
+ *   3. fillRegistrationForm()    — fills all form fields (name, DOB, gender, state, district,
+ *                                  address, education, institution, sport, consent checkboxes)
+ *   4. submitForm()              — clicks the Register/Submit button
+ *   5. clickSubmitPopup()        — handles the post-registration confirmation popup
+ *   6. saveEmailToExcel()        — persists the email to Youth_{env}.xlsx for login tests
+ *
+ * Key Methods:
+ *   - getEmail()          — returns the auto-generated email used for this registration
+ *   - saveEmailToExcel()  — saves email to environment-specific Excel (Youth_beta/prod.xlsx)
+ *   - clickSubmitPopup()  — handles the confirmation popup with multiple locator fallbacks
+ *
+ * Data Generation:
+ *   - Email: {randomName}@yopmail.com (via JavaFaker)
+ *   - Mobile: random 10-digit number starting with 9
+ *   - Name, DOB, address: randomized via JavaFaker
+ *
+ * Dependencies: BasePage, ConfigReader, JavaFaker, Apache POI (Excel), Yopmail
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see RegistrationTest
+ * @see LoginPage
  */
 public class RegistrationPage extends BasePage {
 

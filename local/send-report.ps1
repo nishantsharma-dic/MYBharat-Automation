@@ -60,6 +60,7 @@ $s_approve = Get-TestStatus "step19_superAdminApprove"
 # Main flow tests (all-modules)
 $s_publicPages = Get-TestStatus "publicPages"
 $s_registerYouth = Get-TestStatus "registerIndianYouth"
+$s_verifyDB = Get-TestStatus "verifyUserInDatabase"
 $s_logoutUser = Get-TestStatus "logoutUser"
 $s_loginOTP = Get-TestStatus "loginWithOTP"
 $s_profile = Get-TestStatus "completeYouthProfile"
@@ -67,9 +68,10 @@ $s_regCert = Get-TestStatus "verifyRegistrationCertificateDownload"
 $s_basicInfo = Get-TestStatus "clickBasicInfoAndExtractEmail"
 $s_quiz = Get-TestStatus "attemptCompetitiveQuiz"
 $s_quizCert = Get-TestStatus "verifyQuizCertificateDownload"
+$s_blog = Get-TestStatus "writeAndPublishBlog"
 
-# Count module-level test cases (12 modules total)
-$allStatuses = @($s_publicPages, $s_registerYouth, $s_logoutUser, $s_loginOTP, $s_profile, $s_regCert, $s_basicInfo, $s_quiz, $s_quizCert, $s_submit, $s_approve)
+# Count module-level test cases (13 modules total)
+$allStatuses = @($s_publicPages, $s_registerYouth, $s_verifyDB, $s_logoutUser, $s_loginOTP, $s_profile, $s_regCert, $s_basicInfo, $s_quiz, $s_quizCert, $s_blog, $s_submit, $s_approve)
 $total = ($allStatuses | Where-Object { $_ -ne "SKIP" }).Count
 $passed = ($allStatuses | Where-Object { $_ -eq "PASS" }).Count
 $failed = ($allStatuses | Where-Object { $_ -eq "FAIL" }).Count
@@ -154,6 +156,15 @@ $htmlBody = @"
       </tr>
       <tr style="background: #f9f9f9;">
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">3</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Registration</td>
+        <td style="padding: 6px; border: 1px solid #eee;">verifyUserInDatabase</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Verify registered user exists in DB via Redash</td>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_verifyDB)</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">4</td>
         <td style="padding: 6px; border: 1px solid #eee;">Logout</td>
         <td style="padding: 6px; border: 1px solid #eee;">logoutUser</td>
         <td style="padding: 6px; border: 1px solid #eee;">Logout after registration</td>
@@ -161,8 +172,8 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_logoutUser)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
       </tr>
-      <tr>
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">4</td>
+      <tr style="background: #f9f9f9;">
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">5</td>
         <td style="padding: 6px; border: 1px solid #eee;">Login</td>
         <td style="padding: 6px; border: 1px solid #eee;">loginWithOTP</td>
         <td style="padding: 6px; border: 1px solid #eee;">Login with OTP from Yopmail</td>
@@ -170,8 +181,8 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_loginOTP)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
       </tr>
-      <tr style="background: #f9f9f9;">
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">5</td>
+      <tr>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">6</td>
         <td style="padding: 6px; border: 1px solid #eee;">Profile</td>
         <td style="padding: 6px; border: 1px solid #eee;">completeYouthProfile</td>
         <td style="padding: 6px; border: 1px solid #eee;">Fill all profile sections</td>
@@ -179,8 +190,8 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_profile)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
       </tr>
-      <tr>
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">6</td>
+      <tr style="background: #f9f9f9;">
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">7</td>
         <td style="padding: 6px; border: 1px solid #eee;">Certificate</td>
         <td style="padding: 6px; border: 1px solid #eee;">verifyRegistrationCertificateDownload</td>
         <td style="padding: 6px; border: 1px solid #eee;">Download certificate PNG</td>
@@ -188,8 +199,8 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_regCert)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
       </tr>
-      <tr style="background: #f9f9f9;">
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">7</td>
+      <tr>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">8</td>
         <td style="padding: 6px; border: 1px solid #eee;">Basic Info</td>
         <td style="padding: 6px; border: 1px solid #eee;">clickBasicInfoAndExtractEmail</td>
         <td style="padding: 6px; border: 1px solid #eee;">Verify email in Basic Info</td>
@@ -197,8 +208,8 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_basicInfo)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
       </tr>
-      <tr>
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">8</td>
+      <tr style="background: #f9f9f9;">
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">9</td>
         <td style="padding: 6px; border: 1px solid #eee;">Quiz</td>
         <td style="padding: 6px; border: 1px solid #eee;">attemptCompetitiveQuiz</td>
         <td style="padding: 6px; border: 1px solid #eee;">Attempt competitive quiz</td>
@@ -206,8 +217,8 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_quiz)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
       </tr>
-      <tr style="background: #f9f9f9;">
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">9</td>
+      <tr>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">10</td>
         <td style="padding: 6px; border: 1px solid #eee;">Quiz Certificate</td>
         <td style="padding: 6px; border: 1px solid #eee;">verifyQuizCertificateDownload</td>
         <td style="padding: 6px; border: 1px solid #eee;">Download quiz certificate</td>
@@ -215,29 +226,38 @@ $htmlBody = @"
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_quizCert)</td>
         <td style="padding: 6px; border: 1px solid #eee;">Uvais</td>
       </tr>
-      <tr style="background: #e8f5e9;">
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">10</td>
-        <td style="padding: 6px; border: 1px solid #eee;"><b>Youth Club</b></td>
-        <td style="padding: 6px; border: 1px solid #eee;">registerMembers + createYouthClub</td>
-        <td style="padding: 6px; border: 1px solid #eee;">Register 6 members + Create Youth Club + Add members with OTP</td>
+      <tr style="background: #f9f9f9;">
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Blog</td>
+        <td style="padding: 6px; border: 1px solid #eee;">writeAndPublishBlog</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Create blog and verify Pending status</td>
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_submit)</td>
-        <td style="padding: 6px; border: 1px solid #eee;">Pal</td>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_blog)</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Sonali</td>
       </tr>
       <tr style="background: #e8f5e9;">
-        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">11</td>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">12</td>
+        <td style="padding: 6px; border: 1px solid #eee;"><b>Youth Club</b></td>
+        <td style="padding: 6px; border: 1px solid #eee;">createYouthClub</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Register 6 members + Create Youth Club + Verify members</td>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_submit)</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+      </tr>
+      <tr style="background: #e8f5e9;">
+        <td style="padding: 6px; border: 1px solid #eee; text-align: center;">13</td>
         <td style="padding: 6px; border: 1px solid #eee;"><b>Youth Club Approve</b></td>
-        <td style="padding: 6px; border: 1px solid #eee;">superAdminApprove</td>
-        <td style="padding: 6px; border: 1px solid #eee;">SuperAdmin login + Search + Approve Youth Club</td>
+        <td style="padding: 6px; border: 1px solid #eee;">approveYouthClub</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Login SuperAdmin and approve Youth Club</td>
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
         <td style="padding: 6px; border: 1px solid #eee; text-align: center;">$(Get-StatusIcon $s_approve)</td>
-        <td style="padding: 6px; border: 1px solid #eee;">Pal</td>
+        <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
       </tr>
     </table>
 
     <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
     <p style="font-size: 13px; color: #555; line-height: 1.8;">
-      Public Pages &#8594; Registration &#8594; Logout &#8594; Login (OTP) &#8594; Profile &#8594; Certificate &#8594; Basic Info &#8594; Quiz &#8594; Quiz Certificate &#8594; <b>Youth Club (Create + Approve)</b>
+      Public Pages &#8594; Registration &#8594; Logout &#8594; Login (OTP) &#8594; Profile &#8594; Certificate &#8594; Basic Info &#8594; Quiz &#8594; Quiz Certificate &#8594; Blog &#8594; <b>Create Youth Club &#8594; Approve Youth Club</b>
     </p>
   </div>
   <div style="background: #f8f9fa; padding: 12px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0; border-top: none;">

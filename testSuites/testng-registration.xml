@@ -2,13 +2,38 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <!--
+  ============================================================
   Registration Only Suite
+  ============================================================
+  Purpose: Registers a new Indian youth user and saves the email to Excel.
+           This is a standalone suite for testing ONLY the registration flow.
   
-  Flow: Register new Indian youth → Save email to Excel → Logout
+  Flow:
+    1. Open MYBharat → close popup → click "Register Now" → "Register" (Indian)
+    2. Enter auto-generated @yopmail.com email → Request OTP
+    3. Open Yopmail in new tab → extract OTP → verify OTP
+    4. Fill registration form (name, DOB, gender, state, district, education, etc.)
+    5. Submit form → handle confirmation popup
+    6. Save email to Youth_{env}.xlsx for subsequent login tests
+    7. Verify user exists in database via Redash (if credentials provided)
+  
+  Prerequisites:
+    - Yopmail must be accessible for OTP retrieval
+    - resources/ folder must be writable for Excel file creation
   
   Run with:
     mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-registration.xml
     mvn test -Denv=prod -Dbrowser=firefox -Dsurefire.suiteXmlFiles=testSuites/testng-registration.xml
+  
+  Optional Redash verification:
+    mvn test -Denv=beta -Dbrowser=chrome \
+      -DredashBaseUrl=https://dash-beta.mybharats.in \
+      -DredashQueryId=63 \
+      -DredashApiKey=your-api-key \
+      -Dsurefire.suiteXmlFiles=testSuites/testng-registration.xml
+  
+  Team: QA Team | Developer: Nishant Sharma
+  ============================================================
 -->
 <suite name="Registration Suite" parallel="false" verbose="1">
 

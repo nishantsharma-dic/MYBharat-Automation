@@ -49,3 +49,14 @@ screenshots/
 # Environment secrets (NEVER push these)
 # ========================
 *.env
+bin/
+
+# ========================
+# Local scripts (testing only — not for production)
+# ========================
+local/
+
+# ========================
+# Kiro AI config (developer-specific)
+# ========================
+.kiro/

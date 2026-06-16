@@ -12,11 +12,34 @@ import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.youth.YouthProfilePage;
 
 /**
- * YouthProfileTest - Completes the youth profile after login.
- * 
- * Runs on the SAME browser session after LoginTest.
- * The user is already logged in but on the dashboard/home page.
- * This test navigates to the profile page first, then completes the profile.
+ * YouthProfileTest - End-to-end test for completing the youth profile on MYBharat.
+ *
+ * Purpose: After login, navigates to the React profile page and fills all profile
+ *          sections (photo, about, interests, education, languages, professional
+ *          summary, work experience, tools).
+ *
+ * Prerequisites: User is already logged in (runs AFTER LoginTest in the same browser
+ *                session within the testng-youth.xml suite). User is on dashboard/home.
+ *
+ * Flow:
+ *   1. Navigate to /youth-profile
+ *   2. Upload profile photo
+ *   3. Fill About section
+ *   4. Add Area of Interest (react-select)
+ *   5. Add Education Qualification (native dropdowns)
+ *   6. Add Language (react-select)
+ *   7. Fill Professional Summary + skills
+ *   8. Add Work Experience
+ *   9. Fill Tools section + social links
+ *
+ * Key Methods:
+ *   - completeYouthProfile() — orchestrates all section fills via YouthProfilePage
+ *
+ * Dependencies: BaseTest, YouthProfilePage, TestListeners
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see YouthProfilePage
+ * @see LoginTest
  */
 @Listeners(TestListeners.class)
 public class YouthProfileTest extends BaseTest {

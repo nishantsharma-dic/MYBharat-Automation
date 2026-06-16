@@ -16,15 +16,37 @@ import com.mybharat.pages.BasePage;
 import com.mybharat.utils.ConfigReader;
 
 /**
- * RegistrationCertificateVerificationPage - Downloads certificate from React profile.
+ * RegistrationCertificateVerificationPage - Page Object for downloading the registration certificate.
  *
- * New React UI flow:
- *   1. Scroll to "My Certifications" section on About tab
- *   2. Click the certificate card (has text "Registration Certificate")
- *   3. Modal opens with certificate preview + Download PNG / Download PDF buttons
- *   4. Click "Download PNG"
- *   5. Verify file downloaded to Downloads folder
- *   6. Close modal
+ * Purpose: Navigates to the "My Certifications" section on the React youth profile page,
+ *          clicks the registration certificate card, downloads it as PNG, and verifies
+ *          the file was successfully saved to the downloads folder.
+ *
+ * New React UI Flow:
+ *   1. Navigate to youth-profile page (if not already there)
+ *   2. Scroll to "My Certifications" section on the About tab
+ *   3. Click the certificate card (contains text "Registration Certificate")
+ *   4. Modal opens with certificate preview + Download PNG / Download PDF buttons
+ *   5. Click "Download PNG"
+ *   6. Poll downloads/ folder for up to 15 seconds for a new .png file
+ *   7. Close modal
+ *
+ * Key Methods:
+ *   - downloadCertificate() — complete download flow, returns true if file verified
+ *   - closeModal()          — closes the certificate preview modal (X button or Escape)
+ *
+ * Verification: Checks that a .png file appeared in downloads/ within the last 30 seconds,
+ *               is not a partial download (.crdownload), and has non-zero size.
+ *
+ * Environment:
+ *   Beta: https://yuva-beta.mybharats.in/youth-profile
+ *   Prod: https://mybharat.gov.in/youth-profile
+ *
+ * Dependencies: BasePage, ConfigReader
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see RegistrationCertificateVerificationTest
+ * @see YouthProfilePage
  */
 public class RegistrationCertificateVerificationPage extends BasePage {
 

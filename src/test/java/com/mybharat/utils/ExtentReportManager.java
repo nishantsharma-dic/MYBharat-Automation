@@ -5,9 +5,29 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 
 /**
- * ExtentReportManager - Creates and configures the HTML test report.
- * Uses singleton pattern so all test suites write to the SAME report.
- * Report is saved to: reports/index.html
+ * ExtentReportManager - Singleton factory for the ExtentReports HTML report engine.
+ *
+ * Purpose: Creates and configures a single shared ExtentReports instance used by all
+ *          test suites. Generates a DARK-themed interactive HTML report with project
+ *          metadata, environment info, and timeline visualization.
+ *
+ * Report Output: reports/index.html (in the project root)
+ *
+ * Key Methods:
+ *   - getReportObject() — returns the singleton ExtentReports instance (thread-safe)
+ *
+ * Report Configuration:
+ *   - Theme: DARK
+ *   - Timeline: enabled (shows test execution order)
+ *   - System info: Project name, Team, Tester, Environment, Base URL, Browser, OS, Java version
+ *
+ * Thread Safety: Uses synchronized initialization (double-checked locking pattern via
+ *                synchronized method) to ensure only one report instance exists.
+ *
+ * Dependencies: ExtentReports (aventstack), ExtentSparkReporter
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see TestListeners
  */
 public class ExtentReportManager {
 

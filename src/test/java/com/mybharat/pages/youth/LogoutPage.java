@@ -13,10 +13,28 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import com.mybharat.pages.BasePage;
 
 /**
- * LogoutPage - Handles user logout functionality.
- * 
- * Opens the user menu and clicks the logout button.
- * Can be reused after any flow that requires logging out (registration, profile, etc.)
+ * LogoutPage - Page Object for the user logout functionality.
+ *
+ * Purpose: Handles user session termination by interacting with the user menu
+ *          and clicking the logout button. Includes retry logic for flaky UI interactions.
+ *
+ * Flow:
+ *   1. Wait for page stability (2s delay)
+ *   2. openUserMenu()     — clicks the circular profile/avatar button
+ *   3. clickLogoutButton() — clicks the logout menu item
+ *   4. waitForPageLoad()  — waits for redirect to home page
+ *
+ * Key Methods:
+ *   - logout() — performs the complete logout sequence
+ *
+ * Usage: Called after registration, profile completion, or any flow
+ *        that needs the user to be logged out before the next step.
+ *
+ * Dependencies: BasePage (parent), Selenium WebDriverWait
+ * Developer: Nishant Sharma (QA Team)
+ *
+ * @see LogoutTest
+ * @see LoginPage
  */
 public class LogoutPage extends BasePage {
 
