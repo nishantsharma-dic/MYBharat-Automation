@@ -91,7 +91,7 @@
       - Org user logs in → Creates template → Creates event
       - Youth logs in → Applies on event → Uploads images
       - Org logs back in → Approves images → Edits event
-      - Developer: Alamgeer / Manoj
+      - Developer: Alamgeer
     -->
     <test name="VO Full Cycle" preserve-order="true">
         <classes>
