@@ -173,7 +173,9 @@ public class BlogPage extends BasePage {
         // Category
         WebElement categoryInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(CATEGORY_INPUT));
         categoryInput.clear();
-        categoryInput.sendKeys("Technology");
+        String[] categories = {"Technology", "Education", "Environment", "Health", "Social Impact",
+                "Culture", "Sports", "Career", "Innovation", "Volunteering"};
+        categoryInput.sendKeys(categories[new java.util.Random().nextInt(categories.length)]);
         log.info("Category entered");
         Thread.sleep(500);
 
@@ -224,7 +226,8 @@ public class BlogPage extends BasePage {
             editor.click();
             Thread.sleep(300);
 
-            String blogContent = "India's youth population represents one of the largest demographic dividends in the world. "
+            String[] blogContents = {
+                "India's youth population represents one of the largest demographic dividends in the world. "
                     + "With over 600 million people under the age of 25, the country stands at a unique crossroads "
                     + "where the energy and innovation of its young citizens can drive transformative change across "
                     + "every sector of society. From technology and entrepreneurship to social service and governance, "
@@ -236,7 +239,33 @@ public class BlogPage extends BasePage {
                     + "Programs like Digital India, Skill India, and Startup India have created an ecosystem where "
                     + "young people can learn, innovate, and lead. The emphasis on digital literacy, vocational "
                     + "training, and entrepreneurship is helping bridge the urban-rural divide and creating "
-                    + "opportunities in every corner of the country.";
+                    + "opportunities in every corner of the country.",
+
+                "Volunteering has long been recognized as a catalyst for personal growth and community development. "
+                    + "When young people step out of their comfort zones to serve others, they gain invaluable life "
+                    + "skills — empathy, teamwork, communication, and problem-solving — that no classroom can teach. "
+                    + "In India, the culture of seva (selfless service) runs deep, and modern platforms like MY Bharat "
+                    + "are channeling this spirit into structured, impactful programs.\n\n"
+                    + "From organizing health camps in rural villages to teaching digital skills at community centers, "
+                    + "volunteers are making a tangible difference in the lives of millions. These experiences also "
+                    + "build a sense of national pride and shared responsibility among the youth.\n\n"
+                    + "The ripple effect of volunteering extends far beyond the immediate beneficiaries. It inspires "
+                    + "others to act, strengthens social cohesion, and creates a generation of responsible citizens "
+                    + "who understand that India's progress depends on collective effort.",
+
+                "The rise of digital technology has opened unprecedented avenues for youth participation in governance "
+                    + "and nation-building. Today, a young person in a remote village can access the same learning "
+                    + "resources, government schemes, and volunteering opportunities as someone in a metro city. "
+                    + "This democratization of access is fundamentally reshaping how India develops.\n\n"
+                    + "Initiatives like Aadhaar, UPI, and DigiLocker have shown how technology can simplify lives "
+                    + "and bring transparency to public services. Young tech-savvy Indians are not just users of "
+                    + "these platforms — they are contributors, building apps, analyzing data, and creating content "
+                    + "that helps fellow citizens navigate the digital ecosystem.\n\n"
+                    + "As India marches toward becoming a developed nation by 2047, the role of its youth in driving "
+                    + "this transformation cannot be overstated. Every volunteer hour, every innovation, and every "
+                    + "act of community service brings us closer to that shared vision."
+            };
+            String blogContent = blogContents[new java.util.Random().nextInt(blogContents.length)];
 
             ((JavascriptExecutor) driver).executeScript(
                     "arguments[0].innerHTML = arguments[1];", editor, "<p>" + blogContent + "</p>");
@@ -261,9 +290,20 @@ public class BlogPage extends BasePage {
             bioEditor.click();
             Thread.sleep(300);
 
-            String bio = "A passionate writer and youth advocate from India, dedicated to sharing stories of "
+            String[] bios = {
+                "A passionate writer and youth advocate from India, dedicated to sharing stories of "
                     + "innovation, social impact, and nation-building. Believes in the power of youth-led "
-                    + "initiatives to transform communities and drive sustainable development across the country.";
+                    + "initiatives to transform communities and drive sustainable development across the country.",
+                "Final year student at Delhi University with a deep interest in public policy and grassroots "
+                    + "development. Regular contributor to campus magazines and community blogs on topics "
+                    + "ranging from education reform to environmental sustainability.",
+                "Young professional from Bangalore who volunteers on weekends with underprivileged children. "
+                    + "Writes about the intersection of technology and social good, hoping to inspire peers "
+                    + "to contribute their skills for meaningful causes.",
+                "Aspiring journalist and communications graduate from Mumbai. Passionate about amplifying "
+                    + "unheard voices and documenting the impact of youth-led movements across India."
+            };
+            String bio = bios[new java.util.Random().nextInt(bios.length)];
             ((JavascriptExecutor) driver).executeScript(
                     "arguments[0].innerHTML = arguments[1];", bioEditor, "<p>" + bio + "</p>");
             ((JavascriptExecutor) driver).executeScript(

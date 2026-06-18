@@ -292,7 +292,20 @@ public class YouthProfilePage extends BasePage {
 
         if (textarea != null && textarea.isDisplayed()) {
             scrollToElement(textarea);
-            setReactInputValue(textarea, "Automated testing profile. Passionate about technology and innovation.");
+            String[] aboutTexts = {
+                "Final year B.Tech student passionate about sustainable development and rural education. "
+                    + "I enjoy working with local communities to organize awareness campaigns on health and hygiene.",
+                "Aspiring civil servant with keen interest in public policy and governance. "
+                    + "Currently volunteering with district administration on youth engagement programs.",
+                "Creative arts enthusiast pursuing BA in English Literature. Love writing, photography, "
+                    + "and conducting storytelling workshops for underprivileged children.",
+                "Commerce graduate with hands-on experience in event management and fundraising. "
+                    + "Organized multiple blood donation drives and tree plantation campaigns in my city.",
+                "Engineering student with a knack for problem solving and community service. "
+                    + "Active member of NSS unit, participated in Swachh Bharat and flood relief initiatives."
+            };
+            String selectedAbout = aboutTexts[new java.util.Random().nextInt(aboutTexts.length)];
+            setReactInputValue(textarea, selectedAbout);
             clickSaveOrUpdateInSection("About");
             waitForToastOrTimeout();
             log.info("✅ About section saved");
@@ -397,7 +410,15 @@ public class YouthProfilePage extends BasePage {
 
         if (textarea != null) {
             scrollToElement(textarea);
-            setReactInputValue(textarea, "Experienced in automation testing with Selenium, Java, and TestNG.");
+            String[] summaries = {
+                "Motivated individual with experience in event coordination, volunteer management, and community outreach programs.",
+                "Detail-oriented graduate skilled in research, data analysis, and content creation for social media campaigns.",
+                "Proactive team player with strong communication skills and experience in NGO project coordination.",
+                "Self-driven individual with background in digital marketing, graphic design, and youth mentorship programs.",
+                "Resourceful professional with hands-on experience in stakeholder engagement and program implementation."
+            };
+            String selectedSummary = summaries[new java.util.Random().nextInt(summaries.length)];
+            setReactInputValue(textarea, selectedSummary);
             log.info("Professional Summary textarea filled");
         } else {
             log.warn("Professional Summary textarea not found");
@@ -624,7 +645,9 @@ public class YouthProfilePage extends BasePage {
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Enter job title']")));
             scrollToElement(jobTitleInput);
-            typeInReactInput(jobTitleInput, "Software Test Engineer");
+            String[] jobTitles = {"Content Writer", "Social Media Executive", "Program Coordinator",
+                    "Research Intern", "Event Manager", "Graphic Designer", "Data Analyst"};
+            typeInReactInput(jobTitleInput, jobTitles[new java.util.Random().nextInt(jobTitles.length)]);
         } catch (Exception e) {
             log.warn("Job title input not found: {}", e.getMessage());
             savePageSourceForDebug("work_exp_form_missing");
@@ -634,7 +657,9 @@ public class YouthProfilePage extends BasePage {
         try {
             WebElement companyInput = driver.findElement(
                     By.xpath("//input[@placeholder='Enter company name']"));
-            typeInReactInput(companyInput, "ABC Technologies Pvt Ltd");
+            String[] companies = {"Tata Consultancy Services", "Infosys Foundation", "Wipro Cares",
+                    "Bharti Foundation", "Reliance Industries Ltd", "Mahindra Group", "HCL Technologies"};
+            typeInReactInput(companyInput, companies[new java.util.Random().nextInt(companies.length)]);
         } catch (Exception e) {
             log.warn("Company input not found");
         }
@@ -720,7 +745,14 @@ public class YouthProfilePage extends BasePage {
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Add tools (comma separated)']")));
             scrollToElement(toolsInput);
-            typeInReactInput(toolsInput, "Selenium, Java, TestNG, Maven, Git, Jenkins, Docker");
+            String[] toolSets = {
+                "Canva, MS Office, Google Workspace, WordPress, Figma",
+                "Python, MS Excel, Tableau, Google Analytics, PowerPoint",
+                "Adobe Photoshop, Premiere Pro, After Effects, Canva, Notion",
+                "React, HTML, CSS, JavaScript, VS Code, GitHub",
+                "AutoCAD, SolidWorks, MATLAB, MS Project, Excel"
+            };
+            typeInReactInput(toolsInput, toolSets[new java.util.Random().nextInt(toolSets.length)]);
         } catch (Exception e) {
             log.warn("Tools input not found: {}", e.getMessage());
         }
@@ -1067,6 +1099,14 @@ public class YouthProfilePage extends BasePage {
      *   4. Triggers blur to finalize React state
      */
     private void setReactInputValue(WebElement element, String value) {
+        // Capture a locator strategy to re-find the element if it becomes stale after React re-render
+        String tagName;
+        try {
+            tagName = element.getTagName().toLowerCase();
+        } catch (Exception e) {
+            tagName = "input";
+        }
+
         try {
             scrollToElement(element);
             element.click();
@@ -1078,14 +1118,37 @@ public class YouthProfilePage extends BasePage {
             safeSleep(100);
             // Type the new value
             element.sendKeys(value);
+            safeSleep(300);
+            // After sendKeys, React may re-render the controlled component making
+            // the original element reference stale. Use JS to find the active/focused
+            // element and dispatch blur on it directly.
+            ((JavascriptExecutor) driver).executeScript(
+                    "var el = document.activeElement;" +
+                    "if (el) { el.dispatchEvent(new Event('blur', {bubbles:true})); }");
             safeSleep(200);
-            // Trigger blur to finalize
-            ((JavascriptExecutor) driver).executeScript("arguments[0].dispatchEvent(new Event('blur', {bubbles:true}));", element);
-            safeSleep(200);
+        } catch (org.openqa.selenium.StaleElementReferenceException stale) {
+            log.warn("Element went stale during sendKeys, using JS native setter approach");
+            // Re-find the element using the original locator approach
+            WebElement freshElement = null;
+            try {
+                freshElement = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.cssSelector(tagName + "[placeholder]")));
+            } catch (Exception e2) {
+                freshElement = driver.findElement(By.cssSelector(tagName));
+            }
+            setReactValueViaJS(freshElement, value, tagName);
         } catch (Exception e) {
             log.warn("sendKeys approach failed, trying JS setter: {}", e.getMessage());
-            // Fallback: JS native setter (works on some React versions)
-            String tagName = element.getTagName().toLowerCase();
+            setReactValueViaJS(element, value, tagName);
+        }
+    }
+
+    /**
+     * Fallback: Set React input value purely via JavaScript (avoids stale element issues).
+     */
+    private void setReactValueViaJS(WebElement element, String value, String tagName) {
+        try {
             String prototype = tagName.equals("textarea")
                     ? "window.HTMLTextAreaElement.prototype"
                     : "window.HTMLInputElement.prototype";
@@ -1100,6 +1163,8 @@ public class YouthProfilePage extends BasePage {
                     "el.dispatchEvent(new Event('blur', { bubbles: true }));",
                     element, value);
             safeSleep(200);
+        } catch (Exception jsError) {
+            log.error("JS setter also failed: {}", jsError.getMessage());
         }
     }
 
@@ -1173,19 +1238,41 @@ public class YouthProfilePage extends BasePage {
     }
 
     /**
-     * Get profile image path — always uses Userpic.jpeg for consistency.
+     * Get a random image path from the UploadImages folder.
+     * Only returns images >= 50KB (app requirement).
      */
     private String getRandomImagePath() {
-        File imageFile = Paths.get(System.getProperty("user.dir"), "UploadImages", "Userpic.jpeg").toFile();
-        if (!imageFile.exists()) {
-            // Fallback: try Userpic.jpg
-            imageFile = Paths.get(System.getProperty("user.dir"), "UploadImages", "Userpic.jpg").toFile();
+        File imagesDir = Paths.get(System.getProperty("user.dir"), "UploadImages").toFile();
+        if (!imagesDir.exists()) {
+            throw new RuntimeException("UploadImages folder not found at: " + imagesDir.getAbsolutePath());
         }
-        if (!imageFile.exists()) {
-            throw new RuntimeException("Userpic.jpeg not found in UploadImages folder");
+        File[] files = imagesDir.listFiles((dir, name) ->
+                name.toLowerCase().matches(".*\\.(jpg|png|jpeg)"));
+        if (files == null || files.length == 0) {
+            throw new RuntimeException("No images found in: " + imagesDir.getAbsolutePath());
         }
-        log.info("Selected image: {} ({}KB)", imageFile.getName(), imageFile.length() / 1024);
-        return imageFile.getAbsolutePath();
+
+        // Filter for files >= 50KB (app requires minimum 50KB)
+        List<File> validFiles = new java.util.ArrayList<>();
+        for (File f : files) {
+            if (f.length() >= 50 * 1024) { // 50KB minimum
+                validFiles.add(f);
+            }
+        }
+
+        if (validFiles.isEmpty()) {
+            // Fallback: use largest available file
+            File largest = files[0];
+            for (File f : files) {
+                if (f.length() > largest.length()) largest = f;
+            }
+            log.warn("No images >= 50KB found, using largest: {} ({}KB)", largest.getName(), largest.length() / 1024);
+            return largest.getAbsolutePath();
+        }
+
+        File randomFile = validFiles.get(random.nextInt(validFiles.size()));
+        log.info("Selected image: {} ({}KB)", randomFile.getName(), randomFile.length() / 1024);
+        return randomFile.getAbsolutePath();
     }
 
     /**

@@ -275,8 +275,11 @@ public class PublicPage extends BasePage {
 
             safeClick(menu);
 
-            // Check if new tab opened unexpectedly
-            try { Thread.sleep(1000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+            // Wait for either a new tab to open or the page URL to change
+            new WebDriverWait(driver, Duration.ofSeconds(3)).until(d ->
+                    d.getWindowHandles().size() > windowCount ||
+                    !d.getCurrentUrl().equals("about:blank"));
+
             if (driver.getWindowHandles().size() > windowCount) {
                 return handleNewTab(menuName, originalWindow);
             }
@@ -316,7 +319,11 @@ public class PublicPage extends BasePage {
             }
 
             safeClick(menu);
-            try { Thread.sleep(1000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+
+            // Wait for either a new tab to open or the page URL to change
+            new WebDriverWait(driver, Duration.ofSeconds(3)).until(d ->
+                    d.getWindowHandles().size() > windowCount ||
+                    !d.getCurrentUrl().equals("about:blank"));
 
             if (driver.getWindowHandles().size() > windowCount) {
                 return handleNewTab(menuName, originalWindow);
@@ -613,8 +620,9 @@ public class PublicPage extends BasePage {
 
     private boolean handleNewTab(String menuName, String originalWindow) {
         try {
-            // Small wait for new tab to fully open
-            try { Thread.sleep(2000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+            // Wait for new tab to be available (up to 3 seconds)
+            new WebDriverWait(driver, Duration.ofSeconds(3)).until(
+                    d -> d.getWindowHandles().size() > 1);
 
             Set<String> handles = driver.getWindowHandles();
 
@@ -973,7 +981,18 @@ public class PublicPage extends BasePage {
                     // keep scrolling
                 }
                 scrollPage(400);
-                try { Thread.sleep(500); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                // Brief implicit wait for content to render after scroll
+                try {
+                    new WebDriverWait(driver, Duration.ofSeconds(1))
+                            .until(ExpectedConditions.presenceOfElementLocated(viewMoreLocator));
+                    List<WebElement> found = driver.findElements(viewMoreLocator);
+                    for (WebElement link : found) {
+                        if (link.isDisplayed()) { viewMore = link; break; }
+                    }
+                    if (viewMore != null) break;
+                } catch (Exception ignored) {
+                    // keep scrolling
+                }
             }
 
             if (viewMore == null) {
@@ -1103,20 +1122,25 @@ public class PublicPage extends BasePage {
                         .until(ExpectedConditions.presenceOfElementLocated(districtSelect));
                 scrollToElement(distEl);
 
-                // Poll for options to load
-                for (int i = 0; i < 20; i++) {
-                    org.openqa.selenium.support.ui.Select sel =
-                            new org.openqa.selenium.support.ui.Select(driver.findElement(districtSelect));
-                    if (sel.getOptions().size() > 1) {
-                        sel.selectByIndex(1);
-                        log.info("✅ District selected (native): {}", sel.getFirstSelectedOption().getText());
-                        waitForPageLoad();
-                        return true;
+                // Wait for options to load (up to 10 seconds)
+                new WebDriverWait(driver, Duration.ofSeconds(10)).until(d -> {
+                    try {
+                        org.openqa.selenium.support.ui.Select sel =
+                                new org.openqa.selenium.support.ui.Select(d.findElement(districtSelect));
+                        return sel.getOptions().size() > 1;
+                    } catch (Exception e) {
+                        return false;
                     }
-                    try { Thread.sleep(500); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
-                }
+                });
+
+                org.openqa.selenium.support.ui.Select sel =
+                        new org.openqa.selenium.support.ui.Select(driver.findElement(districtSelect));
+                sel.selectByIndex(1);
+                log.info("✅ District selected (native): {}", sel.getFirstSelectedOption().getText());
+                waitForPageLoad();
+                return true;
             } catch (Exception e) {
-                log.info("Native district select not found");
+                log.info("Native district select not found or options didn't load");
             }
 
             // JavaScript approach — select from second select element
