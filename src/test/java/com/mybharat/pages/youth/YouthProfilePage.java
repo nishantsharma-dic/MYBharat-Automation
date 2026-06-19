@@ -90,6 +90,10 @@ public class YouthProfilePage extends BasePage {
     // Basic Info form fields
     private static final By INPUT_USER_EMAIL = By.xpath("//input[@name='user_email']");
 
+    // Education Qualification form locators
+    private static final By SCHOOL_NAME_DIV = By.cssSelector("div[class='w-full border text-sm border-gray-300 rounded-lg px-3 py-2 cursor-pointer']");
+    private static final By COURSE_SELECT = By.xpath("//div[6]//select[1]");
+
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
@@ -720,26 +724,16 @@ public class YouthProfilePage extends BasePage {
             
             safeSleep(1500);
 
-            // 5. Course Name — select "Less than 8th" course
+            // 5. Course Name — select "Less than 8th" course using //div[6]//select[1]
             try {
-                // Re-fetch selects since DOM may have re-rendered
-                List<WebElement> courseSelects = driver.findElements(By.cssSelector(
-                        "select.w-full.border.border-gray-300"));
-                // Find the Course Name select (should have "Course" in its options or label)
-                for (WebElement sel : courseSelects) {
-                    List<WebElement> opts = sel.findElements(By.tagName("option"));
-                    boolean isCourseSelect = opts.stream().anyMatch(o ->
-                            o.getText().contains("Course") || o.getText().contains("Select Course")
-                            || o.getText().contains("Less than"));
-                    if (isCourseSelect && opts.size() >= 2) {
-                        ((JavascriptExecutor) driver).executeScript(
-                                "arguments[0].selectedIndex=1; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
-                                sel);
-                        safeSleep(500);
-                        log.info("Course Name selected");
-                        break;
-                    }
-                }
+                // Use the specified XPath for Course Name
+                WebElement courseSelect = driver.findElement(COURSE_SELECT);
+                scrollToElement(courseSelect);
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].selectedIndex=1; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                        courseSelect);
+                safeSleep(500);
+                log.info("Course Name selected (using //div[6]//select[1])");
             } catch (Exception e) {
                 log.info("Course Name dropdown not found or error: {}", e.getMessage());
             }
@@ -838,8 +832,7 @@ public class YouthProfilePage extends BasePage {
         try {
             // Find the school name searchable dropdown div
             WebElement schoolDiv = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
-                    ExpectedConditions.elementToBeClickable(
-                            By.cssSelector("div[class='w-full border text-sm border-gray-300 rounded-lg px-3 py-2 cursor-pointer']")));
+                    ExpectedConditions.elementToBeClickable(SCHOOL_NAME_DIV));
             scrollToElement(schoolDiv);
             
             // Click to open the dropdown
@@ -900,8 +893,7 @@ public class YouthProfilePage extends BasePage {
     private void verifyAndFixSchoolName(String fullSchoolName, String searchTerm) {
         try {
             // Check if school name div still shows selected value or is empty
-            WebElement schoolDiv = driver.findElement(
-                    By.cssSelector("div[class='w-full border text-sm border-gray-300 rounded-lg px-3 py-2 cursor-pointer']"));
+            WebElement schoolDiv = driver.findElement(SCHOOL_NAME_DIV);
             
             String divText = schoolDiv.getText();
             log.info("School name field current text: '{}'", divText);
