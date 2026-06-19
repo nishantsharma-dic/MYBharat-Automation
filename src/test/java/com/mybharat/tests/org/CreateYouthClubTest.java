@@ -400,20 +400,8 @@ public class CreateYouthClubTest extends BaseTest {
         } catch (Exception e) { /* skip */ }
 
         // Step D: Capture prevCount BEFORE clicking Login
-        int prevCount = 0;
-        try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient preClient =
-                org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
-            org.apache.hc.client5.http.classic.methods.HttpPost preReq =
-                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
-            preReq.setHeader("Content-Type", "application/json");
-            preReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
-                    "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
-            String preResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
-                    preClient.execute(preReq).getEntity());
-            prevCount = new com.fasterxml.jackson.databind.ObjectMapper()
-                    .readTree(preResp).path("data").path("inbox").size();
-        } catch (Exception e) { /* default 0 */ }
-        log.info("  prevCount={} for {}", prevCount, mailbox);
+        // NOTE: For login OTP, we skip prevCount check and just read the latest message
+        // because Maildrop may have cleaned old emails or rate-limiting may delay delivery
 
         // Step E: Click Login button (same as LoginPage uses)
         WebElement loginBtn = wait.until(ExpectedConditions.elementToBeClickable(
@@ -421,16 +409,17 @@ public class CreateYouthClubTest extends BaseTest {
         try { loginBtn.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", loginBtn); }
         log.info("  Login button clicked — OTP requested");
 
-        // Step F: Wait and fetch OTP from Maildrop (SAME as addMembers pattern)
-        Thread.sleep(5000);
+        // Step F: Wait for OTP email and fetch from Maildrop
+        // Strategy: Wait 10s for delivery, then read the LATEST message (no prevCount check)
+        Thread.sleep(10000);
         String otp = "";
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        for (int otpAttempt = 1; otpAttempt <= 8; otpAttempt++) {
+        for (int otpAttempt = 1; otpAttempt <= 10; otpAttempt++) {
             try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
                     org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
 
-                // Get inbox
+                // Get inbox — read the LATEST message directly (index 0 = newest)
                 org.apache.hc.client5.http.classic.methods.HttpPost listReq =
                         new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
                 listReq.setHeader("Content-Type", "application/json");
@@ -441,13 +430,13 @@ public class CreateYouthClubTest extends BaseTest {
 
                 com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
 
-                if (inbox.size() <= prevCount) {
-                    log.info("  No NEW email yet (attempt {}/8, count={})", otpAttempt, inbox.size());
+                if (inbox.size() == 0) {
+                    log.info("  Inbox empty (attempt {}/10)", otpAttempt);
                     Thread.sleep(3000);
                     continue;
                 }
 
-                // Get the NEWEST message (index 0)
+                // Read the NEWEST message (index 0)
                 String msgId = inbox.get(0).get("id").asText();
                 org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
                         new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
@@ -462,19 +451,18 @@ public class CreateYouthClubTest extends BaseTest {
                         ? msg.get("html").asText() : msg.has("data") ? msg.get("data").asText() : "";
 
                 if (!body.isEmpty()) {
-                    // Pattern 1: <strong>XXXXXX</strong>
+                    // Extract OTP — try all patterns
                     java.util.regex.Matcher mStrong = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(body);
                     if (mStrong.find()) { otp = mStrong.group(1); break; }
-                    // Pattern 2: Your OTP: XXXXXX
                     java.util.regex.Matcher mYourOtp = java.util.regex.Pattern.compile("Your OTP:\\s*(\\d{6})").matcher(body);
                     if (mYourOtp.find()) { otp = mYourOtp.group(1); break; }
-                    // Pattern 3: OTP is XXXXXX
-                    java.util.regex.Matcher mIs = java.util.regex.Pattern.compile("(?:OTP|is)\\s+(?:<[^>]+>)*(\\d{6})").matcher(body);
-                    if (mIs.find()) { otp = mIs.group(1); break; }
+                    java.util.regex.Matcher mAny = java.util.regex.Pattern.compile("(\\d{6})").matcher(body);
+                    if (mAny.find()) { otp = mAny.group(1); break; }
+                    log.warn("  Message found but no 6-digit OTP in body (attempt {}/10)", otpAttempt);
                 }
                 Thread.sleep(3000);
             } catch (Exception apiEx) {
-                log.warn("  Maildrop API error (attempt {}/8): {}", otpAttempt, apiEx.getMessage());
+                log.warn("  Maildrop API error (attempt {}/10): {}", otpAttempt, apiEx.getMessage());
                 Thread.sleep(3000);
             }
         }
