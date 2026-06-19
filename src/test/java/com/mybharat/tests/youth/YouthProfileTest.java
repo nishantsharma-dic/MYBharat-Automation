@@ -53,12 +53,13 @@ public class YouthProfileTest extends BaseTest {
         profilePage = new YouthProfilePage(driver);
     }
 
-    @Test(priority = 1, groups = {"regression", "profile"}, retryAnalyzer = Retry.class,
-          description = "Complete youth profile: Upload photo → About → Area of Interest → Education → Language → Professional Summary → Work Experience → Tools")
+    @Test(priority = 2, groups = {"regression", "profile"}, retryAnalyzer = Retry.class,
+          description = "Complete youth profile: Navigate to profile → Verify public profile → Upload photo → About → Area of Interest → Education → Language → Professional Summary → Work Experience → Tools")
     public void completeYouthProfile() throws Exception {
         log.info("Starting: Youth Profile Completion");
 
-        // Navigate to profile page first (user is on dashboard after login)
+        // User should be on dashboard after registration (already logged in)
+        // Navigate to profile page
         profilePage.navigateToProfilePage();
         log.info("Navigated to profile page");
 

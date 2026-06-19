@@ -217,11 +217,14 @@ public class RegistrationPage extends BasePage {
     public void enterEmailAndRequestOTP() throws InterruptedException {
         waitForVisible(emailInput);
         scrollToElement(emailInput);
-        Thread.sleep(500);
+        waitForClickable(emailInput);
         safeClick(emailInput);
         clearAndType(emailInput, email);
         safeClick(getOtpBtn);
-        Thread.sleep(2000); // Wait for OTP to be sent
+        // Wait for OTP request to complete - wait for either success message or next field
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                d -> d.findElements(By.xpath("//*[contains(text(),'OTP') or contains(@placeholder,'OTP') or contains(@name,'otp')]")).size() > 0
+                        || d.findElements(By.cssSelector(".Toastify__toast")).size() > 0);
     }
 
     /**
@@ -261,7 +264,9 @@ public class RegistrationPage extends BasePage {
      * Fill the complete registration form for Indian users.
      */
     public void fillRegistrationForm() throws InterruptedException {
-        Thread.sleep(1000);
+        // Wait for registration form to load
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                ExpectedConditions.visibilityOf(firstNameInput));
 
         // Personal details
         waitForVisible(firstNameInput);
@@ -366,15 +371,18 @@ public class RegistrationPage extends BasePage {
      * Tries CSS selector first, falls back to XPath alternative, then additionalDetails button.
      */
     public void clickSubmitPopup() throws InterruptedException {
-        Thread.sleep(5000); // Wait for popup to fully load after registration
         WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
+
+        // Wait for popup to appear
+        longWait.until(d -> d.findElements(By.cssSelector("button[class*='bg-[#bc4717]']")).size() > 0
+                || d.findElements(By.xpath("//button[contains(@class,'bg-[#bc4717]')]")).size() > 0);
 
         try {
             // Try primary: the submit popup button with specific CSS path
             WebElement popup = longWait.until(ExpectedConditions.elementToBeClickable(
                     By.cssSelector("body > div:nth-child(1) > div:nth-child(1) > main:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > main:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > div:nth-child(3) > button:nth-child(1)")));
             scrollToElement(popup);
-            Thread.sleep(500);
+            new WebDriverWait(driver, Duration.ofSeconds(2)).until(ExpectedConditions.elementToBeClickable(popup));
             jsClick(popup);
             System.out.println("✅ Clicked submit popup button (CSS locator)");
         } catch (Exception e1) {
@@ -383,7 +391,7 @@ public class RegistrationPage extends BasePage {
                 WebElement popupAlt = longWait.until(ExpectedConditions.elementToBeClickable(
                         By.xpath("(//button[contains(@class,'bg-[#bc4717] hover:bg-orange-700 text-white px-5 py-2 rounded cursor-pointer flex items-center justify-center gap-2')])[1]")));
                 scrollToElement(popupAlt);
-                Thread.sleep(500);
+                new WebDriverWait(driver, Duration.ofSeconds(2)).until(ExpectedConditions.elementToBeClickable(popupAlt));
                 jsClick(popupAlt);
                 System.out.println("✅ Clicked submit popup button (XPath locator)");
             } catch (Exception e2) {
@@ -401,13 +409,12 @@ public class RegistrationPage extends BasePage {
         }
 
         // Handle any browser alert that appears
-        Thread.sleep(2000);
         try {
+            new WebDriverWait(driver, Duration.ofSeconds(3)).until(ExpectedConditions.alertIsPresent());
             driver.switchTo().alert().accept();
         } catch (Exception e) {
             // No alert present — continue
         }
-        Thread.sleep(1000);
     }
 
 
