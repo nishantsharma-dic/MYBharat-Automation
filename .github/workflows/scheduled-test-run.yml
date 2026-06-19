@@ -84,7 +84,7 @@ jobs:
         if: always()
         run: |
           # Extract registered email from logs
-          REG_EMAIL=$(grep -r '@yopmail.com' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9]*@yopmail.com' | head -1 || echo "N/A")
+          REG_EMAIL=$(grep -r 'Registration completed.*@yopmail.com\|Email saved to Excel:.*@yopmail.com' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9_]*@yopmail.com' | head -1 || echo "N/A")
           echo "reg_email=${REG_EMAIL:-N/A}" >> $GITHUB_OUTPUT
 
           # Extract quiz name
