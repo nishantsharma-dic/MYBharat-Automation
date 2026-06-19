@@ -167,7 +167,14 @@ public class BaseTest {
                     "--remote-allow-origins=*",
                     "--disable-blink-features=AutomationControlled",
                     "--no-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--disable-extensions",
+                    "--disable-popup-blocking",
+                    "--disable-background-timer-throttling",
+                    "--disable-backgrounding-occluded-windows",
+                    "--disable-renderer-backgrounding",
+                    "--disable-hang-monitor"
                 );
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
