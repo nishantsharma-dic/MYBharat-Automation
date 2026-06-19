@@ -40,8 +40,8 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  * RegisterMembersForYouthClubTest — Registers 6 fresh youth users for Youth Club membership.
  *
  * Strategy: 3 parallel browsers first, then 3 more parallel browsers.
- * Email: rohank{N}@yopmail.com (N auto-increments from last used number in Excel)
- * OTP Fetch: Yopmail browser tab with synchronized lock (one at a time to avoid CAPTCHA)
+ * Email: yc{N}@maildrop.cc (N auto-increments, 6-digit padded, from last used number in Excel)
+ * OTP Fetch: Maildrop GraphQL API with prevCount logic
  *
  * Saves registered emails to:
  *   - Youth_<env>.xlsx → "YouthClubMembers" sheet
@@ -59,7 +59,7 @@ public class RegisterMembersForYouthClubTest {
     /** Thread-safe list to collect registered emails from all parallel threads */
     private static final CopyOnWriteArrayList<String> registeredEmails = new CopyOnWriteArrayList<>();
 
-    /** Starting number for rohank emails (read from Excel in @BeforeClass) */
+    /** Starting number for yc emails (read from Excel in @BeforeClass) */
     private static int startNumber = 1;
 
     private final ConfigReader config = new ConfigReader();
@@ -69,10 +69,11 @@ public class RegisterMembersForYouthClubTest {
         WebDriverManager.chromedriver().setup();
         registeredEmails.clear();
 
-        // Read last rohank number from Youth_<env>.xlsx "YouthClubMembers" sheet
-        startNumber = getLastRohankNumber() + 1;
+        // Read last yc number from Youth_<env>.xlsx "YouthClubMembers" sheet
+        startNumber = getLastYcNumber() + 1;
         log.info("═══ Registering {} fresh members for Youth Club ═══", MEMBER_COUNT);
-        log.info("═══ Email: rohank{}..rohank{}{} ═══", startNumber, startNumber + MEMBER_COUNT - 1, EMAIL_DOMAIN);
+        log.info("═══ Email: yc{}..yc{}{} ═══", 
+                String.format("%06d", startNumber), String.format("%06d", startNumber + MEMBER_COUNT - 1), EMAIL_DOMAIN);
     }
 
     // =========================================================================
@@ -87,7 +88,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 0; i < 3; i++) {
             int memberNum = startNumber + i;
-            String email = "rohank" + memberNum + EMAIL_DOMAIN;
+            String email = "yc" + String.format("%06d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -122,7 +123,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 3; i < 6; i++) {
             int memberNum = startNumber + i;
-            String email = "rohank" + memberNum + EMAIL_DOMAIN;
+            String email = "yc" + String.format("%06d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -142,6 +143,20 @@ public class RegisterMembersForYouthClubTest {
         }
 
         log.info("═══ BATCH 2 COMPLETE: {}/3 registered ═══", 3 - batchErrors.size());
+    }
+
+    // =========================================================================
+    // VERIFY ALL 6 REGISTERED
+    // =========================================================================
+
+    @Test(priority = 3, dependsOnMethods = "registerBatch2",
+          description = "Verify all 6 members registered successfully")
+    public void verifyAllMembersRegistered() {
+        log.info("═══ VERIFICATION: {}/6 members registered ═══", registeredEmails.size());
+        registeredEmails.forEach(e -> log.info("  ✅ {}", e));
+        org.testng.Assert.assertEquals(registeredEmails.size(), 6,
+                "Expected 6 members registered but got " + registeredEmails.size() +
+                ". Registered: " + registeredEmails);
     }
 
     // =========================================================================
@@ -389,18 +404,18 @@ public class RegisterMembersForYouthClubTest {
     // HELPERS
     // =========================================================================
 
-    private int getLastRohankNumber() {
+    private int getLastYcNumber() {
         String env = config.getEnv();
         String filePath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
 
         File file = new File(filePath);
-        if (!file.exists()) return 90000;
+        if (!file.exists()) return 0;
 
         try (FileInputStream fis = new FileInputStream(file);
              Workbook wb = new XSSFWorkbook(fis)) {
             Sheet sheet = wb.getSheet("YouthClubMembers");
-            if (sheet == null) return 90000;
+            if (sheet == null) return 0;
 
             int maxNum = 0;
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -409,22 +424,19 @@ public class RegisterMembersForYouthClubTest {
                 String email = row.getCell(0).getCellType() == CellType.STRING
                         ? row.getCell(0).getStringCellValue().trim()
                         : row.getCell(0).toString().trim();
-                // Extract number from rohank{N}@maildrop.cc
-                if (email.startsWith("rohank") && email.contains("@")) {
+                // Extract number from yc{N}@maildrop.cc or rohank{N}@maildrop.cc (backward compat)
+                if (email.startsWith("yc") && email.contains("@")) {
                     try {
-                        String numStr = email.replace("rohank", "").split("@")[0];
+                        String numStr = email.replace("yc", "").split("@")[0];
                         int num = Integer.parseInt(numStr);
                         if (num > maxNum) maxNum = num;
                     } catch (NumberFormatException e) { /* skip */ }
+                } else if (email.startsWith("rohank") && email.contains("@")) {
+                    // Old format — ignore for numbering, new format starts fresh
                 }
             }
 
-            // If no rohank entries found, start from 90000
-            if (maxNum == 0) {
-                maxNum = 90000;
-            }
-
-            log.info("Last rohank number in Excel: {}", maxNum);
+            log.info("Last yc number in Excel: {}", maxNum);
             return maxNum;
         } catch (Exception e) {
             log.warn("Could not read YouthClubMembers sheet: {}", e.getMessage());
