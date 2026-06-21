@@ -1683,10 +1683,10 @@ public class YouthProfilePage extends BasePage {
 
     /**
      * Get the specific image path for profile upload.
-     * Uses mybharat_blog_cover.png from the UploadImages folder.
+     * Uses test_upload_photo.jpg from the UploadImages folder.
      */
     private String getRandomImagePath() {
-        String imagePath = System.getProperty("user.dir") + File.separator + "UploadImages" + File.separator + "mybharat_blog_cover.jpg";
+        String imagePath = System.getProperty("user.dir") + File.separator + "UploadImages" + File.separator + "test_upload_photo.jpg";
         File imageFile = new File(imagePath);
         if (!imageFile.exists()) {
             throw new RuntimeException("Image file not found at: " + imagePath);
