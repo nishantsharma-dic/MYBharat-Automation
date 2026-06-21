@@ -240,11 +240,12 @@ public class YouthProfilePage extends BasePage {
     }
 
     /**
-     * Fill Basic Info form fields and click Save.
-     * Sets: First Name = Nishant, Last Name = Sharma, DOB = 23/03/1990, Gender = Male
+     * Update Basic Info form fields and click Save.
+     * Updates: First Name = Nishant, Last Name = Sharma, DOB = 23/03/1990, Gender = Male
+     * (These fields were initially filled during registration, this updates them on the profile page)
      */
     public void fillBasicInfoAndSave() throws InterruptedException {
-        log.info("Filling Basic Info form...");
+        log.info("Updating Basic Info form...");
 
         // First Name
         try {

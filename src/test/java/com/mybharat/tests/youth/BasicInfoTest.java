@@ -49,7 +49,7 @@ public class BasicInfoTest extends BaseTest {
     @Test(priority = 1, groups = {"regression", "profile"}, retryAnalyzer = Retry.class,
           description = "Navigate to Basic Info tab, update name/DOB/gender, save, and extract email")
     public void clickBasicInfoAndExtractEmail() throws Exception {
-        log.info("Starting: Basic Info — Update Info + Extract Email");
+        log.info("Starting: Basic Info — Update Details + Extract Email");
 
         profilePage.navigateToBasicInfo();
         profilePage.fillBasicInfoAndSave();
