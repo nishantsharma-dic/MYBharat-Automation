@@ -284,7 +284,7 @@ public class CreateYouthClubTest extends BaseTest {
     @Test(priority = 18, dependsOnMethods = "step17_saveToPartnerExcel", retryAnalyzer = Retry.class)
     public void step18_logoutAfterCreate() throws Exception {
         log.info("═══ Logging out after Youth Club creation ═══");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Verify browser session is alive
         try {
@@ -297,9 +297,9 @@ public class CreateYouthClubTest extends BaseTest {
         // Navigate to organizations page where user-options logout works
         ConfigReader cfg = new ConfigReader();
         driver.get(cfg.getUrl() + "/mybharat_organizations");
-        Thread.sleep(4000);
+        safeSleep(3000);
         loginPage.closePopupIfPresent();
-        Thread.sleep(1000);
+        safeSleep(500);
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
@@ -308,13 +308,13 @@ public class CreateYouthClubTest extends BaseTest {
         WebElement userIcon = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//a[@id='user-options']")));
         js.executeScript("arguments[0].click();", userIcon);
-        Thread.sleep(1500);
+        safeSleep(1000);
 
         // Click "Log Out" button
         WebElement logoutBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//a[contains(@class,'firebase-profile-logout-btn')]")));
         js.executeScript("arguments[0].click();", logoutBtn);
-        Thread.sleep(3000);
+        safeSleep(2000);
 
         log.info("✅ Logged out successfully");
     }
@@ -329,7 +329,7 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Wait for backend to process the Youth Club invitation (race condition on fast servers)
         log.info("  Waiting 10s for backend to process invitation...");
-        Thread.sleep(10000);
+        safeSleep(10000);
 
         // Get the 6th member email (last one added — the one without OTP verify)
         String member6Email = null;
@@ -348,9 +348,9 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Step A: Navigate and open login modal
         driver.get(cfg.getUrl());
-        Thread.sleep(5000);
+        safeSleep(4000);
         loginPage.closePopupIfPresent();
-        Thread.sleep(1000);
+        safeSleep(500);
 
         // Check if still logged in (previous logout might have failed on server)
         boolean alreadyLoggedIn = false;
@@ -361,15 +361,15 @@ public class CreateYouthClubTest extends BaseTest {
                 alreadyLoggedIn = true;
                 log.warn("Still logged in — logging out first");
                 js.executeScript("arguments[0].click();", userMenu);
-                Thread.sleep(1500);
+                safeSleep(1500);
                 WebElement logoutLink = wait.until(ExpectedConditions.presenceOfElementLocated(
                         By.xpath("//a[contains(@class,'firebase-profile-logout-btn')] | //a[contains(text(),'Log Out')]")));
                 js.executeScript("arguments[0].click();", logoutLink);
-                Thread.sleep(3000);
+                safeSleep(2000);
                 driver.get(cfg.getUrl());
-                Thread.sleep(5000);
+                safeSleep(4000);
                 loginPage.closePopupIfPresent();
-                Thread.sleep(1000);
+                safeSleep(500);
             }
         } catch (Exception e) { /* not logged in — good */ }
 
@@ -384,14 +384,14 @@ public class CreateYouthClubTest extends BaseTest {
                     By.xpath("//a[contains(@class,'sign-in')] | //a[contains(text(),'Sign In')] | //*[normalize-space()='Sign In']")));
         }
         try { signIn.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", signIn); }
-        Thread.sleep(1500);
+        safeSleep(1500);
 
         // Step B: Enter email
         WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//input[@id='otp_login_header']")));
         emailInput.clear();
         emailInput.sendKeys(member6Email);
-        Thread.sleep(500);
+        safeSleep(500);
 
         // Step C: Check consent
         try {
@@ -411,7 +411,7 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Step F: Wait for OTP email and fetch from Maildrop
         // Strategy: Wait 10s for delivery, then read the LATEST message (no prevCount check)
-        Thread.sleep(10000);
+        safeSleep(10000);
         String otp = "";
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
@@ -432,7 +432,7 @@ public class CreateYouthClubTest extends BaseTest {
 
                 if (inbox.size() == 0) {
                     log.info("  Inbox empty (attempt {}/10)", otpAttempt);
-                    Thread.sleep(3000);
+                    safeSleep(3000);
                     continue;
                 }
 
@@ -460,10 +460,10 @@ public class CreateYouthClubTest extends BaseTest {
                     if (mAny.find()) { otp = mAny.group(1); break; }
                     log.warn("  Message found but no 6-digit OTP in body (attempt {}/10)", otpAttempt);
                 }
-                Thread.sleep(3000);
+                safeSleep(3000);
             } catch (Exception apiEx) {
                 log.warn("  Maildrop API error (attempt {}/10): {}", otpAttempt, apiEx.getMessage());
-                Thread.sleep(3000);
+                safeSleep(3000);
             }
         }
         Assert.assertFalse(otp.isEmpty(), "Could not fetch OTP from Maildrop for Member 6 login");
@@ -480,55 +480,55 @@ public class CreateYouthClubTest extends BaseTest {
         }
         otpField.clear();
         otpField.sendKeys(otp);
-        Thread.sleep(500);
+        safeSleep(500);
 
         WebElement verifyBtn = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//button[@id='btn-otp-verify-header']")));
         try { verifyBtn.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", verifyBtn); }
-        Thread.sleep(3000);
+        safeSleep(3000);
 
         Assert.assertTrue(loginPage.isLoginSuccessful(), "Member 6 login failed after OTP");
         log.info("✅ Member 6 logged in: {}", member6Email);
 
         // Step H: Handle "Update the newly introduced fields" popup (Caste, PwD, Aapda Mitra)
         // This popup appears after login — just click Submit (fields are pre-filled)
-        Thread.sleep(3000);
+        safeSleep(3000);
         try {
             WebElement submitPopup = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[normalize-space()='Submit']")));
             js.executeScript("arguments[0].click();", submitPopup);
             log.info("✅ 'Update newly introduced fields' popup submitted");
-            Thread.sleep(3000);
+            safeSleep(3000);
         } catch (Exception e) {
             log.info("No 'Update fields' popup — continuing");
         }
 
         // After Update fields popup, navigate to profile to trigger the Accept popup
         driver.get(cfg.getUrl() + "/reports/public_profile");
-        Thread.sleep(5000);
+        safeSleep(4000);
         loginPage.closePopupIfPresent();
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Step I: Wait for "Confirm your participation" popup and click Accept
-        Thread.sleep(3000);
+        safeSleep(2000);
         try {
             WebElement acceptBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[contains(text(),'Accept')]")));
             js.executeScript("arguments[0].click();", acceptBtn);
             log.info("✅ Clicked Accept — invitation accepted");
-            Thread.sleep(2000);
+            safeSleep(1500);
         } catch (Exception e) {
             // Try refreshing the profile page — popup might appear on reload
             log.warn("Accept popup not found — refreshing profile page");
             driver.navigate().refresh();
-            Thread.sleep(5000);
+            safeSleep(5000);
             try {
                 WebElement acceptAlt = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
                         ExpectedConditions.elementToBeClickable(
                                 By.xpath("//button[contains(text(),'Accept')] | //button[normalize-space()='Accept']")));
                 js.executeScript("arguments[0].click();", acceptAlt);
                 log.info("✅ Accept clicked after refresh");
-                Thread.sleep(2000);
+                safeSleep(2000);
             } catch (Exception e2) {
                 log.error("❌ Accept button not found even after refresh: {}", e2.getMessage());
                 throw e2;
@@ -536,21 +536,21 @@ public class CreateYouthClubTest extends BaseTest {
         }
 
         // Step J: Logout Member 6
-        Thread.sleep(2000);
+        safeSleep(1000);
         driver.get(cfg.getUrl() + "/mybharat_organizations");
-        Thread.sleep(4000);
+        safeSleep(3000);
         loginPage.closePopupIfPresent();
-        Thread.sleep(1000);
+        safeSleep(500);
 
         WebElement userIcon = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//a[@id='user-options']")));
         js.executeScript("arguments[0].click();", userIcon);
-        Thread.sleep(1500);
+        safeSleep(1000);
 
         WebElement logoutBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//a[contains(@class,'firebase-profile-logout-btn')]")));
         js.executeScript("arguments[0].click();", logoutBtn);
-        Thread.sleep(3000);
+        safeSleep(2000);
 
         log.info("✅ Member 6 logged out after accepting invitation");
     }
@@ -579,5 +579,13 @@ public class CreateYouthClubTest extends BaseTest {
         // Step 3: Verify approval
         Assert.assertTrue(approvalPage.isApprovalSuccessful(), "Youth Club approval failed");
         log.info("✅ Youth Club approved: {}", youthClubName);
+    }
+
+    // =========================================================================
+    // UTILITY
+    // =========================================================================
+
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 }
