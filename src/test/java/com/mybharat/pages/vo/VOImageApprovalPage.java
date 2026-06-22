@@ -36,6 +36,13 @@ public class VOImageApprovalPage extends BasePage {
         super(driver);
     }
 
+    /** Wait for page ready: page load + overlay dismissed + short buffer */
+    private void waitForPageReady() {
+        waitForPageLoad();
+        dismissOverlay();
+        try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+    }
+
     // -------------------------------------------------------------------------
     // Step 1: Navigate to Org Dashboard
     // -------------------------------------------------------------------------
@@ -55,13 +62,11 @@ public class VOImageApprovalPage extends BasePage {
         // Navigate to profile
         String baseUrl = config.getUrl();
         driver.get(baseUrl + "/youth-profile");
-        Thread.sleep(3000);
-        waitForPageLoad();
-        dismissOverlay();
+        waitForPageReady();
 
         // Scroll down
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(2000);
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 
         // Click "View More"
         try {
@@ -69,15 +74,12 @@ public class VOImageApprovalPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//a[contains(text(),'View More')] | //button[contains(text(),'View More')]")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", viewMore);
-            Thread.sleep(3000);
-            waitForPageLoad();
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Clicked View More");
         } catch (Exception e) {
             log.warn("View More not found, navigating directly...");
             driver.get(baseUrl + "/mybharat_organizations");
-            Thread.sleep(3000);
-            dismissOverlay();
+            waitForPageReady();
         }
 
         // Click org name (first row in table)
@@ -86,11 +88,9 @@ public class VOImageApprovalPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//table//tbody//tr[1]//td[2]//a | //table//tbody//a[1]")));
             scrollToElement(orgLink);
-            Thread.sleep(300);
+            try { Thread.sleep(300); } catch (InterruptedException ignored) {}
             orgLink.click();
-            Thread.sleep(3000);
-            waitForPageLoad();
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Clicked org name — on Org Dashboard");
         } catch (Exception e) {
             log.warn("Org name not found: {}", e.getMessage());
@@ -109,16 +109,13 @@ public class VOImageApprovalPage extends BasePage {
                             By.xpath("//a[contains(text(),'Youth Photo Moderation')]"
                                     + " | //span[contains(text(),'Youth Photo Moderation')]/ancestor::a")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", link);
-            Thread.sleep(3000);
-            waitForPageLoad();
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ On Youth Photo Moderation page. URL: {}", driver.getCurrentUrl());
         } catch (Exception e) {
             // Direct navigation fallback
             log.warn("Sidebar link not found, navigating directly...");
             driver.get(config.getUrl() + "/pages/youth_events_approval");
-            Thread.sleep(3000);
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Navigated to Youth Photo Moderation directly");
         }
     }
@@ -136,7 +133,7 @@ public class VOImageApprovalPage extends BasePage {
                                     + " | //button[normalize-space()='VO']"
                                     + " | //li//a[normalize-space()='VO']")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", voTab);
-            Thread.sleep(2000);
+            try { Thread.sleep(1500); } catch (InterruptedException ignored) {}
             dismissOverlay();
             log.info("✅ Clicked 'VO' tab");
         } catch (Exception e) {
@@ -152,7 +149,7 @@ public class VOImageApprovalPage extends BasePage {
 
     public void searchEventInModeration(String eventName) throws InterruptedException {
         log.info("Searching for event in Youth Photo Moderation: {}", eventName);
-        Thread.sleep(1000);
+        dismissOverlay();
 
         // Type event name in the "Event Name" input
         try {
@@ -177,8 +174,7 @@ public class VOImageApprovalPage extends BasePage {
                                     + " | //a[normalize-space()='Search']"
                                     + " | //input[@type='submit' and @value='Search']")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", searchBtn);
-            Thread.sleep(3000);
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Clicked Search");
         } catch (Exception e) {
             log.warn("Search button not found: {}", e.getMessage());
@@ -197,8 +193,7 @@ public class VOImageApprovalPage extends BasePage {
                                             + " | //a[normalize-space()='Reset']"
                                             + " | //input[@type='button' and @value='Reset']")));
                     ((JavascriptExecutor) driver).executeScript("arguments[0].click();", resetBtn);
-                    Thread.sleep(3000);
-                    dismissOverlay();
+                    waitForPageReady();
                     log.info("✅ Clicked Reset — showing all records");
                 } catch (Exception e2) {
                     log.warn("Reset button not found: {}", e2.getMessage());
@@ -211,7 +206,7 @@ public class VOImageApprovalPage extends BasePage {
 
     public void approveFirstRejectSecond() throws InterruptedException {
         log.info("Approving 1st image and Rejecting 2nd image...");
-        Thread.sleep(2000);
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
         dismissOverlay();
 
         // Find all Approve buttons
@@ -230,14 +225,14 @@ public class VOImageApprovalPage extends BasePage {
             scrollToElement(firstApprove);
             Thread.sleep(500);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", firstApprove);
-            Thread.sleep(2000);
+            try { Thread.sleep(1500); } catch (InterruptedException ignored) {}
             handleConfirmationPopup();
             log.info("✅ Approved 1st image");
         } else {
             log.warn("No Approve buttons found");
         }
 
-        Thread.sleep(2000);
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
         dismissOverlay();
 
         // Re-fetch Reject buttons (DOM may have refreshed)
@@ -250,7 +245,7 @@ public class VOImageApprovalPage extends BasePage {
             scrollToElement(rejectBtn);
             Thread.sleep(500);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", rejectBtn);
-            Thread.sleep(2000);
+            try { Thread.sleep(1500); } catch (InterruptedException ignored) {}
             handleConfirmationPopup();
             log.info("✅ Rejected 2nd image");
         } else {
@@ -272,9 +267,7 @@ public class VOImageApprovalPage extends BasePage {
                             By.xpath("//a[normalize-space()='Events']"
                                     + " | //span[normalize-space()='Events']/ancestor::a")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", eventsLink);
-            Thread.sleep(3000);
-            waitForPageLoad();
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Clicked Events. URL: {}", driver.getCurrentUrl());
         } catch (Exception e) {
             log.warn("Events sidebar link not found: {}", e.getMessage());
@@ -307,9 +300,7 @@ public class VOImageApprovalPage extends BasePage {
             log.info("✅ Clicked 'Add/Edit Gallery' (JS fallback)");
         }
 
-        Thread.sleep(5000);
-        waitForPageLoad();
-        dismissOverlay();
+        waitForPageReady();
         log.info("✅ On Add Gallery page. URL: {}", driver.getCurrentUrl());
     }
 
@@ -331,7 +322,7 @@ public class VOImageApprovalPage extends BasePage {
                 "arguments[0].style.display='block';" +
                 "arguments[0].style.opacity='1';" +
                 "arguments[0].classList.remove('hidden');", fileInput);
-        Thread.sleep(500);
+        Thread.sleep(300);
 
         // Get image path
         String imagePath = getImagePath();
@@ -340,11 +331,11 @@ public class VOImageApprovalPage extends BasePage {
         // Upload 5 images
         for (int i = 1; i <= 5; i++) {
             fileInput.sendKeys(imagePath);
-            Thread.sleep(2000);
+            Thread.sleep(1500);
             log.info("✅ Uploaded image {}", i);
         }
 
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         // Click "Send For Approval" button
         log.info("Clicking 'Send For Approval'...");
@@ -358,8 +349,7 @@ public class VOImageApprovalPage extends BasePage {
             scrollToElement(sendBtn);
             Thread.sleep(300);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", sendBtn);
-            Thread.sleep(3000);
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Clicked 'Send For Approval'");
         } catch (Exception e) {
             log.warn("Send For Approval button not found: {}", e.getMessage());
@@ -367,7 +357,7 @@ public class VOImageApprovalPage extends BasePage {
 
         // Delete one image (click red trash icon on first image)
         log.info("Deleting one image...");
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         try {
             List<WebElement> deleteIcons = driver.findElements(
                     By.xpath("//i[contains(@class,'fa-trash') or contains(@class,'delete')]"
@@ -380,7 +370,7 @@ public class VOImageApprovalPage extends BasePage {
                 scrollToElement(firstDelete);
                 Thread.sleep(300);
                 ((JavascriptExecutor) driver).executeScript("arguments[0].click();", firstDelete);
-                Thread.sleep(2000);
+                Thread.sleep(1500);
                 handleConfirmationPopup();
                 log.info("✅ Deleted one image");
             } else {
@@ -392,7 +382,7 @@ public class VOImageApprovalPage extends BasePage {
 
         // Click back button (← arrow)
         log.info("Clicking back button...");
-        Thread.sleep(1000);
+        Thread.sleep(500);
         try {
             WebElement backBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                     ExpectedConditions.elementToBeClickable(
@@ -402,14 +392,12 @@ public class VOImageApprovalPage extends BasePage {
                                     + " | //a[normalize-space()='← Add Gallery']//.."
                                     + " | //h3/a | //h2/a")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", backBtn);
-            Thread.sleep(3000);
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Clicked back button");
         } catch (Exception e) {
             log.warn("Back button not found, using browser back...");
             driver.navigate().back();
-            Thread.sleep(3000);
-            dismissOverlay();
+            waitForPageReady();
             log.info("✅ Navigated back (browser back)");
         }
     }
@@ -451,9 +439,7 @@ public class VOImageApprovalPage extends BasePage {
             log.info("✅ Clicked 'Edit Event' (JS fallback)");
         }
 
-        Thread.sleep(5000);
-        waitForPageLoad();
-        dismissOverlay();
+        waitForPageReady();
         log.info("✅ On Edit Event page. URL: {}", driver.getCurrentUrl());
     }
 
@@ -466,7 +452,7 @@ public class VOImageApprovalPage extends BasePage {
         dismissOverlay();
 
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         try {
             WebElement saveBtn = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
@@ -488,9 +474,7 @@ public class VOImageApprovalPage extends BasePage {
             log.info("✅ Clicked 'Save as draft' (JS fallback)");
         }
 
-        Thread.sleep(5000);
-        waitForPageLoad();
-        dismissOverlay();
+        waitForPageReady();
         log.info("✅ Event saved as draft");
     }
 
@@ -500,14 +484,14 @@ public class VOImageApprovalPage extends BasePage {
 
     public void logout() throws InterruptedException {
         log.info("Logging out...");
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         // Click profile dropdown
         try {
             ((JavascriptExecutor) driver).executeScript(
                     "var links = document.querySelectorAll('a[data-bs-toggle=\"dropdown\"], a[data-toggle=\"dropdown\"], a.dropdown-toggle');" +
                     "if(links.length > 0) { links[links.length-1].click(); }");
-            Thread.sleep(1000);
+            Thread.sleep(800);
             log.info("✅ Clicked profile dropdown");
         } catch (Exception e) {
             log.warn("Profile dropdown click failed");
@@ -519,7 +503,8 @@ public class VOImageApprovalPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//a[normalize-space()='Log Out'] | //a[contains(text(),'Log Out')]")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", logoutBtn);
-            Thread.sleep(5000);
+            waitForPageLoad();
+            Thread.sleep(1000);
             log.info("✅ Logged out");
         } catch (Exception e) {
             ((JavascriptExecutor) driver).executeScript(
@@ -527,7 +512,8 @@ public class VOImageApprovalPage extends BasePage {
                     "for(var i=0; i<links.length; i++) {" +
                     "  if(links[i].textContent.trim() === 'Log Out') { links[i].click(); break; }" +
                     "}");
-            Thread.sleep(5000);
+            waitForPageLoad();
+            Thread.sleep(1000);
             log.info("✅ Logged out (JS fallback)");
         }
 

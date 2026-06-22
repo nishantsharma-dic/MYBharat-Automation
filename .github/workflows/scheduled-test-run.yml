@@ -27,26 +27,31 @@ jobs:
         run: |
           REPORT_FILE="target/surefire-reports/testng-results.xml"
           if [ -f "$REPORT_FILE" ]; then
-            LINE=$(head -3 "$REPORT_FILE" | tr ' ' '\n')
-            PASSED=$(echo "$LINE" | sed -n 's/.*passed="\([0-9]*\)".*/\1/p')
-            FAILED=$(echo "$LINE" | sed -n 's/.*failed="\([0-9]*\)".*/\1/p')
-            SKIPPED=$(echo "$LINE" | sed -n 's/.*skipped="\([0-9]*\)".*/\1/p')
-            # Total should match email table rows (12 modules)
-            TOTAL=12
-            # Calculate passed/failed for the 12 modules shown in email
-            if [ "${FAILED:-0}" -eq 0 ]; then
-              PASSED=12
-            else
-              PASSED=$((12 - ${FAILED:-0}))
-            fi
+            # Count results from tracked test methods (must match email table rows)
+            TRACKED_METHODS="publicPages registerIndianYouth verifyUserInDatabase logoutUser loginWithOTP completeYouthProfile verifyRegistrationCertificateDownload clickBasicInfoAndExtractEmail attemptCompetitiveQuiz verifyQuizCertificateDownload writeAndPublishBlog loginAsVOUser"
+            PASSED=0
+            FAILED=0
+            SKIPPED=0
+            for method in $TRACKED_METHODS; do
+              if grep -q "name=\"$method\"" "$REPORT_FILE" 2>/dev/null; then
+                if grep -A2 "name=\"$method\"" "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+                  FAILED=$((FAILED + 1))
+                else
+                  PASSED=$((PASSED + 1))
+                fi
+              else
+                SKIPPED=$((SKIPPED + 1))
+              fi
+            done
+            TOTAL=$((PASSED + FAILED))
           else
             TOTAL="N/A"
             PASSED="N/A"
             FAILED="N/A"
             SKIPPED="N/A"
           fi
-          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
-          echo "passed=${PASSED}" >> $GITHUB_OUTPUT
+          echo "total=${TOTAL:-0}" >> $GITHUB_OUTPUT
+          echo "passed=${PASSED:-0}" >> $GITHUB_OUTPUT
           echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
           echo "skipped=${SKIPPED:-0}" >> $GITHUB_OUTPUT
 
