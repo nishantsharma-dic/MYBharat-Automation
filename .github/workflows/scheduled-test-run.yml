@@ -86,6 +86,14 @@ jobs:
           fi
           echo "quiz_name=${QUIZ_NAME}" >> $GITHUB_OUTPUT
 
+          # Check if quiz was available
+          if [ "$QUIZ_NAME" = "No Quiz Available" ]; then
+            QUIZ_AVAILABLE="false"
+          else
+            QUIZ_AVAILABLE="true"
+          fi
+          echo "quiz_available=${QUIZ_AVAILABLE}" >> $GITHUB_OUTPUT
+
           # Parse individual test results from TestNG XML
           REPORT_FILE="target/surefire-reports/testng-results.xml"
           get_status() {
@@ -111,8 +119,15 @@ jobs:
           echo "s5=$(get_status 'completeYouthProfile')" >> $GITHUB_OUTPUT
           echo "s6=$(get_status 'verifyRegistrationCertificateDownload')" >> $GITHUB_OUTPUT
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
-          echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
-          echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+
+          # Quiz: show special status if no quiz was available
+          if [ "$QUIZ_AVAILABLE" = "false" ]; then
+            echo "s8=⚠️ No Quiz Available" >> $GITHUB_OUTPUT
+            echo "s9=⚠️ No Quiz Available" >> $GITHUB_OUTPUT
+          else
+            echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
+            echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
+          fi
 
           # Blog
           echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
