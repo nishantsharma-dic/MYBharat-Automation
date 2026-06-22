@@ -50,3 +50,11 @@ screenshots/
 # ========================
 *.env
 bin/
+
+# ========================
+# Debug/Junk files (never commit)
+# ========================
+*.class
+cp.txt
+ReadExcel.java
+WriteExcel.java
