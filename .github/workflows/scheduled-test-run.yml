@@ -1,16 +1,7 @@
 name: Scheduled Test Execution — MY Bharat (Production)
 
 on:
-  schedule:
-    # 9:40 AM IST = 4:10 AM UTC
-    - cron: '10 4 * * *'
-    # 1:00 PM IST = 7:30 AM UTC
-    - cron: '30 7 * * *'
-    # 5:00 PM IST = 11:30 AM UTC
-    - cron: '30 11 * * *'
-    # 8:00 PM IST = 2:30 PM UTC
-    - cron: '30 14 * * *'
-  workflow_dispatch:  # Allow manual trigger from GitHub UI
+  workflow_dispatch:  # Manual trigger only from GitHub UI
 
 jobs:
   run-tests:
