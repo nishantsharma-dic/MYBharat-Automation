@@ -224,6 +224,9 @@ public class LoginPage extends BasePage {
     /**
      * Open Yopmail in a new tab, fetch the login OTP, switch back and enter it.
      */
+    /**
+     * Fetch OTP from Yopmail in new tab, extract it, and enter in login form.
+     */
     public void fetchOTPFromYopmail() throws InterruptedException {
         log.info("Fetching OTP from Yopmail for: {}", loginEmail);
 

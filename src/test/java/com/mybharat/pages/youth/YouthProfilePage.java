@@ -90,6 +90,14 @@ public class YouthProfilePage extends BasePage {
     // Basic Info form fields
     private static final By INPUT_USER_EMAIL = By.xpath("//input[@name='user_email']");
 
+    // Education Qualification form locators
+    private static final By SCHOOL_NAME_DIV = By.cssSelector("div[class='w-full border text-sm border-gray-300 rounded-lg px-3 py-2 cursor-pointer']");
+    private static final By COURSE_SELECT = By.xpath("//div[6]//select[1]");
+
+    // Public profile verification locators
+    private static final By PUBLIC_PROFILE_LINK = By.xpath("//a[contains(text(),'https://web.mybharat.gov.in/youth-public-profile/d')]");
+    private static final By YOUTH_NAME = By.xpath("//span[@class='youth-name']");
+
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
@@ -107,6 +115,18 @@ public class YouthProfilePage extends BasePage {
     /**
      * Complete the full youth profile in one flow.
      * Called right after login — user navigates to profile page first.
+     * 
+     * Flow:
+     *   1. Navigate to /youth-profile
+     *   2. Upload profile photo
+     *   3. Fill About section
+     *   4. Add Area of Interest
+     *   5. Add Education Qualification
+     *   6. Add Language
+     *   7. Fill Professional Summary
+     *   8. Add Work Experience
+     *   9. Fill Tools section
+     *   10. Verify youth public profile (click link, verify username in new tab, close tab)
      */
     public void completeYouthProfile() throws Exception {
         waitForReactReady();
@@ -125,7 +145,11 @@ public class YouthProfilePage extends BasePage {
         fillProfessionalSummary();
         addWorkExperience();
         fillToolsSection();
-        log.info("✅ All profile sections completed");
+
+        log.info("✅ All profile sections completed - now verifying public profile");
+        
+        // Verify youth public profile AFTER all sections are filled
+        verifyYouthPublicProfile();
     }
 
     /**
@@ -216,6 +240,191 @@ public class YouthProfilePage extends BasePage {
     }
 
     /**
+     * Update Basic Info form fields and click Save.
+     * Updates: First Name = Nishant, Last Name = Sharma, DOB = 23/03/1990, Gender = Male
+     * (These fields were initially filled during registration, this updates them on the profile page)
+     */
+    public void fillBasicInfoAndSave() throws InterruptedException {
+        log.info("Updating Basic Info form...");
+
+        // First Name
+        try {
+            WebElement firstNameInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//input[@placeholder='Enter First Name']")));
+            scrollToElement(firstNameInput);
+            firstNameInput.clear();
+            firstNameInput.sendKeys("Nishant");
+            log.info("First Name entered: Nishant");
+        } catch (Exception e) {
+            log.warn("First Name input not found: {}", e.getMessage());
+        }
+
+        // Last Name
+        try {
+            WebElement lastNameInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//input[@placeholder='Enter Last Name']")));
+            scrollToElement(lastNameInput);
+            lastNameInput.clear();
+            lastNameInput.sendKeys("Sharma");
+            log.info("Last Name entered: Sharma");
+        } catch (Exception e) {
+            log.warn("Last Name input not found: {}", e.getMessage());
+        }
+
+        // Date of Birth
+        try {
+            WebElement dobInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//input[@name='dob']")));
+            scrollToElement(dobInput);
+            dobInput.clear();
+            dobInput.sendKeys("23/03/1990");
+            log.info("DOB entered: 23/03/1990");
+        } catch (Exception e) {
+            log.warn("DOB input not found: {}", e.getMessage());
+        }
+
+        // Gender — select Male
+        try {
+            WebElement genderSelect = longWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//select[@name='gender']")));
+            scrollToElement(genderSelect);
+            new org.openqa.selenium.support.ui.Select(genderSelect).selectByVisibleText("Male");
+            log.info("Gender selected: Male");
+        } catch (Exception e) {
+            log.warn("Gender dropdown not found: {}", e.getMessage());
+        }
+
+        safeSleep(500);
+
+        // Click Save button
+        try {
+            WebElement saveBtn = longWait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[normalize-space()='Save']")));
+            scrollToElement(saveBtn);
+            jsClick(saveBtn);
+            log.info("Clicked Save button");
+            waitForToastOrTimeout();
+            log.info("✅ Basic Info saved successfully");
+        } catch (Exception e) {
+            log.warn("Save button not found: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Verify youth public profile by clicking the link, opening new tab,
+     * checking username display, then closing tab and returning.
+     * 
+     * Steps:
+     * 1. Click youth public profile URL link
+     * 2. Wait for new tab to open
+     * 3. Switch to new tab
+     * 4. Verify username is displayed via //span[@class='youth-name']
+     * 5. Close new tab
+     * 6. Switch back to original tab
+     */
+    public void verifyYouthPublicProfile() throws InterruptedException {
+        log.info("Verifying Youth Public Profile...");
+        
+        // Click on youth public profile URL link (matches: https://web.mybharat.gov.in/youth-public-profile/d)
+        try {
+            WebElement publicProfileLink = longWait.until(
+                    ExpectedConditions.elementToBeClickable(PUBLIC_PROFILE_LINK));
+            scrollToElement(publicProfileLink);
+            safeClick(publicProfileLink);
+            log.info("Clicked youth public profile link with 'd' suffix");
+        } catch (Exception e) {
+            log.warn("Could not find youth public profile link: {}", e.getMessage());
+            return;
+        }
+        
+        // Wait for new tab and switch to it
+        String originalWindow = driver.getWindowHandle();
+        try {
+            // Explicit wait for new tab to open
+            longWait.until(d -> d.getWindowHandles().size() > 1);
+            
+            for (String handle : driver.getWindowHandles()) {
+                if (!handle.equals(originalWindow)) {
+                    driver.switchTo().window(handle);
+                    log.info("Switched to new tab for public profile verification");
+                    break;
+                }
+            }
+            
+            // Explicit wait for page to load in new tab
+            new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+                    d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+            
+            // Verify username is displayed
+            boolean usernameFound = false;
+            String nameText = "";
+            
+            // Use the specified locator for youth name
+            // Strategy 1: //span[@class='youth-name'] (primary)
+            try {
+                WebElement youthName = longWait.until(
+                        ExpectedConditions.visibilityOfElementLocated(YOUTH_NAME));
+                nameText = youthName.getText();
+                usernameFound = true;
+                log.info("✅ Username found via //span[@class='youth-name']: {}", nameText);
+            } catch (Exception e1) {
+                log.info("Strategy 1 failed: //span[@class='youth-name']");
+                
+                // Strategy 2: Try more flexible locator
+                try {
+                    WebElement youthName = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                            ExpectedConditions.visibilityOfElementLocated(
+                                    By.xpath("//span[contains(@class,'youth') and contains(@class,'name')]")));
+                    nameText = youthName.getText();
+                    usernameFound = true;
+                    log.info("✅ Username found via flexible span locator: {}", nameText);
+                } catch (Exception e2) {
+                    log.info("Strategy 2 failed: flexible span locator");
+                    
+                    // Strategy 3: Try h1 or h2 containing name
+                    try {
+                        WebElement youthName = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                                ExpectedConditions.visibilityOfElementLocated(
+                                        By.xpath("//h1[@class] | //h2[@class] | //div[@class and contains(.,'@')]")));
+                        nameText = youthName.getText();
+                        usernameFound = true;
+                        log.info("✅ Username found via heading locator: {}", nameText);
+                    } catch (Exception e3) {
+                        log.info("Strategy 3 failed: heading locators");
+                    }
+                }
+            }
+            
+            // If username still not found, throw exception to FAIL the test
+            if (!usernameFound) {
+                savePageSourceForDebug("public_profile_verification_failed");
+                throw new AssertionError("❌ Username verification FAILED - No youth name element found on public profile page");
+            }
+            
+            // Close new tab
+            driver.close();
+            log.info("Closed public profile tab");
+            
+            // Switch back to original tab
+            driver.switchTo().window(originalWindow);
+            log.info("Switched back to original tab");
+            
+            // Wait for original tab to be ready
+            new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+            
+            log.info("✅ Public profile verification completed successfully");
+            
+        } catch (AssertionError ae) {
+            // Re-throw assertion errors (these fail the test)
+            throw ae;
+        } catch (Exception e) {
+            log.error("Public profile verification failed with exception: {}", e.getMessage());
+            throw new AssertionError("Public profile verification error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Upload profile photo via the hidden file input in UserInfoCard.
      * The input has class="hidden" and accept="image/*".
      * We make it visible via JS, then sendKeys the file path.
@@ -272,25 +481,68 @@ public class YouthProfilePage extends BasePage {
     public void fillAboutSection() throws InterruptedException {
         log.info("Filling About section...");
 
-        expandSectionIfCollapsed("About");
-        safeSleep(200);
-
-        WebElement textarea = null;
+        // First try to expand the About accordion section by clicking the SVG icon
         try {
-            textarea = new WebDriverWait(driver, Duration.ofSeconds(7)).until(
+            WebElement aboutSvg = driver.findElement(By.cssSelector(
+                    "body div div main div div div main div div div div div:nth-child(1) button:nth-child(1) span:nth-child(1) svg"));
+            scrollToElement(aboutSvg);
+            jsClick(aboutSvg);
+            safeSleep(1000);
+            log.info("Clicked About section expand SVG icon");
+        } catch (Exception e) {
+            log.info("About SVG icon not found, trying other strategies: {}", e.getMessage());
+            // Try expand accordion approach
+            expandSectionIfCollapsed("About");
+            safeSleep(500);
+        }
+
+        // Try to click edit icon if section is in view mode
+        clickEditIconInSection("About");
+        safeSleep(1000);
+
+        // Try multiple strategies to find the textarea
+        WebElement textarea = null;
+        
+        // Strategy 1: Direct lookup by placeholder
+        try {
+            textarea = longWait.until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//textarea[@placeholder='Tell us about yourself...']")));
+            log.info("Found About textarea via placeholder");
         } catch (Exception e) {
-            clickEditIconInSection("About");
-            safeSleep(200);
+            log.info("Strategy 1 failed: {}", e.getMessage());
+        }
+
+        // Strategy 2: Look within About section container
+        if (textarea == null) {
             try {
-                textarea = driver.findElement(By.xpath("//textarea[@placeholder='Tell us about yourself...']"));
-            } catch (Exception e2) {
-                textarea = findTextareaInSection("About");
+                WebElement section = findSectionContainer("About");
+                if (section != null) {
+                    textarea = section.findElement(By.tagName("textarea"));
+                    log.info("Found About textarea within section container");
+                }
+            } catch (Exception e) {
+                log.info("Strategy 2 failed: {}", e.getMessage());
             }
         }
 
-        if (textarea != null && textarea.isDisplayed()) {
+        // Strategy 3: Find all textareas and get the first visible one
+        if (textarea == null) {
+            try {
+                List<WebElement> allTextareas = driver.findElements(By.tagName("textarea"));
+                for (WebElement ta : allTextareas) {
+                    if (ta.isDisplayed() && ta.isEnabled()) {
+                        textarea = ta;
+                        log.info("Found visible textarea as fallback");
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                log.info("Strategy 3 failed: {}", e.getMessage());
+            }
+        }
+
+        if (textarea != null && textarea.isDisplayed() && textarea.isEnabled()) {
             scrollToElement(textarea);
             String[] aboutTexts = {
                 "Final year B.Tech student passionate about sustainable development and rural education. "
@@ -306,11 +558,15 @@ public class YouthProfilePage extends BasePage {
             };
             String selectedAbout = aboutTexts[new java.util.Random().nextInt(aboutTexts.length)];
             setReactInputValue(textarea, selectedAbout);
+            safeSleep(500);
+            
+            // Click Save/Update button in About section
             clickSaveOrUpdateInSection("About");
             waitForToastOrTimeout();
             log.info("✅ About section saved");
         } else {
             log.warn("⚠️ Could not find About textarea, skipping");
+            savePageSourceForDebug("about_textarea_missing");
         }
     }
 
@@ -378,7 +634,6 @@ public class YouthProfilePage extends BasePage {
         safeSleep(2000); // React needs time: state update + re-render + API calls for languages/skills
 
         // Find the textarea inside Professional Summary section
-        // The section container has the textarea after edit mode is activated
         WebElement textarea = null;
         try {
             WebElement section = findSectionContainer("Professional Summary");
@@ -418,7 +673,16 @@ public class YouthProfilePage extends BasePage {
                 "Resourceful professional with hands-on experience in stakeholder engagement and program implementation."
             };
             String selectedSummary = summaries[new java.util.Random().nextInt(summaries.length)];
-            setReactInputValue(textarea, selectedSummary);
+            
+            // Use click + clear + sendKeys approach for textarea
+            textarea.click();
+            safeSleep(200);
+            textarea.sendKeys(Keys.chord(Keys.COMMAND, "a"));
+            safeSleep(100);
+            textarea.sendKeys(Keys.BACK_SPACE);
+            safeSleep(100);
+            textarea.sendKeys(selectedSummary);
+            safeSleep(500);
             log.info("Professional Summary textarea filled");
         } else {
             log.warn("Professional Summary textarea not found");
@@ -433,7 +697,6 @@ public class YouthProfilePage extends BasePage {
                 scrollToElement(lastSelect);
                 lastSelect.click();
                 safeSleep(500);
-                // Click the first option directly from the menu
                 WebElement firstOption = new WebDriverWait(driver, Duration.ofSeconds(3)).until(
                         ExpectedConditions.visibilityOfElementLocated(
                                 By.cssSelector("[class*='css-'][class*='option']")));
@@ -444,20 +707,8 @@ public class YouthProfilePage extends BasePage {
             log.info("Skills react-select not found, skipping");
         }
 
-        // Click Save/Update — find any visible Save/Update button
-        try {
-            List<WebElement> buttons = driver.findElements(By.xpath(
-                    "//button[normalize-space()='Save' or normalize-space()='Update']"));
-            for (WebElement btn : buttons) {
-                if (btn.isDisplayed() && btn.isEnabled()) {
-                    scrollToElement(btn);
-                    safeClick(btn);
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Save button not found for Professional Summary");
-        }
+        // Click Save button using exact locator
+        clickSaveButton();
         waitForToastOrTimeout();
         log.info("✅ Professional Summary saved");
     }
@@ -494,19 +745,19 @@ public class YouthProfilePage extends BasePage {
                     educationType);
             safeSleep(1500);
 
-            // 2. State — select "Chandigarh"
+            // 2. State — select "Uttar Pradesh"
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
             for (WebElement sel : selects) {
                 List<WebElement> opts = sel.findElements(By.tagName("option"));
-                boolean hasChandigarh = opts.stream().anyMatch(o ->
-                        o.getText().toLowerCase().contains("chandigarh"));
-                if (hasChandigarh) {
+                boolean hasUttarPradesh = opts.stream().anyMatch(o ->
+                        o.getText().toLowerCase().contains("uttar pradesh"));
+                if (hasUttarPradesh) {
                     for (WebElement opt : opts) {
-                        if (opt.getText().toLowerCase().contains("chandigarh")) {
+                        if (opt.getText().toLowerCase().contains("uttar pradesh")) {
                             ((JavascriptExecutor) driver).executeScript(
                                     "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
                                     sel, opt.getAttribute("value"));
-                            log.info("State selected: Chandigarh");
+                            log.info("State selected: Uttar Pradesh");
                             break;
                         }
                     }
@@ -515,43 +766,57 @@ public class YouthProfilePage extends BasePage {
             }
             safeSleep(1500);
 
-            // 3. District — select first available
+            // 3. District — select "Ghaziabad"
             selects = driver.findElements(By.cssSelector("select.w-full.border.border-gray-300"));
             for (WebElement sel : selects) {
                 List<WebElement> opts = sel.findElements(By.tagName("option"));
-                if (opts.size() >= 2 && opts.size() <= 10) {
-                    String firstOptText = opts.get(0).getText();
-                    if (firstOptText.contains("Select") && !firstOptText.contains("Education")
-                            && !firstOptText.contains("Institute") && !firstOptText.contains("Status")
-                            && !firstOptText.contains("Board") && !firstOptText.contains("Identifier")
-                            && !firstOptText.contains("Course") && !firstOptText.contains("State")) {
-                        String currentVal = sel.getAttribute("value");
-                        if (currentVal == null || currentVal.isEmpty()) {
+                boolean hasGhaziabad = opts.stream().anyMatch(o ->
+                        o.getText().toLowerCase().contains("ghaziabad"));
+                if (hasGhaziabad) {
+                    for (WebElement opt : opts) {
+                        if (opt.getText().toLowerCase().contains("ghaziabad")) {
                             ((JavascriptExecutor) driver).executeScript(
-                                    "arguments[0].selectedIndex=1; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
-                                    sel);
-                            log.info("District selected");
+                                    "arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                                    sel, opt.getAttribute("value"));
+                            log.info("District selected: Ghaziabad");
                             break;
                         }
                     }
+                    break;
                 }
             }
-            safeSleep(1000);
+            safeSleep(1500);
 
-            // 4. School Name — select index 2
+            // 4. School Name — Type "TULSIRAM MAHESHWARI PUBLIC SCHOOL"
+            // The school name field is a SearchableDropdown component (React custom component)
+            String selectedSchool = selectSchoolName("TULSIRAM MAHESHWARI PUBLIC SCHOOL", "TULSIRAM");
+            if (selectedSchool != null && !selectedSchool.isEmpty()) {
+                log.info("✅ School Name selected: {}", selectedSchool);
+            } else {
+                log.warn("⚠️ School Name selection may have failed");
+            }
+            
+            safeSleep(1500);
+
+            // 5. Course Name — select "Less than 8th" course using //div[6]//select[1]
             try {
-                WebElement schoolSelect = driver.findElement(By.xpath("//div[5]//select[1]"));
-                scrollToElement(schoolSelect);
+                // Use the specified XPath for Course Name
+                WebElement courseSelect = driver.findElement(COURSE_SELECT);
+                scrollToElement(courseSelect);
                 ((JavascriptExecutor) driver).executeScript(
-                        "arguments[0].selectedIndex=2; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
-                        schoolSelect);
+                        "arguments[0].selectedIndex=1; arguments[0].dispatchEvent(new Event('change',{bubbles:true}));",
+                        courseSelect);
                 safeSleep(500);
-                log.info("School Name selected");
+                log.info("Course Name selected (using //div[6]//select[1])");
             } catch (Exception e) {
-                log.warn("School Name dropdown not found");
+                log.info("Course Name dropdown not found or error: {}", e.getMessage());
             }
 
-            // 5. Education Status = "Passed"
+            // Re-verify and re-select school name if it got cleared after course name selection
+            safeSleep(1000);
+            verifyAndFixSchoolName("TULSIRAM MAHESHWARI PUBLIC SCHOOL", "TULSIRAM");
+
+            // 6. Education Status = "Passed"
             try {
                 WebElement statusSelect = driver.findElement(By.xpath(
                         "//*[contains(text(),'Education Status')]/following::select[1]"));
@@ -564,7 +829,7 @@ public class YouthProfilePage extends BasePage {
                 log.warn("Education Status dropdown not found");
             }
 
-            // 6. Student Identifier = "Roll number"
+            // 7. Student Identifier = "Roll number"
             try {
                 WebElement identifierSelect = driver.findElement(By.xpath(
                         "//*[contains(text(),'Student Unique Identifier')]/following::select[1]"));
@@ -577,14 +842,14 @@ public class YouthProfilePage extends BasePage {
                 log.warn("Student Identifier dropdown not found");
             }
 
-            // 7. Student Identifier Value
+            // 8. Student Identifier Value
             try {
                 WebElement identifierInput = driver.findElement(By.xpath("//input[@placeholder='Enter value']"));
                 scrollToElement(identifierInput);
-                typeInReactInput(identifierInput, "CHD2020123456");
+                typeInReactInput(identifierInput, "UP2020123456");
             } catch (Exception e) { /* skip */ }
 
-            // 8. Year of Passing
+            // 9. Year of Passing
             try {
                 WebElement yearSelect = driver.findElement(By.xpath("//div[9]//select[1]"));
                 scrollToElement(yearSelect);
@@ -597,21 +862,21 @@ public class YouthProfilePage extends BasePage {
                 log.warn("Year of Passing dropdown not found");
             }
 
-            // 9. Division
+            // 10. Division
             try {
                 WebElement divisionInput = driver.findElement(By.xpath("//input[@placeholder='Enter division']"));
                 scrollToElement(divisionInput);
                 typeInReactInput(divisionInput, "First");
             } catch (Exception e) { /* skip */ }
 
-            // 10. Percentage
+            // 11. Percentage
             try {
                 WebElement percentInput = driver.findElement(By.xpath("//input[@placeholder='Enter percentage']"));
                 scrollToElement(percentInput);
                 typeInReactInput(percentInput, "78");
             } catch (Exception e) { /* skip */ }
 
-            // 11. Save
+            // 12. Save
             scrollPage(300);
             clickSaveOrUpdateInSection("Education Qualification");
             waitForToastOrTimeout();
@@ -623,6 +888,104 @@ public class YouthProfilePage extends BasePage {
             safeSleep(500);
         } catch (Exception e) {
             log.warn("Education qualification fill failed: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Select school name from SearchableDropdown component.
+     * This is a React custom component, not a native <select>.
+     * 
+     * Flow:
+     *   1. Click the div to open dropdown
+     *   2. Search input appears
+     *   3. Type at least 3 chars
+     *   4. Wait for results
+     *   5. Click matching <li> option
+     */
+    private String selectSchoolName(String fullSchoolName, String searchTerm) throws InterruptedException {
+        try {
+            // Find the school name searchable dropdown div
+            WebElement schoolDiv = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(SCHOOL_NAME_DIV));
+            scrollToElement(schoolDiv);
+            
+            // Click to open the dropdown
+            jsClick(schoolDiv);
+            safeSleep(1000);
+            log.info("Clicked school name dropdown");
+            
+            // Find the search input that appears
+            WebElement searchInput = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            By.xpath("//input[contains(@placeholder,'Search')]")));
+            
+            // Clear and type search term
+            searchInput.clear();
+            searchInput.sendKeys(searchTerm);
+            safeSleep(2000); // Wait for API to return results (needs min 3 chars)
+            
+            // Find and click the matching option
+            try {
+                WebElement option = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                        ExpectedConditions.elementToBeClickable(
+                                By.xpath("//li[contains(normalize-space(),'TULSIRAM')]")));
+                option.click();
+                log.info("Clicked school option");
+                safeSleep(1000);
+                
+                // Wait for dropdown to close
+                new WebDriverWait(driver, Duration.ofSeconds(3)).until(
+                        ExpectedConditions.invisibilityOfElementLocated(
+                                By.xpath("//li[contains(normalize-space(),'TULSIRAM')]")));
+                
+                return fullSchoolName;
+            } catch (Exception e) {
+                log.warn("Could not find exact match, trying first result: {}", e.getMessage());
+                // Try clicking first li in results
+                try {
+                    WebElement firstOption = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                            ExpectedConditions.elementToBeClickable(
+                                    By.cssSelector("div.absolute ul li")));
+                    firstOption.click();
+                    safeSleep(1000);
+                    return "First result";
+                } catch (Exception e2) {
+                    log.warn("No school options found in dropdown");
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("School name selection failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Verify and re-select school name if it got cleared after subsequent field changes.
+     * This addresses the issue where school name clears when course name is selected.
+     */
+    private void verifyAndFixSchoolName(String fullSchoolName, String searchTerm) {
+        try {
+            // Check if school name div still shows selected value or is empty
+            WebElement schoolDiv = driver.findElement(SCHOOL_NAME_DIV);
+            
+            String divText = schoolDiv.getText();
+            log.info("School name field current text: '{}'", divText);
+            
+            // If empty or just placeholder text, re-select
+            if (divText == null || divText.trim().isEmpty() || divText.contains("Search")) {
+                log.info("School name was cleared, re-selecting...");
+                String result = selectSchoolName(fullSchoolName, searchTerm);
+                if (result != null) {
+                    log.info("✅ School name re-selected after course change: {}", result);
+                } else {
+                    log.warn("⚠️ Could not re-select school name");
+                }
+            } else {
+                log.info("✅ School name still selected: {}", divText);
+            }
+        } catch (Exception e) {
+            log.info("Could not verify school name field: {}", e.getMessage());
         }
     }
 
@@ -644,10 +1007,18 @@ public class YouthProfilePage extends BasePage {
             WebElement jobTitleInput = new WebDriverWait(driver, Duration.ofSeconds(7)).until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.xpath("//input[@placeholder='Enter job title']")));
-            scrollToElement(jobTitleInput);
+            // Scroll with offset to avoid sticky nav header
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].scrollIntoView({block:'center'});", jobTitleInput);
+            safeSleep(200);
             String[] jobTitles = {"Content Writer", "Social Media Executive", "Program Coordinator",
                     "Research Intern", "Event Manager", "Graphic Designer", "Data Analyst"};
-            typeInReactInput(jobTitleInput, jobTitles[new java.util.Random().nextInt(jobTitles.length)]);
+            String jobTitle = jobTitles[new java.util.Random().nextInt(jobTitles.length)];
+            // Use JS to focus and type to avoid click interception
+            ((JavascriptExecutor) driver).executeScript("arguments[0].focus();", jobTitleInput);
+            jobTitleInput.sendKeys(jobTitle);
+            safeSleep(200);
+            log.info("Job title filled: {}", jobTitle);
         } catch (Exception e) {
             log.warn("Job title input not found: {}", e.getMessage());
             savePageSourceForDebug("work_exp_form_missing");
@@ -657,9 +1028,16 @@ public class YouthProfilePage extends BasePage {
         try {
             WebElement companyInput = driver.findElement(
                     By.xpath("//input[@placeholder='Enter company name']"));
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].scrollIntoView({block:'center'});", companyInput);
+            safeSleep(200);
             String[] companies = {"Tata Consultancy Services", "Infosys Foundation", "Wipro Cares",
                     "Bharti Foundation", "Reliance Industries Ltd", "Mahindra Group", "HCL Technologies"};
-            typeInReactInput(companyInput, companies[new java.util.Random().nextInt(companies.length)]);
+            String company = companies[new java.util.Random().nextInt(companies.length)];
+            ((JavascriptExecutor) driver).executeScript("arguments[0].focus();", companyInput);
+            companyInput.sendKeys(company);
+            safeSleep(200);
+            log.info("Company name filled: {}", company);
         } catch (Exception e) {
             log.warn("Company input not found");
         }
@@ -752,7 +1130,17 @@ public class YouthProfilePage extends BasePage {
                 "React, HTML, CSS, JavaScript, VS Code, GitHub",
                 "AutoCAD, SolidWorks, MATLAB, MS Project, Excel"
             };
-            typeInReactInput(toolsInput, toolSets[new java.util.Random().nextInt(toolSets.length)]);
+            String selectedTools = toolSets[new java.util.Random().nextInt(toolSets.length)];
+            // Use click + clear + sendKeys for reliable input
+            toolsInput.click();
+            safeSleep(200);
+            toolsInput.sendKeys(Keys.chord(Keys.COMMAND, "a"));
+            safeSleep(100);
+            toolsInput.sendKeys(Keys.BACK_SPACE);
+            safeSleep(100);
+            toolsInput.sendKeys(selectedTools);
+            safeSleep(500);
+            log.info("Tools input filled: {}", selectedTools);
         } catch (Exception e) {
             log.warn("Tools input not found: {}", e.getMessage());
         }
@@ -761,21 +1149,29 @@ public class YouthProfilePage extends BasePage {
             WebElement videoInput = driver.findElement(
                     By.xpath("//input[@placeholder='Insert introduction video links']"));
             scrollToElement(videoInput);
-            typeInReactInput(videoInput, "https://www.youtube.com/watch?v=QZSlDNgi-eQ");
+            videoInput.click();
+            safeSleep(200);
+            videoInput.sendKeys(Keys.chord(Keys.COMMAND, "a"));
+            safeSleep(100);
+            videoInput.sendKeys(Keys.BACK_SPACE);
+            safeSleep(100);
+            videoInput.sendKeys("https://www.youtube.com/watch?v=QZSlDNgi-eQ");
+            safeSleep(300);
+            log.info("Video link input filled");
         } catch (Exception e) { /* skip */ }
 
-        // Click Save/Update
+        // Click Update button for Tools section
         try {
-            List<WebElement> buttons = driver.findElements(By.xpath(
-                    "//button[normalize-space()='Save' or normalize-space()='Update']"));
-            for (WebElement btn : buttons) {
-                if (btn.isDisplayed() && btn.isEnabled()) {
-                    scrollToElement(btn);
-                    safeClick(btn);
-                    break;
-                }
-            }
-        } catch (Exception e) { /* skip */ }
+            WebElement updateBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[normalize-space()='Update']")));
+            scrollToElement(updateBtn);
+            jsClick(updateBtn);
+            log.info("Clicked Update button for Tools section");
+        } catch (Exception e) {
+            // Fallback to clickSaveButton
+            clickSaveButton();
+        }
         waitForToastOrTimeout();
         log.info("✅ Tools section saved");
     }
@@ -982,6 +1378,54 @@ public class YouthProfilePage extends BasePage {
             }
         }
         log.warn("Could not find Save/Update button for section: {}", sectionTitle);
+    }
+
+    /**
+     * Click the Save button using the exact CSS selector.
+     * Uses: button[class='px-5 py-2 bg-[#bc4717] text-white rounded-lg flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer']
+     */
+    private void clickSaveButton() {
+        safeSleep(300);
+        try {
+            // Strategy 1: Exact CSS selector for Save button
+            WebElement saveBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector("button[class='px-5 py-2 bg-[#bc4717] text-white rounded-lg flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer']")));
+            scrollToElement(saveBtn);
+            jsClick(saveBtn);
+            log.info("Clicked Save button (exact CSS selector)");
+            return;
+        } catch (Exception e) {
+            log.info("Exact CSS save button not found, trying alternatives");
+        }
+
+        try {
+            // Strategy 2: XPath with first matching button
+            WebElement saveBtn = driver.findElement(By.xpath(
+                    "(//button[@class='px-5 py-2 bg-[#bc4717] text-white rounded-lg flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer'])[1]"));
+            scrollToElement(saveBtn);
+            jsClick(saveBtn);
+            log.info("Clicked Save button (XPath first match)");
+            return;
+        } catch (Exception e2) {
+            log.info("XPath save button not found, trying generic");
+        }
+
+        // Strategy 3: Generic Save/Update button
+        try {
+            List<WebElement> buttons = driver.findElements(By.xpath(
+                    "//button[normalize-space()='Save' or normalize-space()='Update']"));
+            for (WebElement btn : buttons) {
+                if (btn.isDisplayed() && btn.isEnabled()) {
+                    scrollToElement(btn);
+                    jsClick(btn);
+                    log.info("Clicked Save button (generic fallback)");
+                    return;
+                }
+            }
+        } catch (Exception e3) {
+            log.warn("Could not find any Save button");
+        }
     }
 
     /**
@@ -1238,41 +1682,17 @@ public class YouthProfilePage extends BasePage {
     }
 
     /**
-     * Get a random image path from the UploadImages folder.
-     * Only returns images >= 50KB (app requirement).
+     * Get the specific image path for profile upload.
+     * Uses mybharat_blog_cover.jpg from the UploadImages folder.
      */
     private String getRandomImagePath() {
-        File imagesDir = Paths.get(System.getProperty("user.dir"), "UploadImages").toFile();
-        if (!imagesDir.exists()) {
-            throw new RuntimeException("UploadImages folder not found at: " + imagesDir.getAbsolutePath());
+        String imagePath = System.getProperty("user.dir") + File.separator + "UploadImages" + File.separator + "mybharat_blog_cover.jpg";
+        File imageFile = new File(imagePath);
+        if (!imageFile.exists()) {
+            throw new RuntimeException("Image file not found at: " + imagePath);
         }
-        File[] files = imagesDir.listFiles((dir, name) ->
-                name.toLowerCase().matches(".*\\.(jpg|png|jpeg)"));
-        if (files == null || files.length == 0) {
-            throw new RuntimeException("No images found in: " + imagesDir.getAbsolutePath());
-        }
-
-        // Filter for files >= 50KB (app requires minimum 50KB)
-        List<File> validFiles = new java.util.ArrayList<>();
-        for (File f : files) {
-            if (f.length() >= 50 * 1024) { // 50KB minimum
-                validFiles.add(f);
-            }
-        }
-
-        if (validFiles.isEmpty()) {
-            // Fallback: use largest available file
-            File largest = files[0];
-            for (File f : files) {
-                if (f.length() > largest.length()) largest = f;
-            }
-            log.warn("No images >= 50KB found, using largest: {} ({}KB)", largest.getName(), largest.length() / 1024);
-            return largest.getAbsolutePath();
-        }
-
-        File randomFile = validFiles.get(random.nextInt(validFiles.size()));
-        log.info("Selected image: {} ({}KB)", randomFile.getName(), randomFile.length() / 1024);
-        return randomFile.getAbsolutePath();
+        log.info("Selected image: {} ({}KB)", imageFile.getName(), imageFile.length() / 1024);
+        return imageFile.getAbsolutePath();
     }
 
     /**

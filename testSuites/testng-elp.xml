@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  ELP (Experiential Learning Program) Full Test Cycle
+  
+  Flow:
+    1. Login as ELP Admin (random email from Partner_beta.xlsx / Partner_prod.xlsx)
+    2. Navigate to profile → View More
+    3. Create ELP
+    4. Logout ELP Admin
+    5. Login as Youth (email from Youth_beta.xlsx / Youth_prod.xlsx)
+    6. (TODO) Youth applies to ELP
+  
+  All steps run on the SAME browser session (single <test> block).
+  
+  Run with:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-elp.xml
+-->
+<suite name="ELP Test Cycle" parallel="none" verbose="1" preserve-order="true">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="ELP Full Flow" preserve-order="true">
+        <classes>
+            <!-- Step 1: Login as ELP Admin -->
+            <class name="com.mybharat.tests.elp.ELPLoginTest"/>
+            <!-- Step 2: Navigate to View More -->
+            <class name="com.mybharat.tests.elp.ELPNavigationTest"/>
+            <!-- Step 3: Create ELP -->
+            <class name="com.mybharat.tests.elp.ELPCreateTest"/>
+            <!-- Step 4: Logout ELP Admin -->
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+            <!-- Step 5: Login as Youth -->
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+            <!-- Step 6: Handle popup + Click Experiential Learning -->
+            <class name="com.mybharat.tests.elp.ELPYouthApplyTest"/>
+        </classes>
+    </test>
+
+</suite>

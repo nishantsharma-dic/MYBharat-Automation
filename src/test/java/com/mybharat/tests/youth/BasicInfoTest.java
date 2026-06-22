@@ -47,13 +47,14 @@ public class BasicInfoTest extends BaseTest {
     }
 
     @Test(priority = 1, groups = {"regression", "profile"}, retryAnalyzer = Retry.class,
-          description = "Navigate to Basic Info tab and extract the registered email from the profile form for verification")
+          description = "Navigate to Basic Info tab, update name/DOB/gender, save, and extract email")
     public void clickBasicInfoAndExtractEmail() throws Exception {
-        log.info("Starting: Basic Info + Extract Email");
+        log.info("Starting: Basic Info — Update Details + Extract Email");
 
         profilePage.navigateToBasicInfo();
+        profilePage.fillBasicInfoAndSave();
         profilePage.extractEmailFromProfile();
 
-        log.info("✅ Basic Info completed, email extracted");
+        log.info("✅ Basic Info updated and email extracted");
     }
 }
