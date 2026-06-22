@@ -181,8 +181,30 @@ jobs:
             echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
           fi
           echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
-          echo "s11=$(get_status 'step15_submit')" >> $GITHUB_OUTPUT
-          echo "s12=$(get_status 'step19_superAdminApprove')" >> $GITHUB_OUTPUT
+
+          # Youth Club: if ANY step fails, mark both as FAIL
+          YC_STATUS="? PASS"
+          if grep -q 'name="step15_submit"' "$REPORT_FILE" 2>/dev/null; then
+            if grep -A2 'name="step15_submit"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+              YC_STATUS="? FAIL"
+            fi
+          else
+            YC_STATUS="? FAIL"
+          fi
+          if grep -q 'name="step19_superAdminApprove"' "$REPORT_FILE" 2>/dev/null; then
+            if grep -A2 'name="step19_superAdminApprove"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+              YC_STATUS="? FAIL"
+            fi
+          else
+            YC_STATUS="? FAIL"
+          fi
+          if grep -q 'name="step19_member6AcceptInvite"' "$REPORT_FILE" 2>/dev/null; then
+            if grep -A2 'name="step19_member6AcceptInvite"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
+              YC_STATUS="? FAIL"
+            fi
+          fi
+          echo "s11=${YC_STATUS}" >> $GITHUB_OUTPUT
+          echo "s12=${YC_STATUS}" >> $GITHUB_OUTPUT
 
       - name: Send test email to QA lead (personal only)
         if: always()
