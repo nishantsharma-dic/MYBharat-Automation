@@ -53,7 +53,8 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 public class RegisterMembersForYouthClubTest {
 
     private static final Logger log = LogManager.getLogger(RegisterMembersForYouthClubTest.class);
-    private static final int MEMBER_COUNT = 6;
+    private static final int MEMBER_COUNT = 8; // Register 8 to handle failures — only 6 needed
+    private static final int REQUIRED_COUNT = 6; // Minimum members needed for Youth Club
     private static final String EMAIL_DOMAIN = "@maildrop.cc";
 
     /** Thread-safe list to collect registered emails from all parallel threads */
@@ -146,7 +147,7 @@ public class RegisterMembersForYouthClubTest {
     }
 
     // =========================================================================
-    // BATCH 3: Register last 2 members in parallel
+    // BATCH 3: Register members 5-6 in parallel
     // =========================================================================
 
     @Test(priority = 3, dependsOnMethods = "registerBatch2",
@@ -181,11 +182,51 @@ public class RegisterMembersForYouthClubTest {
     }
 
     // =========================================================================
-    // VERIFY ALL 6 REGISTERED
+    // BATCH 4: Register members 7-8 (buffer for failures)
     // =========================================================================
 
     @Test(priority = 4, dependsOnMethods = "registerBatch3",
-          description = "Verify all 6 members registered successfully")
+          description = "Register member batch 4 (2 parallel — buffer)")
+    public void registerBatch4() throws Exception {
+        // Skip if we already have enough
+        if (registeredEmails.size() >= REQUIRED_COUNT) {
+            log.info("═══ BATCH 4: SKIPPED — already have {}/{} members ═══", registeredEmails.size(), REQUIRED_COUNT);
+            return;
+        }
+        log.info("═══ BATCH 4: Registering members {} to {} (2 parallel — buffer) ═══", startNumber + 6, startNumber + 7);
+        List<Thread> threads = new ArrayList<>();
+        CopyOnWriteArrayList<String> batchErrors = new CopyOnWriteArrayList<>();
+
+        for (int i = 6; i < 8; i++) {
+            int memberNum = startNumber + i;
+            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            Thread t = new Thread(() -> {
+                try {
+                    registerSingleMember(email, memberNum);
+                    registeredEmails.add(email);
+                    log.info("[Batch4] ✅ Registered: {}", email);
+                } catch (Exception e) {
+                    log.error("[Batch4] ❌ Failed: {} — {}", email, e.getMessage());
+                    batchErrors.add(email + ": " + e.getMessage());
+                }
+            }, "Member-" + memberNum);
+            threads.add(t);
+            t.start();
+        }
+
+        for (Thread t : threads) {
+            t.join(300000);
+        }
+
+        log.info("═══ BATCH 4 COMPLETE: {}/2 registered ═══", 2 - batchErrors.size());
+    }
+
+    // =========================================================================
+    // VERIFY AT LEAST 6 REGISTERED
+    // =========================================================================
+
+    @Test(priority = 5, dependsOnMethods = "registerBatch4",
+          description = "Verify at least 6 members registered successfully")
     public void verifyAllMembersRegistered() {
         // If static list is empty (can happen with parallel threads on server), read from Excel
         if (registeredEmails.isEmpty()) {

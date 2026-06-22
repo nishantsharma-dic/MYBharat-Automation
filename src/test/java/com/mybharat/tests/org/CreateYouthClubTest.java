@@ -192,10 +192,10 @@ public class CreateYouthClubTest extends BaseTest {
             }
         }
 
-        // Ensure enough emails
-        while (memberEmails.size() < 10) {
-            memberEmails.add("ycc" + String.format("%05d", memberEmails.size() + 100) + "@maildrop.cc");
-        }
+        // Verify we have enough REAL registered members
+        Assert.assertTrue(memberEmails.size() >= 6,
+                "Not enough registered members: got " + memberEmails.size() + " but need 6. " +
+                "Registered: " + memberEmails);
 
         log.info("Members to add: {}", memberEmails.subList(0, Math.min(6, memberEmails.size())));
         String[] emails = memberEmails.toArray(new String[0]);
