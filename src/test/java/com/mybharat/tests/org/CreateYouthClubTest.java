@@ -171,9 +171,9 @@ public class CreateYouthClubTest extends BaseTest {
                         Row row = sheet.getRow(i);
                         if (row == null || row.getCell(0) == null) continue;
                         String email = row.getCell(0).getStringCellValue().trim();
-                        if (email.startsWith("ycc") && email.contains("@")) {
+                        if (email.startsWith("yco") && email.contains("@")) {
                             try {
-                                int num = Integer.parseInt(email.replace("ycc", "").split("@")[0]);
+                                int num = Integer.parseInt(email.replace("yco", "").split("@")[0]);
                                 emailsByNumber.put(num, email);
                             } catch (NumberFormatException e) { /* skip */ }
                         }

@@ -40,7 +40,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  * RegisterMembersForYouthClubTest — Registers 6 fresh youth users for Youth Club membership.
  *
  * Strategy: 3 parallel browsers first, then 3 more parallel browsers.
- * Email: ycc{N}@maildrop.cc (N auto-increments, 5-digit padded, from last used number in Excel)
+ * Email: yco{N}@maildrop.cc (N auto-increments, 5-digit padded, from last used number in Excel)
  * OTP Fetch: Maildrop GraphQL API with prevCount logic
  *
  * Saves registered emails to:
@@ -70,8 +70,8 @@ public class RegisterMembersForYouthClubTest {
         WebDriverManager.chromedriver().setup();
         registeredEmails.clear();
 
-        // Read Last ycc number from Youth_<env>.xlsx "YouthClubMembers" sheet
-        startNumber = getLastYccNumber() + 1;
+        // Read Last yco number from Youth_<env>.xlsx "YouthClubMembers" sheet
+        startNumber = getLastYcoNumber() + 1;
         log.info("═══ Registering {} fresh members for Youth Club ═══", MEMBER_COUNT);
         log.info("═══ Email: yc{}..yc{}{} ═══", 
                 String.format("%05d", startNumber), String.format("%05d", startNumber + MEMBER_COUNT - 1), EMAIL_DOMAIN);
@@ -89,7 +89,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 0; i < 2; i++) {
             int memberNum = startNumber + i;
-            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -124,7 +124,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 2; i < 4; i++) {
             int memberNum = startNumber + i;
-            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -159,7 +159,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 4; i < 6; i++) {
             int memberNum = startNumber + i;
-            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -199,7 +199,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 6; i < 8; i++) {
             int memberNum = startNumber + i;
-            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -238,13 +238,13 @@ public class RegisterMembersForYouthClubTest {
                  Workbook wb = new XSSFWorkbook(fis)) {
                 Sheet sheet = wb.getSheet("YouthClubMembers");
                 if (sheet != null) {
-                    // Count ycc entries added in this run (last 6 with highest numbers)
+                    // Count yco entries added in this run (last 6 with highest numbers)
                     int count = 0;
                     for (int i = sheet.getLastRowNum(); i >= 1 && count < 6; i--) {
                         Row row = sheet.getRow(i);
                         if (row != null && row.getCell(0) != null) {
                             String email = row.getCell(0).getStringCellValue().trim();
-                            if (email.startsWith("ycc") && email.contains("@")) {
+                            if (email.startsWith("yco") && email.contains("@")) {
                                 registeredEmails.add(email);
                                 count++;
                             }
@@ -508,44 +508,45 @@ public class RegisterMembersForYouthClubTest {
     // HELPERS
     // =========================================================================
 
-    private int getLastYccNumber() {
+    private int getLastYcoNumber() {
         String env = config.getEnv();
         String filePath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
 
         File file = new File(filePath);
-        if (!file.exists()) return 0;
+        int maxFromExcel = 0;
 
-        try (FileInputStream fis = new FileInputStream(file);
-             Workbook wb = new XSSFWorkbook(fis)) {
-            Sheet sheet = wb.getSheet("YouthClubMembers");
-            if (sheet == null) return 0;
-
-            int maxNum = 0;
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row == null || row.getCell(0) == null) continue;
-                String email = row.getCell(0).getCellType() == CellType.STRING
-                        ? row.getCell(0).getStringCellValue().trim()
-                        : row.getCell(0).toString().trim();
-                // Extract number from yc{N}@maildrop.cc or rohank{N}@maildrop.cc (backward compat)
-                if (email.startsWith("ycc") && email.contains("@")) {
-                    try {
-                        String numStr = email.replace("ycc", "").split("@")[0];
-                        int num = Integer.parseInt(numStr);
-                        if (num > maxNum) maxNum = num;
-                    } catch (NumberFormatException e) { /* skip */ }
-                } else if (email.startsWith("rohank") && email.contains("@")) {
-                    // Old format — ignore for numbering, new format starts fresh
+        if (file.exists()) {
+            try (FileInputStream fis = new FileInputStream(file);
+                 Workbook wb = new XSSFWorkbook(fis)) {
+                Sheet sheet = wb.getSheet("YouthClubMembers");
+                if (sheet != null) {
+                    for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                        Row row = sheet.getRow(i);
+                        if (row == null || row.getCell(0) == null) continue;
+                        String email = row.getCell(0).getCellType() == CellType.STRING
+                                ? row.getCell(0).getStringCellValue().trim()
+                                : row.getCell(0).toString().trim();
+                        if (email.startsWith("yco") && email.contains("@")) {
+                            try {
+                                String numStr = email.replace("yco", "").split("@")[0];
+                                int num = Integer.parseInt(numStr);
+                                if (num > maxFromExcel) maxFromExcel = num;
+                            } catch (NumberFormatException e) { /* skip */ }
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                log.warn("Could not read YouthClubMembers sheet: {}", e.getMessage());
             }
-
-            log.info("Last ycc number in Excel: {}", maxNum);
-            return maxNum;
-        } catch (Exception e) {
-            log.warn("Could not read YouthClubMembers sheet: {}", e.getMessage());
-            return 0;
         }
+
+        // Use timestamp-based number to avoid collisions on server (Excel resets on checkout)
+        // Format: last 5 digits of current time in seconds since midnight
+        int timeBasedNum = (int) ((System.currentTimeMillis() / 1000) % 99999);
+        int startFrom = Math.max(maxFromExcel, timeBasedNum);
+        log.info("Last yco number: excelMax={}, timeBased={}, using={}", maxFromExcel, timeBasedNum, startFrom);
+        return startFrom;
     }
 
     private WebDriver createDriver() {
