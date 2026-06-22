@@ -69,26 +69,26 @@ public class RegisterMembersForYouthClubTest {
         WebDriverManager.chromedriver().setup();
         registeredEmails.clear();
 
-        // Read last yc number from Youth_<env>.xlsx "YouthClubMembers" sheet
-        startNumber = getLastYcNumber() + 1;
+        // Read Last ycc number from Youth_<env>.xlsx "YouthClubMembers" sheet
+        startNumber = getLastYccNumber() + 1;
         log.info("═══ Registering {} fresh members for Youth Club ═══", MEMBER_COUNT);
         log.info("═══ Email: yc{}..yc{}{} ═══", 
                 String.format("%06d", startNumber), String.format("%06d", startNumber + MEMBER_COUNT - 1), EMAIL_DOMAIN);
     }
 
     // =========================================================================
-    // BATCH 1: Register first 3 members in parallel (Yopmail serialized)
+    // BATCH 1: Register first 2 members in parallel
     // =========================================================================
 
-    @Test(priority = 1, description = "Register member batch 1 (3 parallel, Yopmail serialized)")
+    @Test(priority = 1, description = "Register member batch 1 (2 parallel)")
     public void registerBatch1() throws Exception {
-        log.info("═══ BATCH 1: Registering members {} to {} (3 parallel) ═══", startNumber, startNumber + 2);
+        log.info("═══ BATCH 1: Registering members {} to {} (2 parallel) ═══", startNumber, startNumber + 1);
         List<Thread> threads = new ArrayList<>();
         CopyOnWriteArrayList<String> batchErrors = new CopyOnWriteArrayList<>();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             int memberNum = startNumber + i;
-            String email = "yc" + String.format("%06d", memberNum) + EMAIL_DOMAIN;
+            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -107,23 +107,23 @@ public class RegisterMembersForYouthClubTest {
             t.join(300000);
         }
 
-        log.info("═══ BATCH 1 COMPLETE: {}/3 registered ═══", 3 - batchErrors.size());
+        log.info("═══ BATCH 1 COMPLETE: {}/2 registered ═══", 2 - batchErrors.size());
     }
 
     // =========================================================================
-    // BATCH 2: Register next 3 members in parallel (Yopmail serialized)
+    // BATCH 2: Register next 2 members in parallel
     // =========================================================================
 
     @Test(priority = 2, dependsOnMethods = "registerBatch1",
-          description = "Register member batch 2 (3 parallel, Yopmail serialized)")
+          description = "Register member batch 2 (2 parallel)")
     public void registerBatch2() throws Exception {
-        log.info("═══ BATCH 2: Registering members {} to {} (3 parallel) ═══", startNumber + 3, startNumber + 5);
+        log.info("═══ BATCH 2: Registering members {} to {} (2 parallel) ═══", startNumber + 2, startNumber + 3);
         List<Thread> threads = new ArrayList<>();
         CopyOnWriteArrayList<String> batchErrors = new CopyOnWriteArrayList<>();
 
-        for (int i = 3; i < 6; i++) {
+        for (int i = 2; i < 4; i++) {
             int memberNum = startNumber + i;
-            String email = "yc" + String.format("%06d", memberNum) + EMAIL_DOMAIN;
+            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -142,14 +142,49 @@ public class RegisterMembersForYouthClubTest {
             t.join(300000);
         }
 
-        log.info("═══ BATCH 2 COMPLETE: {}/3 registered ═══", 3 - batchErrors.size());
+        log.info("═══ BATCH 2 COMPLETE: {}/2 registered ═══", 2 - batchErrors.size());
+    }
+
+    // =========================================================================
+    // BATCH 3: Register last 2 members in parallel
+    // =========================================================================
+
+    @Test(priority = 3, dependsOnMethods = "registerBatch2",
+          description = "Register member batch 3 (2 parallel)")
+    public void registerBatch3() throws Exception {
+        log.info("═══ BATCH 3: Registering members {} to {} (2 parallel) ═══", startNumber + 4, startNumber + 5);
+        List<Thread> threads = new ArrayList<>();
+        CopyOnWriteArrayList<String> batchErrors = new CopyOnWriteArrayList<>();
+
+        for (int i = 4; i < 6; i++) {
+            int memberNum = startNumber + i;
+            String email = "ycc" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            Thread t = new Thread(() -> {
+                try {
+                    registerSingleMember(email, memberNum);
+                    registeredEmails.add(email);
+                    log.info("[Batch3] ✅ Registered: {}", email);
+                } catch (Exception e) {
+                    log.error("[Batch3] ❌ Failed: {} — {}", email, e.getMessage());
+                    batchErrors.add(email + ": " + e.getMessage());
+                }
+            }, "Member-" + memberNum);
+            threads.add(t);
+            t.start();
+        }
+
+        for (Thread t : threads) {
+            t.join(300000);
+        }
+
+        log.info("═══ BATCH 3 COMPLETE: {}/2 registered ═══", 2 - batchErrors.size());
     }
 
     // =========================================================================
     // VERIFY ALL 6 REGISTERED
     // =========================================================================
 
-    @Test(priority = 3, dependsOnMethods = "registerBatch2",
+    @Test(priority = 4, dependsOnMethods = "registerBatch3",
           description = "Verify all 6 members registered successfully")
     public void verifyAllMembersRegistered() {
         log.info("═══ VERIFICATION: {}/6 members registered ═══", registeredEmails.size());
@@ -404,7 +439,7 @@ public class RegisterMembersForYouthClubTest {
     // HELPERS
     // =========================================================================
 
-    private int getLastYcNumber() {
+    private int getLastYccNumber() {
         String env = config.getEnv();
         String filePath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
@@ -425,9 +460,9 @@ public class RegisterMembersForYouthClubTest {
                         ? row.getCell(0).getStringCellValue().trim()
                         : row.getCell(0).toString().trim();
                 // Extract number from yc{N}@maildrop.cc or rohank{N}@maildrop.cc (backward compat)
-                if (email.startsWith("yc") && email.contains("@")) {
+                if (email.startsWith("ycc") && email.contains("@")) {
                     try {
-                        String numStr = email.replace("yc", "").split("@")[0];
+                        String numStr = email.replace("ycc", "").split("@")[0];
                         int num = Integer.parseInt(numStr);
                         if (num > maxNum) maxNum = num;
                     } catch (NumberFormatException e) { /* skip */ }
@@ -436,7 +471,7 @@ public class RegisterMembersForYouthClubTest {
                 }
             }
 
-            log.info("Last yc number in Excel: {}", maxNum);
+            log.info("Last ycc number in Excel: {}", maxNum);
             return maxNum;
         } catch (Exception e) {
             log.warn("Could not read YouthClubMembers sheet: {}", e.getMessage());

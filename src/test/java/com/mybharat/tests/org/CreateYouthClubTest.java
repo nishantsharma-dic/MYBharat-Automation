@@ -171,9 +171,9 @@ public class CreateYouthClubTest extends BaseTest {
                         Row row = sheet.getRow(i);
                         if (row == null || row.getCell(0) == null) continue;
                         String email = row.getCell(0).getStringCellValue().trim();
-                        if (email.startsWith("yc") && email.contains("@")) {
+                        if (email.startsWith("ycc") && email.contains("@")) {
                             try {
-                                int num = Integer.parseInt(email.replace("yc", "").split("@")[0]);
+                                int num = Integer.parseInt(email.replace("ycc", "").split("@")[0]);
                                 emailsByNumber.put(num, email);
                             } catch (NumberFormatException e) { /* skip */ }
                         }
@@ -194,7 +194,7 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Ensure enough emails
         while (memberEmails.size() < 10) {
-            memberEmails.add("yc" + String.format("%06d", memberEmails.size() + 100) + "@maildrop.cc");
+            memberEmails.add("ycc" + String.format("%05d", memberEmails.size() + 100) + "@maildrop.cc");
         }
 
         log.info("Members to add: {}", memberEmails.subList(0, Math.min(6, memberEmails.size())));
