@@ -95,7 +95,7 @@ public class CreateYouthClubTest extends BaseTest {
         log.info("▶ Step 3: About Section");
         createOrgPage.uploadBanner();
         createOrgPage.uploadLogo();
-        createOrgPage.enterAboutText("This Youth Club engages youth in community development, sports, culture, and skill training.");
+        createOrgPage.enterAboutText("We are a community-driven youth organization focused on empowering young people through sports, cultural activities, skill development workshops, and social service initiatives. Our club organizes regular events to promote leadership, teamwork, and civic responsibility among the youth of our community.");
         createOrgPage.clickNext();
 
         // Step 4-5: Category
@@ -105,9 +105,19 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Step 6: Basic Info
         log.info("▶ Step 6: Basic Info");
-        youthClubName = "Youth Club Automation " + System.currentTimeMillis() % 10000;
+        // Generate unique realistic Youth Club name (different every run)
+        String[] clubNames = {
+            "Yuva Shakti", "Nai Disha", "Pragati", "Jagriti", "Udaan", "Tarun Bharat",
+            "Navjyoti", "Sahyog", "Umang", "Sankalp", "Prerana", "Vikas"
+        };
+        String[] areas = {"Nagar", "Colony", "Vihar", "Puram", "Enclave", "Block", "Sector", "Ward", "Mohalla", "Basti"};
+        String[] suffixes = {"Alpha", "Beta", "Delta", "Sigma", "Nova", "Apex", "Prime", "Elite", "Core", "Rise"};
+        java.util.Random rnd = new java.util.Random();
+        youthClubName = clubNames[rnd.nextInt(clubNames.length)] + " " 
+                + areas[rnd.nextInt(areas.length)] + " " 
+                + suffixes[rnd.nextInt(suffixes.length)] + " Youth Club";
         createOrgPage.enterName(youthClubName);
-        createOrgPage.enterAbbreviation("YCA");
+        createOrgPage.enterAbbreviation("YSYC");
         createOrgPage.selectNodalDesignation("President");
 
         // Step 7: Affiliation
@@ -117,8 +127,8 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Step 8: Address
         log.info("▶ Step 8: Address");
-        createOrgPage.enterAddress1("123 Youth Club Building, Sector 10");
-        createOrgPage.enterAddress2("Near Community Center, Block A");
+        createOrgPage.enterAddress1("Ward No 12, Community Hall Building");
+        createOrgPage.enterAddress2("Near Government School, Main Road");
         createOrgPage.selectState("DELHI");
         createOrgPage.selectDistrict();
         createOrgPage.selectAreaUrban();
