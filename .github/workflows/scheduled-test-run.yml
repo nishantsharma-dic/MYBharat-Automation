@@ -1,4 +1,4 @@
-﻿name: Scheduled Test Execution — MY Bharat (Production)
+name: Scheduled Test Execution � MY Bharat (Production)
 
 on:
   workflow_dispatch:  # Manual trigger only from GitHub UI
@@ -62,15 +62,15 @@ jobs:
           FAILED="${{ steps.parse.outputs.failed }}"
           if [ "$FAILED" == "0" ] || [ "$FAILED" == "N/A" ] && [ "${{ steps.test_run.outcome }}" == "success" ]; then
             echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
-            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "emoji=?" >> $GITHUB_OUTPUT
             echo "color=#28a745" >> $GITHUB_OUTPUT
           elif [ "$FAILED" == "0" ]; then
             echo "status=ALL TESTS PASSED" >> $GITHUB_OUTPUT
-            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "emoji=?" >> $GITHUB_OUTPUT
             echo "color=#28a745" >> $GITHUB_OUTPUT
           else
             echo "status=SOME TESTS FAILED" >> $GITHUB_OUTPUT
-            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "emoji=?" >> $GITHUB_OUTPUT
             echo "color=#dc3545" >> $GITHUB_OUTPUT
           fi
           echo "timestamp=$(TZ='Asia/Kolkata' date +'%d-%b-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
@@ -105,16 +105,16 @@ jobs:
             local method="$1"
             if grep -q "name=\"$method\"" "$REPORT_FILE" 2>/dev/null; then
               if grep -A2 "name=\"$method\"" "$REPORT_FILE" | grep -q 'status="FAIL"'; then
-                echo "❌ FAIL"
+                echo "? FAIL"
               else
-                echo "✅ PASS"
+                echo "? PASS"
               fi
             else
-              echo "⏭ SKIP"
+              echo "? SKIP"
             fi
           }
 
-          # Public Pages — single test method "publicPages"
+          # Public Pages � single test method "publicPages"
           echo "s0=$(get_status 'publicPages')" >> $GITHUB_OUTPUT
 
           echo "s1=$(get_status 'registerIndianYouth')" >> $GITHUB_OUTPUT
@@ -126,37 +126,45 @@ jobs:
           echo "s7=$(get_status 'clickBasicInfoAndExtractEmail')" >> $GITHUB_OUTPUT
           # Quiz: show special status if no quiz was available
           if [ "$QUIZ_AVAILABLE" = "false" ]; then
-            echo "s8=⚠️ No Quiz Available" >> $GITHUB_OUTPUT
-            echo "s9=⚠️ No Quiz Available" >> $GITHUB_OUTPUT
+            echo "s8=?? No Quiz Available" >> $GITHUB_OUTPUT
+            echo "s9=?? No Quiz Available" >> $GITHUB_OUTPUT
           else
             echo "s8=$(get_status 'attemptCompetitiveQuiz')" >> $GITHUB_OUTPUT
             echo "s9=$(get_status 'verifyQuizCertificateDownload')" >> $GITHUB_OUTPUT
           fi
           echo "s10=$(get_status 'writeAndPublishBlog')" >> $GITHUB_OUTPUT
 
+          # Read Youth Club name from file (saved by test)
+          if [ -f "reports/youth_club_name.txt" ]; then
+            YC_NAME=$(cat reports/youth_club_name.txt)
+          else
+            YC_NAME="Youth Club"
+          fi
+          echo "yc_name=${YC_NAME}" >> $GITHUB_OUTPUT
+
           # Youth Club Create: fails if step15_submit fails or didn't run
-          YC_CREATE="✅ PASS"
+          YC_CREATE="? PASS"
           if grep -q 'name="step15_submit"' "$REPORT_FILE" 2>/dev/null; then
             if grep -A2 'name="step15_submit"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
-              YC_CREATE="❌ FAIL"
+              YC_CREATE="? FAIL"
             fi
           else
-            YC_CREATE="❌ FAIL"
+            YC_CREATE="? FAIL"
           fi
           echo "s11=${YC_CREATE}" >> $GITHUB_OUTPUT
 
           # Youth Club Approve: fails if step19_superAdminApprove fails, skipped, or member6 accept failed
-          YC_APPROVE="✅ PASS"
+          YC_APPROVE="? PASS"
           if grep -q 'name="step19_superAdminApprove"' "$REPORT_FILE" 2>/dev/null; then
             if grep -A2 'name="step19_superAdminApprove"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
-              YC_APPROVE="❌ FAIL"
+              YC_APPROVE="? FAIL"
             fi
           else
-            YC_APPROVE="❌ FAIL"
+            YC_APPROVE="? FAIL"
           fi
           if grep -q 'name="step19_member6AcceptInvite"' "$REPORT_FILE" 2>/dev/null; then
             if grep -A2 'name="step19_member6AcceptInvite"' "$REPORT_FILE" | grep -q 'status="FAIL"'; then
-              YC_APPROVE="❌ FAIL"
+              YC_APPROVE="? FAIL"
             fi
           fi
           echo "s12=${YC_APPROVE}" >> $GITHUB_OUTPUT
@@ -204,7 +212,7 @@ jobs:
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
               <!-- Header -->
               <div style="background: linear-gradient(135deg, #160363, #2d0a8f); padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
-                <h1 style="color: #fff; margin: 0; font-size: 22px;">MY Bharat — QA Automation Report</h1>
+                <h1 style="color: #fff; margin: 0; font-size: 22px;">MY Bharat � QA Automation Report</h1>
                 <p style="color: #c4b5fd; margin: 8px 0 0; font-size: 13px;">Production Environment | Automated E2E Test Execution</p>
               </div>
 
@@ -221,7 +229,7 @@ jobs:
                   <tr><td style="padding: 8px; font-weight: bold; width: 40%;">Execution Time:</td><td style="padding: 8px;">${{ steps.result.outputs.timestamp }}</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Environment:</td><td style="padding: 8px;">Production (https://mybharat.gov.in)</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (UI Mode)</td></tr>
-                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules — Full End-to-End</td></tr>
+                  <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules � Full End-to-End</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Registered User:</td><td style="padding: 8px;">${{ steps.details.outputs.reg_email }}</td></tr>
                 </table>
 
@@ -352,29 +360,20 @@ jobs:
                   </tr>
                   <tr>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">12</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">VO Full Cycle</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">voFullCycle</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">Org Login → Template → Event → Youth Apply → Approval → Edit → Save Draft</td>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s11 }}</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer</td>
-                  </tr>
-                  <tr style="background: #f9f9f9;">
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">13</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Youth Club</td>
                     <td style="padding: 6px; border: 1px solid #eee;">createYouthClub</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Register 6 members + Create Youth Club + Verify members</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s12 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s11 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
                   </tr>
-                  <tr>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">14</td>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">13</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Youth Club Approve</td>
                     <td style="padding: 6px; border: 1px solid #eee;">approveYouthClub</td>
-                    <td style="padding: 6px; border: 1px solid #eee;">Login SuperAdmin and approve Youth Club</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Login SuperAdmin and approve: ${{ steps.details.outputs.yc_name }}</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
-                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s13 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s12 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
                   </tr>
                 </table>
@@ -382,7 +381,7 @@ jobs:
                 <!-- Test Flow -->
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
                 <p style="font-size: 13px; color: #555; line-height: 1.8;">
-                  Public Pages (Header + Org + Footer) → Registration (new user) → Logout → Login (OTP) → Complete Profile → Download Certificate → Verify Basic Info → Play Quiz → Quiz Certificate → Blog Creation → VO Full Cycle → Create Youth Club → Approve Youth Club
+                  Public Pages (Header + Org + Footer) ? Registration (new user) ? Logout ? Login (OTP) ? Complete Profile ? Download Certificate ? Verify Basic Info ? Play Quiz ? Quiz Certificate ? Blog Creation ? Create Youth Club ? Approve Youth Club
                 </p>
 
                 <!-- View Report Button -->

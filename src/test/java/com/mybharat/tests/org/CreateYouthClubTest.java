@@ -173,6 +173,16 @@ public class CreateYouthClubTest extends BaseTest {
         createOrgPage.finalSubmit();
         Assert.assertTrue(createOrgPage.isSubmissionSuccessful(), "[Step 15] Submission failed");
 
+        // Save Youth Club name to file for email report
+        try {
+            File reportsDir = new File(System.getProperty("user.dir") + File.separator + "reports");
+            reportsDir.mkdirs();
+            java.io.FileWriter fw = new java.io.FileWriter(reportsDir + File.separator + "youth_club_name.txt");
+            fw.write(youthClubName);
+            fw.close();
+            log.info("Saved youth club name to reports/youth_club_name.txt: {}", youthClubName);
+        } catch (Exception e) { log.warn("Could not save youth club name: {}", e.getMessage()); }
+
         // Mark used members in Excel as "Picked" with Youth Club name
         markMembersAsPicked();
 
