@@ -89,7 +89,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 0; i < 2; i++) {
             int memberNum = startNumber + i;
-            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = generateMemberEmail(i + 1);
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -124,7 +124,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 2; i < 4; i++) {
             int memberNum = startNumber + i;
-            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = generateMemberEmail(i + 1);
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -159,7 +159,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 4; i < 6; i++) {
             int memberNum = startNumber + i;
-            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = generateMemberEmail(i + 1);
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -199,7 +199,7 @@ public class RegisterMembersForYouthClubTest {
 
         for (int i = 6; i < 8; i++) {
             int memberNum = startNumber + i;
-            String email = "yco" + String.format("%05d", memberNum) + EMAIL_DOMAIN;
+            String email = generateMemberEmail(i + 1);
             Thread t = new Thread(() -> {
                 try {
                     registerSingleMember(email, memberNum);
@@ -301,11 +301,19 @@ public class RegisterMembersForYouthClubTest {
             }
 
             int nextRow = sheet.getLastRowNum() + 1;
+            List<String> usedForClub = registeredEmails.size() > 6
+                    ? new ArrayList<>(registeredEmails.subList(0, 6))
+                    : new ArrayList<>(registeredEmails);
+
             for (String email : registeredEmails) {
                 Row row = sheet.createRow(nextRow++);
                 row.createCell(0).setCellValue(email);
                 row.createCell(1).setCellValue(""); // Youth Club Name — filled by CreateYouthClubTest
-                row.createCell(2).setCellValue(""); // Status — filled as "Picked" when used
+                if (usedForClub.contains(email)) {
+                    row.createCell(2).setCellValue(""); // Status filled later as "Picked"
+                } else {
+                    row.createCell(2).setCellValue("Not Used"); // Buffer member
+                }
             }
 
             FileOutputStream fos = new FileOutputStream(file);
@@ -513,44 +521,45 @@ public class RegisterMembersForYouthClubTest {
     // =========================================================================
 
     private int getLastYcoNumber() {
+        // Read last serial number from Excel to continue incrementing
         String env = config.getEnv();
         String filePath = System.getProperty("user.dir") + File.separator
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
-
         File file = new File(filePath);
-        int maxFromExcel = 0;
+        if (!file.exists()) return 0;
 
-        if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file);
-                 Workbook wb = new XSSFWorkbook(fis)) {
-                Sheet sheet = wb.getSheet("YouthClubMembers");
-                if (sheet != null) {
-                    for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                        Row row = sheet.getRow(i);
-                        if (row == null || row.getCell(0) == null) continue;
-                        String email = row.getCell(0).getCellType() == CellType.STRING
-                                ? row.getCell(0).getStringCellValue().trim()
-                                : row.getCell(0).toString().trim();
-                        if (email.startsWith("yco") && email.contains("@")) {
-                            try {
-                                String numStr = email.replace("yco", "").split("@")[0];
-                                int num = Integer.parseInt(numStr);
-                                if (num > maxFromExcel) maxFromExcel = num;
-                            } catch (NumberFormatException e) { /* skip */ }
-                        }
-                    }
+        try (FileInputStream fis = new FileInputStream(file);
+             Workbook wb = new XSSFWorkbook(fis)) {
+            Sheet sheet = wb.getSheet("YouthClubMembers");
+            if (sheet == null) return 0;
+            // Count existing yco rows to determine next serial
+            int count = 0;
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row != null && row.getCell(0) != null) {
+                    String email = row.getCell(0).getStringCellValue().trim();
+                    if (email.startsWith("yco")) count++;
                 }
-            } catch (Exception e) {
-                log.warn("Could not read YouthClubMembers sheet: {}", e.getMessage());
             }
+            log.info("Existing yco entries in Excel: {} — next serial starts at {}", count, count + 1);
+            return count;
+        } catch (Exception e) {
+            log.warn("Could not read Excel: {}", e.getMessage());
+            return 0;
         }
+    }
 
-        // Use timestamp-based number to avoid collisions on server (Excel resets on checkout)
-        // Format: last 5 digits of current time in seconds since midnight
-        int timeBasedNum = (int) ((System.currentTimeMillis() / 1000) % 99999);
-        int startFrom = Math.max(maxFromExcel, timeBasedNum);
-        log.info("Last yco number: excelMax={}, timeBased={}, using={}", maxFromExcel, timeBasedNum, startFrom);
-        return startFrom;
+    /**
+     * Generate email prefix based on current timestamp: yco + YYMMDDHHmm + memberIndex
+     * Example: yco2606231545 + "1" = yco26062315451@maildrop.cc
+     * NEVER repeats because minute never repeats.
+     */
+    private static String generateMemberEmail(int memberIndex) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        String timestamp = String.format("%02d%02d%02d%02d%02d",
+                now.getYear() % 100, now.getMonthValue(), now.getDayOfMonth(),
+                now.getHour(), now.getMinute());
+        return "yco" + timestamp + "m" + memberIndex + EMAIL_DOMAIN;
     }
 
     private WebDriver createDriver() {
