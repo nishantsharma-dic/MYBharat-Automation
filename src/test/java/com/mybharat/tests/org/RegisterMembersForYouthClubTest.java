@@ -60,8 +60,8 @@ public class RegisterMembersForYouthClubTest {
     /** Thread-safe list to collect registered emails from all parallel threads */
     private static final CopyOnWriteArrayList<String> registeredEmails = new CopyOnWriteArrayList<>();
 
-    /** Starting number for yc emails (read from Excel in @BeforeClass) */
-    private static int startNumber = 1;
+    /** Starting number for yco emails — volatile for thread visibility */
+    private static volatile int startNumber = 1;
 
     private final ConfigReader config = new ConfigReader();
 
@@ -296,12 +296,16 @@ public class RegisterMembersForYouthClubTest {
                 sheet = workbook.createSheet("YouthClubMembers");
                 Row header = sheet.createRow(0);
                 header.createCell(0).setCellValue("Email");
+                header.createCell(1).setCellValue("Youth Club Name");
+                header.createCell(2).setCellValue("Status");
             }
 
             int nextRow = sheet.getLastRowNum() + 1;
             for (String email : registeredEmails) {
                 Row row = sheet.createRow(nextRow++);
                 row.createCell(0).setCellValue(email);
+                row.createCell(1).setCellValue(""); // Youth Club Name — filled by CreateYouthClubTest
+                row.createCell(2).setCellValue(""); // Status — filled as "Picked" when used
             }
 
             FileOutputStream fos = new FileOutputStream(file);
@@ -689,5 +693,10 @@ public class RegisterMembersForYouthClubTest {
     /** Public accessor for other tests to get the registered emails */
     public static List<String> getRegisteredEmails() {
         return new ArrayList<>(registeredEmails);
+    }
+
+    /** Public accessor to get the start number used in this run (for filtering fallback) */
+    public static int getStartNumber() {
+        return startNumber;
     }
 }

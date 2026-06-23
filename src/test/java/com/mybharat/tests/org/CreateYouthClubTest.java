@@ -157,7 +157,6 @@ public class CreateYouthClubTest extends BaseTest {
         String[] emails = memberEmails.toArray(new String[0]);
         int addedCount = createOrgPage.addMembers(emails);
         Assert.assertTrue(addedCount >= 6, "[Step 12] Only " + addedCount + "/6 members added");
-
         // Step 13: Establishment
         log.info("▶ Step 13: Establishment");
         createOrgPage.selectRegistered("No");
@@ -173,6 +172,9 @@ public class CreateYouthClubTest extends BaseTest {
         log.info("▶ Step 15: SUBMIT");
         createOrgPage.finalSubmit();
         Assert.assertTrue(createOrgPage.isSubmissionSuccessful(), "[Step 15] Submission failed");
+
+        // Mark used members in Excel as "Picked" with Youth Club name
+        markMembersAsPicked();
 
         // Step 16: Go to Profile
         log.info("▶ Step 16: Go to Profile");
@@ -224,9 +226,14 @@ public class CreateYouthClubTest extends BaseTest {
         if (!freshEmails.isEmpty()) {
             memberEmails.clear();
             memberEmails.addAll(freshEmails);
-            log.info("Using {} members from current run", memberEmails.size());
+            log.info("Using {} members from current run (static list)", memberEmails.size());
         } else {
-            log.warn("No emails from current run — reading from Excel");
+            // Fallback: read from Excel BUT only pick emails from THIS run's startNumber range
+            log.warn("Static list empty — reading from Excel (filtering by current run range)");
+            int runStart = RegisterMembersForYouthClubTest.getStartNumber();
+            int runEnd = runStart + 7; // Up to 8 registered (MEMBER_COUNT)
+            log.info("Current run range: yco{} to yco{}", String.format("%05d", runStart), String.format("%05d", runEnd));
+
             ConfigReader cfg = new ConfigReader();
             String env = cfg.getEnv();
             String youthPath = System.getProperty("user.dir") + File.separator
@@ -243,16 +250,64 @@ public class CreateYouthClubTest extends BaseTest {
                         if (email.startsWith("yco") && email.contains("@")) {
                             try {
                                 int num = Integer.parseInt(email.replace("yco", "").split("@")[0]);
-                                emailsByNumber.put(num, email);
+                                // Only include emails from THIS run's range
+                                if (num >= runStart && num <= runEnd) {
+                                    emailsByNumber.put(num, email);
+                                }
                             } catch (NumberFormatException e) { /* skip */ }
                         }
                     }
-                    java.util.List<String> latest = new java.util.ArrayList<>(emailsByNumber.descendingMap().values());
-                    for (int i = 0; i < Math.min(6, latest.size()); i++) {
-                        if (!latest.get(i).equals(loginEmail)) memberEmails.add(latest.get(i));
+                    java.util.List<String> thisRun = new java.util.ArrayList<>(emailsByNumber.values());
+                    for (int i = 0; i < Math.min(8, thisRun.size()); i++) {
+                        if (!thisRun.get(i).equals(loginEmail)) memberEmails.add(thisRun.get(i));
                     }
+                    log.info("Found {} emails from current run range in Excel", memberEmails.size());
                 }
             } catch (Exception e) { log.warn("Excel read failed: {}", e.getMessage()); }
+        }
+    }
+
+    private void markMembersAsPicked() {
+        // Update YouthClubMembers sheet — mark used members with Youth Club name + "Picked"
+        ConfigReader cfg = new ConfigReader();
+        String env = cfg.getEnv();
+        String filePath = System.getProperty("user.dir") + File.separator
+                + "resources" + File.separator + "Youth_" + env + ".xlsx";
+        File file = new File(filePath);
+        if (!file.exists()) return;
+
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            Workbook wb = new XSSFWorkbook(fis);
+            fis.close();
+
+            Sheet sheet = wb.getSheet("YouthClubMembers");
+            if (sheet == null) return;
+
+            // Get the first 6 member emails that were actually used
+            List<String> usedEmails = memberEmails.subList(0, Math.min(6, memberEmails.size()));
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null || row.getCell(0) == null) continue;
+                String email = row.getCell(0).getStringCellValue().trim();
+                if (usedEmails.contains(email)) {
+                    // Column 2: Youth Club Name
+                    if (row.getCell(1) == null) row.createCell(1);
+                    row.getCell(1).setCellValue(youthClubName);
+                    // Column 3: Status = Picked
+                    if (row.getCell(2) == null) row.createCell(2);
+                    row.getCell(2).setCellValue("Picked");
+                }
+            }
+
+            FileOutputStream fos = new FileOutputStream(file);
+            wb.write(fos);
+            fos.close();
+            wb.close();
+            log.info("✅ Marked {} members as 'Picked' for: {}", usedEmails.size(), youthClubName);
+        } catch (Exception e) {
+            log.warn("Failed to mark members in Excel: {}", e.getMessage());
         }
     }
 
