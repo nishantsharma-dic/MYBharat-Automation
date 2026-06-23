@@ -105,12 +105,12 @@ jobs:
             local method="$1"
             if grep -q "name=\"$method\"" "$REPORT_FILE" 2>/dev/null; then
               if grep -A2 "name=\"$method\"" "$REPORT_FILE" | grep -q 'status="FAIL"'; then
-                echo "❌ FAIL"
+                echo "<span style=\"color:#dc3545;font-weight:bold\">&#10008; FAIL</span>"
               else
-                echo "✅ PASS"
+                echo "<span style=\"color:#28a745;font-weight:bold\">&#10004; PASS</span>"
               fi
             else
-              echo "⏭ SKIP"
+              echo "<span style=\"color:#ffc107;font-weight:bold\">&#9654; SKIP</span>"
             fi
           }
 
