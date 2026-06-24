@@ -64,7 +64,10 @@ public class CreateYouthClubTest extends BaseTest {
              Workbook wb = new XSSFWorkbook(fis)) {
             Sheet sheet = wb.getSheet("UserData");
             if (sheet == null) sheet = wb.getSheetAt(0);
-            Row row = sheet.getRow(sheet.getLastRowNum());
+            // Use second-to-last row to avoid collision with Youth Flow (which uses last row)
+            int targetRow = sheet.getLastRowNum() - 1;
+            if (targetRow < 1) targetRow = sheet.getLastRowNum();
+            Row row = sheet.getRow(targetRow);
             loginEmail = row.getCell(0).getStringCellValue().trim();
         } catch (Exception e) {
             throw new RuntimeException("Failed to read Youth_" + env + ".xlsx: " + e.getMessage(), e);
