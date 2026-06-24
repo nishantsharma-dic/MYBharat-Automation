@@ -261,6 +261,20 @@ public class RegisterMembersForYouthClubTest {
         org.testng.Assert.assertTrue(registeredEmails.size() >= 6,
                 "Expected 6 members registered but got " + registeredEmails.size() +
                 ". Registered: " + registeredEmails);
+
+        // Save to text file for reliable data transfer to CreateYouthClubTest (avoids Excel race condition)
+        try {
+            File reportsDir = new File(System.getProperty("user.dir") + File.separator + "reports");
+            reportsDir.mkdirs();
+            java.io.FileWriter fw = new java.io.FileWriter(reportsDir + File.separator + "registered_members.txt");
+            for (String email : registeredEmails) {
+                fw.write(email + "\n");
+            }
+            fw.close();
+            log.info("✅ Saved {} emails to reports/registered_members.txt", registeredEmails.size());
+        } catch (Exception e) {
+            log.warn("Could not save text file: {}", e.getMessage());
+        }
     }
 
     // =========================================================================
