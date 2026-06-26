@@ -164,13 +164,6 @@ public class OrgApprovalPage extends BasePage {
         if (Boolean.TRUE.equals(clicked)) {
             log.info("✅ Triggered click on green eye icon via jQuery");
             safeSleep(3000);
-
-            // The click opens a new tab — switch to it
-            java.util.ArrayList<String> tabs = new java.util.ArrayList<>(driver.getWindowHandles());
-            if (tabs.size() > 1) {
-                driver.switchTo().window(tabs.get(tabs.size() - 1));
-                log.info("Switched to new tab: {}", driver.getCurrentUrl());
-            }
             waitForPageLoad();
             safeSleep(2000);
         } else {

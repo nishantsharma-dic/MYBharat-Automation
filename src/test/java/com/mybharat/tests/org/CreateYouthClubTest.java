@@ -64,7 +64,10 @@ public class CreateYouthClubTest extends BaseTest {
              Workbook wb = new XSSFWorkbook(fis)) {
             Sheet sheet = wb.getSheet("UserData");
             if (sheet == null) sheet = wb.getSheetAt(0);
-            Row row = sheet.getRow(sheet.getLastRowNum());
+            // Use second-to-last row to avoid collision with Youth Flow (which uses last row)
+            int targetRow = sheet.getLastRowNum() - 1;
+            if (targetRow < 1) targetRow = sheet.getLastRowNum();
+            Row row = sheet.getRow(targetRow);
             loginEmail = row.getCell(0).getStringCellValue().trim();
         } catch (Exception e) {
             throw new RuntimeException("Failed to read Youth_" + env + ".xlsx: " + e.getMessage(), e);
@@ -173,6 +176,16 @@ public class CreateYouthClubTest extends BaseTest {
         createOrgPage.finalSubmit();
         Assert.assertTrue(createOrgPage.isSubmissionSuccessful(), "[Step 15] Submission failed");
 
+        // Save Youth Club name to file for email report
+        try {
+            File reportsDir = new File(System.getProperty("user.dir") + File.separator + "reports");
+            reportsDir.mkdirs();
+            java.io.FileWriter fw = new java.io.FileWriter(reportsDir + File.separator + "youth_club_name.txt");
+            fw.write(youthClubName);
+            fw.close();
+            log.info("Saved youth club name to reports/youth_club_name.txt: {}", youthClubName);
+        } catch (Exception e) { log.warn("Could not save youth club name: {}", e.getMessage()); }
+
         // Mark used members in Excel as "Picked" with Youth Club name
         markMembersAsPicked();
 
@@ -222,49 +235,57 @@ public class CreateYouthClubTest extends BaseTest {
     // =========================================================================
 
     private void loadMemberEmails() {
+        // Priority 1: Static list from registration (same JVM)
         List<String> freshEmails = RegisterMembersForYouthClubTest.getRegisteredEmails();
         if (!freshEmails.isEmpty()) {
             memberEmails.clear();
             memberEmails.addAll(freshEmails);
             log.info("Using {} members from current run (static list)", memberEmails.size());
-        } else {
-            // Fallback: read from Excel BUT only pick emails from THIS run's startNumber range
-            log.warn("Static list empty — reading from Excel (filtering by current run range)");
-            int runStart = RegisterMembersForYouthClubTest.getStartNumber();
-            int runEnd = runStart + 7; // Up to 8 registered (MEMBER_COUNT)
-            log.info("Current run range: yco{} to yco{}", String.format("%05d", runStart), String.format("%05d", runEnd));
+            return;
+        }
 
-            ConfigReader cfg = new ConfigReader();
-            String env = cfg.getEnv();
-            String youthPath = System.getProperty("user.dir") + File.separator
-                    + "resources" + File.separator + "Youth_" + env + ".xlsx";
-            try (FileInputStream fis = new FileInputStream(youthPath);
-                 Workbook wb = new XSSFWorkbook(fis)) {
-                Sheet sheet = wb.getSheet("YouthClubMembers");
-                if (sheet != null) {
-                    java.util.TreeMap<Integer, String> emailsByNumber = new java.util.TreeMap<>();
-                    for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                        Row row = sheet.getRow(i);
-                        if (row == null || row.getCell(0) == null) continue;
+        // Priority 2: Text file (written by verifyAllMembersRegistered — guaranteed on server)
+        log.warn("Static list empty — trying text file");
+        File txtFile = new File(System.getProperty("user.dir") + File.separator + "reports" + File.separator + "registered_members.txt");
+        if (txtFile.exists()) {
+            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(txtFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.isEmpty() && !line.equals(loginEmail)) {
+                        memberEmails.add(line);
+                    }
+                }
+                log.info("Loaded {} members from text file", memberEmails.size());
+            } catch (Exception e) {
+                log.warn("Text file read failed: {}", e.getMessage());
+            }
+            if (!memberEmails.isEmpty()) return;
+        }
+
+        // Priority 3: Excel fallback (last resort)
+        log.warn("Text file not found — reading from Excel");
+        ConfigReader cfg = new ConfigReader();
+        String env = cfg.getEnv();
+        String youthPath = System.getProperty("user.dir") + File.separator
+                + "resources" + File.separator + "Youth_" + env + ".xlsx";
+        try (FileInputStream fis = new FileInputStream(youthPath);
+             Workbook wb = new XSSFWorkbook(fis)) {
+            Sheet sheet = wb.getSheet("YouthClubMembers");
+            if (sheet != null) {
+                // Take last 8 yco entries (most recent)
+                for (int i = sheet.getLastRowNum(); i >= 1 && memberEmails.size() < 8; i--) {
+                    Row row = sheet.getRow(i);
+                    if (row != null && row.getCell(0) != null) {
                         String email = row.getCell(0).getStringCellValue().trim();
-                        if (email.startsWith("yco") && email.contains("@")) {
-                            try {
-                                int num = Integer.parseInt(email.replace("yco", "").split("@")[0]);
-                                // Only include emails from THIS run's range
-                                if (num >= runStart && num <= runEnd) {
-                                    emailsByNumber.put(num, email);
-                                }
-                            } catch (NumberFormatException e) { /* skip */ }
+                        if (email.startsWith("yco") && email.contains("@") && !email.equals(loginEmail)) {
+                            memberEmails.add(email);
                         }
                     }
-                    java.util.List<String> thisRun = new java.util.ArrayList<>(emailsByNumber.values());
-                    for (int i = 0; i < Math.min(8, thisRun.size()); i++) {
-                        if (!thisRun.get(i).equals(loginEmail)) memberEmails.add(thisRun.get(i));
-                    }
-                    log.info("Found {} emails from current run range in Excel", memberEmails.size());
                 }
-            } catch (Exception e) { log.warn("Excel read failed: {}", e.getMessage()); }
-        }
+                log.info("Found {} emails from Excel", memberEmails.size());
+            }
+        } catch (Exception e) { log.warn("Excel read failed: {}", e.getMessage()); }
     }
 
     private void markMembersAsPicked() {
@@ -374,30 +395,20 @@ public class CreateYouthClubTest extends BaseTest {
 
         ConfigReader cfg = new ConfigReader();
         org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         String mailbox = member6Email.split("@")[0];
 
-        // Navigate and check if logged out
-        driver.get(cfg.getUrl());
-        safeSleep(4000);
-        loginPage.closePopupIfPresent();
-        safeSleep(500);
+        // ROBUST: Clear all cookies + local storage to force clean logout state
+        driver.manage().deleteAllCookies();
+        try { js.executeScript("window.localStorage.clear(); window.sessionStorage.clear();"); } catch (Exception e) { /* ignore */ }
+        log.info("  Cleared cookies and storage — fresh session");
 
-        // Force logout if still logged in
-        try {
-            WebElement userMenu = driver.findElement(By.xpath("//a[@id='user-options'] | //button[contains(@class,'rounded-full')]"));
-            if (userMenu.isDisplayed()) {
-                js.executeScript("arguments[0].click();", userMenu);
-                safeSleep(1500);
-                WebElement logoutLink = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//a[contains(@class,'firebase-profile-logout-btn')] | //a[contains(text(),'Log Out')]")));
-                js.executeScript("arguments[0].click();", logoutLink);
-                safeSleep(2000);
-                driver.get(cfg.getUrl());
-                safeSleep(4000);
-                loginPage.closePopupIfPresent();
-                safeSleep(500);
-            }
-        } catch (Exception e) { /* not logged in */ }
+        // Navigate to home page (will show Sign In since no session)
+        driver.get(cfg.getUrl());
+        safeSleep(5000);
+        loginPage.closePopupIfPresent();
+        safeSleep(1000);
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
         // Sign In - try multiple locators with 40s timeout (server page load varies)
         WebElement signIn = null;
