@@ -37,10 +37,10 @@ public class VOYouthLoginTest extends BaseTest {
             // Also clear local/session storage
             org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
             js.executeScript("try{window.localStorage.clear();window.sessionStorage.clear();}catch(e){}");
-            Thread.sleep(1000);
+            safeSleep(500);
             // Navigate fresh to homepage
             driver.navigate().refresh();
-            Thread.sleep(5000);
+            safeSleep(2000);
         } catch (Exception e) {
             // ignore
         }
@@ -61,4 +61,8 @@ public class VOYouthLoginTest extends BaseTest {
 
         log.info("=== ✅ Youth Login PASSED — logged in as: {} ===", youthLoginEmail);
     }
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
 }

@@ -93,7 +93,7 @@ public class VOEventCreatePage extends BasePage {
     private void waitForPageReady() {
         waitForPageLoad();
         dismissOverlay();
-        safeSleep(500);
+        safeSleep(300);
     }
 
     /**
@@ -149,7 +149,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.error("Event Title input not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -179,7 +179,7 @@ public class VOEventCreatePage extends BasePage {
                 log.warn("Description not found: {}", e2.getMessage());
             }
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     // =========================================================================
@@ -204,7 +204,7 @@ public class VOEventCreatePage extends BasePage {
                         "arguments[0].style.opacity='1';" +
                         "arguments[0].style.position='relative';", fileInput);
             }
-            Thread.sleep(300);
+            safeSleep(200);
 
             if (fileInputs.size() >= 2) {
                 // First input = Logo, Second input = Banner
@@ -266,7 +266,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Event Template dropdown not found: {}", e.getMessage());
         }
-        Thread.sleep(500);
+        safeSleep(300);
     }
 
     /**
@@ -286,7 +286,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Specialization dropdown not found: {}", e.getMessage());
         }
-        Thread.sleep(500);
+        safeSleep(300);
     }
 
     /**
@@ -313,7 +313,7 @@ public class VOEventCreatePage extends BasePage {
                 log.warn("Event Mode completely failed: {}", e2.getMessage());
             }
         }
-        Thread.sleep(500);
+        safeSleep(300);
     }
 
     /**
@@ -327,7 +327,7 @@ public class VOEventCreatePage extends BasePage {
     private void fillActivityDates() throws InterruptedException {
         log.info("Filling Activity Dates...");
         scrollPage(300);
-        Thread.sleep(500);
+        safeSleep(300);
 
         LocalDate startDate = LocalDate.now().plusMonths(1).withDayOfMonth(15);
         LocalDate endDate = LocalDate.now().plusMonths(2).withDayOfMonth(20);
@@ -345,7 +345,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Start Date failed: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Event start time (id=event_start_time, type=time)
         try {
@@ -357,7 +357,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Start Time failed: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Event end date (id=event_to_date)
         try {
@@ -370,7 +370,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("End Date failed: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Event end time (id=event_end_time, type=time)
         try {
@@ -382,7 +382,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("End Time failed: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -391,7 +391,7 @@ public class VOEventCreatePage extends BasePage {
     private void fillEventTimeTable() throws InterruptedException {
         log.info("Filling Event Time Table...");
         scrollPage(300);
-        Thread.sleep(500);
+        safeSleep(300);
 
         // Activity Date (same as start date)
         try {
@@ -451,7 +451,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Activity dropdown not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -460,7 +460,7 @@ public class VOEventCreatePage extends BasePage {
     private void fillEventPartnerName() throws InterruptedException {
         log.info("Filling Event Partner Name...");
         scrollPage(300);
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Use the same name as event title (createdEventName) for consistency
         eventName = createdEventName;
@@ -474,7 +474,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Event Partner Name not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -483,7 +483,7 @@ public class VOEventCreatePage extends BasePage {
     private void fillEventLocation() throws InterruptedException {
         log.info("Filling Event Location...");
         scrollPage(300);
-        Thread.sleep(500);
+        safeSleep(300);
 
         // Address
         try {
@@ -544,7 +544,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Pincode not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -557,7 +557,7 @@ public class VOEventCreatePage extends BasePage {
     private void fillEventOrganizerDetails() throws InterruptedException {
         log.info("Filling Event Organizer Details...");
         scrollPage(500);
-        Thread.sleep(500);
+        safeSleep(300);
 
         // Organizer Name
         try {
@@ -606,7 +606,7 @@ public class VOEventCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Email not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -618,7 +618,7 @@ public class VOEventCreatePage extends BasePage {
 
         // Scroll to very bottom of page to make Preview button visible
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(1000);
+        safeSleep(500);
 
         String currentUrl = driver.getCurrentUrl();
 
@@ -629,7 +629,7 @@ public class VOEventCreatePage extends BasePage {
                             + " | //button[@name='saveDraft']"
                             + " | //button[contains(text(),'Preview')]")));
             scrollToElement(previewBtn);
-            Thread.sleep(500);
+            safeSleep(300);
 
             // Click using form submit approach (since button is type="submit")
             ((JavascriptExecutor) driver).executeScript(
@@ -673,7 +673,7 @@ public class VOEventCreatePage extends BasePage {
                             + " | //a[contains(text(),'Publish')]"
                             + " | //button[contains(text(),'Submit')]")));
             scrollToElement(publishBtn);
-            Thread.sleep(300);
+            safeSleep(200);
             safeClick(publishBtn);
             log.info("✅ Clicked Publish");
         } catch (Exception e) {
@@ -681,7 +681,7 @@ public class VOEventCreatePage extends BasePage {
         }
 
         waitForPageLoad();
-        safeSleep(2000); // Wait for event to be indexed on public side
+        safeSleep(1000); // Wait for event to be indexed on public side
         dismissOverlay();
         log.info("✅ Event published successfully");
     }
@@ -705,7 +705,7 @@ public class VOEventCreatePage extends BasePage {
                             + " | //span[contains(text(),'Maynak') or contains(text(),'Singh')]/ancestor::a"
                             + " | (//nav//a[contains(@class,'dropdown')])[last()]")));
             safeClick(profileIcon);
-            Thread.sleep(1000);
+            safeSleep(500);
             log.info("✅ Clicked profile dropdown");
         } catch (Exception e) {
             // JS fallback: find and click the profile dropdown
@@ -714,7 +714,7 @@ public class VOEventCreatePage extends BasePage {
                 ((JavascriptExecutor) driver).executeScript(
                         "var links = document.querySelectorAll('a[data-bs-toggle=\"dropdown\"], a[data-toggle=\"dropdown\"], a.dropdown-toggle');" +
                         "if(links.length > 0) { links[links.length-1].click(); }");
-                Thread.sleep(1000);
+                safeSleep(500);
                 log.info("✅ Clicked profile dropdown (JS)");
             } catch (Exception e2) {
                 log.warn("Profile dropdown JS fallback failed: {}", e2.getMessage());

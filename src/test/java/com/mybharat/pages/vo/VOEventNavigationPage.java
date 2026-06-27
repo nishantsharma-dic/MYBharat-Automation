@@ -56,7 +56,7 @@ public class VOEventNavigationPage extends BasePage {
                     By.xpath("//a[normalize-space()='Events']"
                             + " | //span[normalize-space()='Events']/ancestor::a")));
             scrollToElement(eventsLink);
-            Thread.sleep(300);
+            safeSleep(300);
             try {
                 eventsLink.click();
             } catch (Exception e) {
@@ -69,7 +69,7 @@ public class VOEventNavigationPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         dismissOverlay();
         log.info("✅ On Events page. URL: {}", driver.getCurrentUrl());
     }
@@ -91,7 +91,7 @@ public class VOEventNavigationPage extends BasePage {
                             + " | //*[contains(text(),'+ Add Event')]"
                             + " | //a[contains(@href,'add_event')]")));
             scrollToElement(addBtn);
-            Thread.sleep(300);
+            safeSleep(300);
             safeClick(addBtn);
             log.info("✅ Clicked Add Event");
         } catch (Exception e) {
@@ -100,7 +100,7 @@ public class VOEventNavigationPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         dismissOverlay();
         log.info("✅ On Add Event page. URL: {}", driver.getCurrentUrl());
     }
@@ -119,7 +119,11 @@ public class VOEventNavigationPage extends BasePage {
                     "var loader = document.getElementById('loader2');" +
                     "if(loader) loader.style.display='none';" +
                     "try { $('#overlay').hide(); $('#loader2').hide(); } catch(e) {}");
-            try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+            safeSleep(300);
         }
     }
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
 }

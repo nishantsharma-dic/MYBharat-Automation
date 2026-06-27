@@ -65,12 +65,12 @@ public class VOTemplateNodalDyoPage extends BasePage {
         log.info("Navigating to profile: {}", profileUrl);
         driver.get(profileUrl);
         waitForPageLoad();
-        Thread.sleep(3000);
+        safeSleep(1500);
 
         // Scroll to bottom of the page
         log.info("Scrolling to bottom of profile page...");
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Click "View More" button in Organizations section
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -78,7 +78,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
             WebElement viewMoreBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//a[normalize-space()='View More']")));
             scrollToElement(viewMoreBtn);
-            Thread.sleep(300);
+            safeSleep(300);
             viewMoreBtn.click();
             log.info("✅ Clicked 'View More' button");
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         log.info("On organizations page. URL: {}", driver.getCurrentUrl());
 
         // Click on the first organisation name link in the table
@@ -113,7 +113,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
                     By.xpath("//table//tbody//tr[1]//td[2]//a")));
             String orgName = orgLink.getText();
             scrollToElement(orgLink);
-            Thread.sleep(300);
+            safeSleep(300);
             orgLink.click();
             log.info("✅ Clicked organisation: {}", orgName);
         } catch (Exception e) {
@@ -131,7 +131,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         dismissOverlay();
         log.info("✅ Navigated to organisation page. URL: {}", driver.getCurrentUrl());
     }
@@ -152,7 +152,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
             ((JavascriptExecutor) driver).executeScript(
                     "var overlay = document.getElementById('overlay');" +
                     "if(overlay) overlay.style.display='none';");
-            Thread.sleep(500);
+            safeSleep(300);
             log.info("Overlay force-hidden via JS");
         }
 
@@ -162,7 +162,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
             WebElement voTab = wait.until(ExpectedConditions.presenceOfElementLocated(
                     By.xpath("//span[normalize-space()='Volunteer for Bharat']")));
             scrollToElement(voTab);
-            Thread.sleep(500);
+            safeSleep(300);
             try {
                 voTab.click();
             } catch (Exception clickEx) {
@@ -175,7 +175,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         dismissOverlay();
         log.info("✅ On Volunteer for Bharat page. URL: {}", driver.getCurrentUrl());
     }
@@ -195,7 +195,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
                             + " | //a[contains(text(),'Templates -Nodal/DYO')]"
                             + " | //a[contains(@href,'event_template')]")));
             scrollToElement(templatesLink);
-            Thread.sleep(300);
+            safeSleep(300);
             safeClick(templatesLink);
             log.info("✅ Clicked 'Templates -Nodal/DYO'");
         } catch (Exception e) {
@@ -204,7 +204,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         dismissOverlay();
         log.info("✅ On Templates page. URL: {}", driver.getCurrentUrl());
     }
@@ -224,7 +224,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
                             + " | //button[normalize-space()='Create Template']"
                             + " | //a[contains(@href,'add_event_template')]")));
             scrollToElement(createBtn);
-            Thread.sleep(300);
+            safeSleep(300);
             safeClick(createBtn);
             log.info("✅ Clicked 'Create Template'");
         } catch (Exception e) {
@@ -233,7 +233,7 @@ public class VOTemplateNodalDyoPage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(1000);
         dismissOverlay();
         log.info("✅ On Add Template page. URL: {}", driver.getCurrentUrl());
     }
@@ -250,7 +250,11 @@ public class VOTemplateNodalDyoPage extends BasePage {
                     "var o = document.getElementById('overlay'); if(o) o.style.display='none';" +
                     "var l = document.getElementById('loader2'); if(l) l.style.display='none';" +
                     "try { $('#overlay').hide(); $('#loader2').hide(); $('.loader').hide(); } catch(e) {}");
-            try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+            safeSleep(300);
         }
     }
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
 }

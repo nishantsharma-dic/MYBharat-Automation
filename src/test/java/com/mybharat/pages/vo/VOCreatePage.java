@@ -88,7 +88,7 @@ public class VOCreatePage extends BasePage {
         for (int attempt = 0; attempt < 5; attempt++) {
             dismissOverlay();
             scrollPage(500);
-            Thread.sleep(500);
+            safeSleep(300);
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
@@ -105,7 +105,7 @@ public class VOCreatePage extends BasePage {
                 try {
                     WebElement createBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
                     scrollToElement(createBtn);
-                    Thread.sleep(300);
+                    safeSleep(200);
                     safeClick(createBtn);
                     log.info("✅ Clicked Create button ({})", xpath);
                     clicked = true;
@@ -120,7 +120,7 @@ public class VOCreatePage extends BasePage {
                 throw new RuntimeException("Create button not found on Add Template form");
             }
 
-            Thread.sleep(3000);
+            safeSleep(1500);
             dismissOverlay();
 
             // Check for "Duplicate category name" validation error
@@ -147,7 +147,7 @@ public class VOCreatePage extends BasePage {
                         By.xpath("//input[@placeholder='Enter the Event Template Name' or @name='category_name']"));
                 nameInput.clear();
                 nameInput.sendKeys(newName);
-                Thread.sleep(500);
+                safeSleep(300);
                 log.info("Changed template name to: {}", newName);
             } catch (Exception e) {
                 log.warn("Could not change template name: {}", e.getMessage());
@@ -179,7 +179,7 @@ public class VOCreatePage extends BasePage {
         scrollToElement(nameInput);
         nameInput.clear();
         nameInput.sendKeys(uniqueName);
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Click the toggle switch next to Template Name
         clickNearestToggle(nameInput);
@@ -231,7 +231,7 @@ public class VOCreatePage extends BasePage {
             // It's pre-selected in the screenshot, so just continue
             log.info("Event type radio not found — likely pre-selected, continuing");
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -256,7 +256,7 @@ public class VOCreatePage extends BasePage {
                 WebElement select2 = driver.findElement(
                         By.xpath("//span[contains(@class,'select2')]"));
                 select2.click();
-                Thread.sleep(500);
+                safeSleep(300);
                 WebElement firstOption = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                         ExpectedConditions.elementToBeClickable(
                                 By.xpath("//li[contains(@class,'select2-results__option')]")));
@@ -266,7 +266,7 @@ public class VOCreatePage extends BasePage {
                 log.warn("Specialization selection failed: {}", e2.getMessage());
             }
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -287,7 +287,7 @@ public class VOCreatePage extends BasePage {
         } catch (Exception e) {
             log.info("Sub Specialization not available or not required — skipping");
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -312,7 +312,7 @@ public class VOCreatePage extends BasePage {
                 log.info("Checkbox '{}' not found — skipping", type);
             }
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -339,7 +339,7 @@ public class VOCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Event Medium dropdown not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -368,7 +368,7 @@ public class VOCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Description textarea not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -378,23 +378,23 @@ public class VOCreatePage extends BasePage {
     private void fillEventDates() throws InterruptedException {
         log.info("Filling Event Dates and Times...");
         scrollPage(300);
-        Thread.sleep(500);
+        safeSleep(300);
 
         // Event Start Date (1 month ahead, day 15)
         setDateField("start_date", 1);
-        Thread.sleep(500);
+        safeSleep(300);
 
         // Event Start Time
         setTimeField("start_time", "09:00");
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Event End Date (2 months ahead, day 15)
         setDateField("end_date", 2);
-        Thread.sleep(500);
+        safeSleep(300);
 
         // Event End Time
         setTimeField("end_time", "17:00");
-        Thread.sleep(300);
+        safeSleep(200);
     }
 
     /**
@@ -405,7 +405,7 @@ public class VOCreatePage extends BasePage {
     private void fillThemeAndActivities() throws InterruptedException {
         log.info("Filling Theme and Activities...");
         scrollPage(400);
-        Thread.sleep(500);
+        safeSleep(300);
 
         String[] themes = {
                 "Swachh Bharat Seva", "Youth Empowerment", "Green India Campaign",
@@ -431,7 +431,7 @@ public class VOCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Theme input not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Activity 1 (required)
         try {
@@ -445,7 +445,7 @@ public class VOCreatePage extends BasePage {
         } catch (Exception e) {
             log.warn("Activity 1 not found: {}", e.getMessage());
         }
-        Thread.sleep(300);
+        safeSleep(200);
 
         // Activity 2 (optional)
         try {
@@ -475,7 +475,7 @@ public class VOCreatePage extends BasePage {
                     scrollToElement(toggle);
                     jsClick(toggle);
                     clicked++;
-                    Thread.sleep(200);
+                    safeSleep(150);
                 }
             } catch (Exception ignored) {}
         }

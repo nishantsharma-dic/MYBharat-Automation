@@ -66,7 +66,7 @@ public class VOLoginPage extends BasePage {
         enterEmail(loginEmail);
         clickConsent();
         clickLoginToSendOTP();
-        Thread.sleep(5000); // Wait for OTP email to arrive
+        safeSleep(2000); // Wait for OTP email to arrive
         fetchOTPFromYopmail(loginEmail);
         clickVerifyOTP();
 

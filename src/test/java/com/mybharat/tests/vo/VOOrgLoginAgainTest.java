@@ -32,9 +32,9 @@ public class VOOrgLoginAgainTest extends BaseTest {
             driver.manage().deleteAllCookies();
             org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
             js.executeScript("try{window.localStorage.clear();window.sessionStorage.clear();}catch(e){}");
-            Thread.sleep(1000);
+            safeSleep(500);
             driver.navigate().refresh();
-            Thread.sleep(5000);
+            safeSleep(2000);
         } catch (Exception e) {
             // ignore
         }
@@ -51,7 +51,7 @@ public class VOOrgLoginAgainTest extends BaseTest {
         // Navigate to profile page after login (popup already dismissed by login)
         String baseUrl = new com.mybharat.utils.ConfigReader().getUrl();
         driver.get(baseUrl + "/youth-profile");
-        Thread.sleep(3000);
+        safeSleep(1500);
 
         String currentUrl = driver.getCurrentUrl();
         Assert.assertFalse(currentUrl.contains("login"),
@@ -59,4 +59,8 @@ public class VOOrgLoginAgainTest extends BaseTest {
 
         log.info("=== ✅ Org Login Again PASSED — logged in as: {} ===", voLoginPage.getLoginEmail());
     }
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
 }

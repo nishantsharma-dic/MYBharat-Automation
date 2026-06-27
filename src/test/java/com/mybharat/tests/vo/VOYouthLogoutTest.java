@@ -32,14 +32,14 @@ public class VOYouthLogoutTest extends BaseTest {
     @Test(priority = 1, groups = {"vo", "youth-logout"})
     public void logoutYouthUser() throws Exception {
         log.info("=== Starting: Youth User Logout ===");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Click profile dropdown
         try {
             ((JavascriptExecutor) driver).executeScript(
                     "var links = document.querySelectorAll('a[data-bs-toggle=\"dropdown\"], a[data-toggle=\"dropdown\"], a.dropdown-toggle');" +
                     "if(links.length > 0) { links[links.length-1].click(); }");
-            Thread.sleep(1000);
+            safeSleep(500);
             log.info("✅ Clicked profile dropdown");
         } catch (Exception e) {
             log.warn("Profile dropdown click failed");
@@ -51,7 +51,7 @@ public class VOYouthLogoutTest extends BaseTest {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//a[normalize-space()='Log Out'] | //a[contains(text(),'Log Out')]")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", logoutBtn);
-            Thread.sleep(5000);
+            safeSleep(2000);
             log.info("✅ Clicked Log Out");
         } catch (Exception e) {
             ((JavascriptExecutor) driver).executeScript(
@@ -59,10 +59,14 @@ public class VOYouthLogoutTest extends BaseTest {
                     "for(var i=0; i<links.length; i++) {" +
                     "  if(links[i].textContent.trim() === 'Log Out') { links[i].click(); break; }" +
                     "}");
-            Thread.sleep(5000);
+            safeSleep(2000);
             log.info("✅ Clicked Log Out (JS fallback)");
         }
 
         log.info("=== ✅ Youth Logout PASSED ===");
     }
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
 }

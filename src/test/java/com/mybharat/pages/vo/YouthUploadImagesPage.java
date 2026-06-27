@@ -33,7 +33,7 @@ public class YouthUploadImagesPage extends BasePage {
         log.info("Clicking 'Images by Youth' tab...");
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight * 0.7);");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         try {
             WebElement youthTab = wait.until(ExpectedConditions.elementToBeClickable(
@@ -44,9 +44,9 @@ public class YouthUploadImagesPage extends BasePage {
                             + " | //a[@id='profile-tab']"
                             + " | //button[contains(text(),'Images by Youth')]")));
             scrollToElement(youthTab);
-            Thread.sleep(300);
+            safeSleep(300);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", youthTab);
-            Thread.sleep(2000);
+            safeSleep(1000);
             log.info("✅ Clicked 'Images by Youth' tab");
         } catch (Exception e) {
             log.warn("Images by Youth tab not found via XPath, trying JS...");
@@ -58,7 +58,7 @@ public class YouthUploadImagesPage extends BasePage {
                     "    tabs[i].click(); break;" +
                     "  }" +
                     "}");
-            Thread.sleep(2000);
+            safeSleep(1000);
             log.info("✅ Clicked 'Images by Youth' tab (JS fallback)");
         }
     }
@@ -70,15 +70,15 @@ public class YouthUploadImagesPage extends BasePage {
             WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[contains(text(),'Add Images') or @id='upload-tab'] | //a[contains(text(),'Add Images')]")));
             scrollToElement(addBtn);
-            Thread.sleep(300);
+            safeSleep(300);
             addBtn.click();
-            Thread.sleep(1000);
+            safeSleep(500);
             log.info("✅ Clicked 'Add Images for this Event'");
         } catch (Exception e) {
             log.warn("Add Images button not found, trying JS...");
             try {
                 ((JavascriptExecutor) driver).executeScript("addGalleryMedia();");
-                Thread.sleep(2000);
+                safeSleep(1000);
                 log.info("✅ Called addGalleryMedia() directly");
             } catch (Exception e2) {
                 ((JavascriptExecutor) driver).executeScript(
@@ -88,7 +88,7 @@ public class YouthUploadImagesPage extends BasePage {
                         "    btns[i].style.display='block'; btns[i].click(); break;" +
                         "  }" +
                         "}");
-                Thread.sleep(2000);
+                safeSleep(1000);
                 log.info("✅ Clicked 'Add Images' (JS fallback)");
             }
         }
@@ -104,14 +104,14 @@ public class YouthUploadImagesPage extends BasePage {
                 By.cssSelector("input#image-upload, input.uploadGallery, input[type='file']")));
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].style.display='block';arguments[0].style.opacity='1';arguments[0].classList.remove('hidden');", fileInput);
-        Thread.sleep(300);
+        safeSleep(300);
 
         for (int i = 0; i < 5; i++) {
             fileInput.sendKeys(imagePath);
-            Thread.sleep(1000);
+            safeSleep(500);
         }
         log.info("✅ Uploaded 5 images");
-        Thread.sleep(1000);
+        safeSleep(500);
     }
 
     public void handleMaxImageValidation() throws InterruptedException {
@@ -126,9 +126,9 @@ public class YouthUploadImagesPage extends BasePage {
             if (!deleteIcons.isEmpty()) {
                 WebElement lastDelete = deleteIcons.get(deleteIcons.size() - 1);
                 ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", lastDelete);
-                Thread.sleep(300);
+                safeSleep(300);
                 lastDelete.click();
-                Thread.sleep(1000);
+                safeSleep(500);
                 log.info("✅ Deleted last image");
             }
         } catch (TimeoutException e) {
@@ -143,9 +143,13 @@ public class YouthUploadImagesPage extends BasePage {
         WebElement sendBtn = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//button[@id='gallery_publish_btn' or contains(text(),'Send For Approval')]")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", sendBtn);
-        Thread.sleep(500);
+        safeSleep(300);
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", sendBtn);
-        Thread.sleep(3000);
+        safeSleep(1500);
         log.info("✅ Clicked 'Send For Approval'");
     }
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
 }

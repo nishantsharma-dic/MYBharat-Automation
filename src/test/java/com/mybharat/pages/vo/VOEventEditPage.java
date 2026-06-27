@@ -27,13 +27,17 @@ public class VOEventEditPage extends BasePage {
         super(driver);
     }
 
+    private void safeSleep(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
     /**
      * Scroll to top of the page.
      */
     public void scrollToTop() throws InterruptedException {
         log.info("Scrolling to top of page...");
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0);");
-        Thread.sleep(1500);
+        safeSleep(1000);
         log.info("✅ Scrolled to top");
     }
 
@@ -51,7 +55,7 @@ public class VOEventEditPage extends BasePage {
                     By.xpath("(//a[normalize-space()='Edit' or normalize-space()='Edit Event']"
                             + " | //button[normalize-space()='Edit' or normalize-space()='Edit Event'])[1]")));
             scrollToElement(editBtn);
-            Thread.sleep(300);
+            safeSleep(200);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", editBtn);
             log.info("✅ Clicked Edit button");
         } catch (Exception e) {
@@ -65,7 +69,8 @@ public class VOEventEditPage extends BasePage {
             log.info("✅ Clicked Edit button (JS fallback)");
         }
 
-        Thread.sleep(5000);
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
         waitForPageLoad();
         dismissOverlay();
         log.info("✅ On Edit Event page. URL: {}", driver.getCurrentUrl());
@@ -82,7 +87,7 @@ public class VOEventEditPage extends BasePage {
         // Step 1: Scroll down on profile page
         log.info("Scrolling down on profile page...");
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Step 2: Click "View More"
         try {
@@ -90,7 +95,7 @@ public class VOEventEditPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//a[contains(text(),'View More')]")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", viewMore);
-            Thread.sleep(3000);
+            safeSleep(1500);
             waitForPageLoad();
             dismissOverlay();
             log.info("✅ Clicked View More");
@@ -98,7 +103,7 @@ public class VOEventEditPage extends BasePage {
             log.warn("View More not found, trying direct navigation...");
             String baseUrl = config.getUrl();
             driver.get(baseUrl + "/mybharat_organizations");
-            Thread.sleep(3000);
+            safeSleep(1500);
             dismissOverlay();
         }
 
@@ -108,9 +113,9 @@ public class VOEventEditPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//table//tbody//tr[1]//td[2]//a")));
             scrollToElement(org);
-            Thread.sleep(300);
+            safeSleep(200);
             org.click();
-            Thread.sleep(3000);
+            safeSleep(1500);
             waitForPageLoad();
             dismissOverlay();
             log.info("✅ Clicked org name: {}", org.getText());
@@ -121,7 +126,7 @@ public class VOEventEditPage extends BasePage {
                         ExpectedConditions.elementToBeClickable(
                                 By.xpath("//table//tbody//a[1]")));
                 org.click();
-                Thread.sleep(3000);
+                safeSleep(1500);
                 waitForPageLoad();
                 dismissOverlay();
                 log.info("✅ Clicked org name (fallback)");
@@ -136,7 +141,7 @@ public class VOEventEditPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//a[normalize-space()='Events'] | //span[normalize-space()='Events']/ancestor::a")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", eventsLink);
-            Thread.sleep(3000);
+            safeSleep(1500);
             waitForPageLoad();
             dismissOverlay();
             log.info("✅ Clicked Events tab");
@@ -161,7 +166,7 @@ public class VOEventEditPage extends BasePage {
             WebElement editBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("(//a[normalize-space()='Edit Event'] | //button[normalize-space()='Edit Event'])[1]")));
             scrollToElement(editBtn);
-            Thread.sleep(300);
+            safeSleep(200);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", editBtn);
             log.info("✅ Clicked 'Edit Event' on first card");
         } catch (Exception e) {
@@ -174,7 +179,8 @@ public class VOEventEditPage extends BasePage {
             log.info("✅ Clicked 'Edit Event' (JS fallback)");
         }
 
-        Thread.sleep(5000);
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
         waitForPageLoad();
         dismissOverlay();
         log.info("✅ On Edit Event page. URL: {}", driver.getCurrentUrl());
@@ -191,7 +197,7 @@ public class VOEventEditPage extends BasePage {
 
         // Scroll to bottom of page
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         try {
             WebElement saveBtn = wait.until(ExpectedConditions.elementToBeClickable(
@@ -200,7 +206,7 @@ public class VOEventEditPage extends BasePage {
                             + " | //button[contains(text(),'Save as draft')]"
                             + " | //input[@value='Save as draft']")));
             scrollToElement(saveBtn);
-            Thread.sleep(300);
+            safeSleep(200);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", saveBtn);
             log.info("✅ Clicked 'Save as draft'");
         } catch (Exception e) {
@@ -215,7 +221,8 @@ public class VOEventEditPage extends BasePage {
             log.info("✅ Clicked 'Save as draft' (JS fallback)");
         }
 
-        Thread.sleep(5000);
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
         waitForPageLoad();
         dismissOverlay();
         log.info("✅ Event saved as draft");
@@ -227,7 +234,7 @@ public class VOEventEditPage extends BasePage {
      */
     public void clickLogoAndLogout() throws InterruptedException {
         log.info("Clicking MYBharat logo to go to homepage...");
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Click on logo (top-left)
         try {
@@ -238,7 +245,7 @@ public class VOEventEditPage extends BasePage {
                                     + " | (//nav//a)[1]"
                                     + " | //a[contains(@href, '/home') or @href='/']")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", logo);
-            Thread.sleep(3000);
+            safeSleep(1500);
             waitForPageLoad();
             dismissOverlay();
             log.info("✅ Clicked logo - on homepage");
@@ -246,20 +253,20 @@ public class VOEventEditPage extends BasePage {
             log.warn("Logo not found, navigating to homepage...");
             String baseUrl = config.getUrl();
             driver.get(baseUrl);
-            Thread.sleep(3000);
+            safeSleep(1500);
             dismissOverlay();
         }
 
         // Now logout
         log.info("Logging out org user...");
-        Thread.sleep(1000);
+        safeSleep(500);
 
         // Click profile dropdown
         try {
             ((JavascriptExecutor) driver).executeScript(
                     "var links = document.querySelectorAll('a[data-bs-toggle=\"dropdown\"], a[data-toggle=\"dropdown\"], a.dropdown-toggle');" +
                     "if(links.length > 0) { links[links.length-1].click(); }");
-            Thread.sleep(1000);
+            safeSleep(500);
             log.info("✅ Clicked profile dropdown");
         } catch (Exception e) {
             log.warn("Profile dropdown click failed");
@@ -271,7 +278,7 @@ public class VOEventEditPage extends BasePage {
                     ExpectedConditions.elementToBeClickable(
                             By.xpath("//a[normalize-space()='Log Out'] | //a[contains(text(),'Log Out')]")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", logoutBtn);
-            Thread.sleep(5000);
+            safeSleep(1000);
             log.info("✅ Clicked Log Out");
         } catch (Exception e) {
             ((JavascriptExecutor) driver).executeScript(
@@ -279,7 +286,7 @@ public class VOEventEditPage extends BasePage {
                     "for(var i=0; i<links.length; i++) {" +
                     "  if(links[i].textContent.trim() === 'Log Out') { links[i].click(); break; }" +
                     "}");
-            Thread.sleep(5000);
+            safeSleep(1000);
             log.info("✅ Clicked Log Out (JS fallback)");
         }
 
@@ -297,6 +304,6 @@ public class VOEventEditPage extends BasePage {
                     "var l=document.getElementById('loader2');if(l)l.style.display='none';" +
                     "try{$('#overlay').hide();$('#loader2').hide();}catch(e){}");
         }
-        try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+        safeSleep(300);
     }
 }
