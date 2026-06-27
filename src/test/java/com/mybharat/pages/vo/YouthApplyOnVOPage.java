@@ -28,7 +28,7 @@ public class YouthApplyOnVOPage extends BasePage {
         String baseUrl = config.getUrl();
         driver.get(baseUrl + "/youth-profile");
         waitForPageLoad();
-        Thread.sleep(3000);
+        Thread.sleep(1000);
         dismissOverlay();
 
         WebElement voLink = wait.until(ExpectedConditions.elementToBeClickable(
@@ -36,8 +36,8 @@ public class YouthApplyOnVOPage extends BasePage {
         scrollToElement(voLink);
         Thread.sleep(300);
         voLink.click();
-        Thread.sleep(3000);
         waitForPageLoad();
+        Thread.sleep(1000);
         dismissOverlay();
         log.info("✅ On Volunteer for Bharat page. URL: {}", driver.getCurrentUrl());
     }
@@ -87,7 +87,7 @@ public class YouthApplyOnVOPage extends BasePage {
             } catch (Exception e2) { /* skip */ }
         }
 
-        Thread.sleep(5000);
+        Thread.sleep(2000); waitForPageLoad();
         dismissOverlay();
         log.info("✅ Search complete");
     }
@@ -106,7 +106,7 @@ public class YouthApplyOnVOPage extends BasePage {
     public boolean tryClickEventCard(String eventName) throws InterruptedException {
         log.info("Trying to click event card: {}", eventName);
         dismissOverlay();
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         // Strategy 1: Find clickable cards/links that contain the event name text
         String shortName = eventName.toLowerCase().trim();
@@ -173,7 +173,7 @@ public class YouthApplyOnVOPage extends BasePage {
                 ((JavascriptExecutor) driver).executeScript("arguments[0].click();", card);
             }
 
-            Thread.sleep(4000);
+            Thread.sleep(2000); waitForPageLoad();
             dismissOverlay();
 
             // Check if page loaded (not "page not found")
@@ -181,7 +181,8 @@ public class YouthApplyOnVOPage extends BasePage {
             if (pageSource.contains("page not found") || pageSource.contains("404")) {
                 log.warn("Page not found for card {}. Going back...", i + 1);
                 driver.navigate().back();
-                Thread.sleep(3000);
+                Thread.sleep(1500);
+                waitForPageLoad();
                 dismissOverlay();
                 continue;
             }
@@ -205,8 +206,9 @@ public class YouthApplyOnVOPage extends BasePage {
 
             log.warn("Card {} didn't load event page. Going back...", i + 1);
             driver.navigate().back();
-            Thread.sleep(3000);
-            dismissOverlay();
+            Thread.sleep(1500);
+                waitForPageLoad();
+                dismissOverlay();
         }
 
         log.warn("Could not open any event card for: {}", eventName);
@@ -328,14 +330,15 @@ public class YouthApplyOnVOPage extends BasePage {
                 ((JavascriptExecutor) driver).executeScript("arguments[0].click();", card);
             }
 
-            Thread.sleep(4000);
+            Thread.sleep(2000); waitForPageLoad();
             dismissOverlay();
 
             String pageSource = driver.getPageSource().toLowerCase();
             if (pageSource.contains("page not found") || pageSource.contains("404")) {
                 log.warn("Page not found for card {}. Going back...", i + 1);
                 driver.navigate().back();
-                Thread.sleep(3000);
+                Thread.sleep(1500);
+                waitForPageLoad();
                 dismissOverlay();
                 continue;
             }
@@ -353,8 +356,9 @@ public class YouthApplyOnVOPage extends BasePage {
 
             log.warn("Card {} didn't load event page. Going back...", i + 1);
             driver.navigate().back();
-            Thread.sleep(3000);
-            dismissOverlay();
+            Thread.sleep(1500);
+                waitForPageLoad();
+                dismissOverlay();
         }
 
         return false;
@@ -405,13 +409,14 @@ public class YouthApplyOnVOPage extends BasePage {
                 ((JavascriptExecutor) driver).executeScript("arguments[0].click();", card);
             }
 
-            Thread.sleep(4000);
+            Thread.sleep(2000); waitForPageLoad();
             dismissOverlay();
 
             String pageSource = driver.getPageSource().toLowerCase();
             if (pageSource.contains("page not found") || pageSource.contains("404")) {
                 driver.navigate().back();
-                Thread.sleep(3000);
+                Thread.sleep(1500);
+                waitForPageLoad();
                 dismissOverlay();
                 continue;
             }
@@ -433,7 +438,8 @@ public class YouthApplyOnVOPage extends BasePage {
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", applyBtn);
         Thread.sleep(300);
         applyBtn.click();
-        Thread.sleep(3000);
+        Thread.sleep(1500);
+        waitForPageLoad();
         dismissOverlay();
         log.info("✅ Clicked Apply button");
     }
@@ -451,3 +457,4 @@ public class YouthApplyOnVOPage extends BasePage {
         try { Thread.sleep(500); } catch (InterruptedException ignored) {}
     }
 }
+

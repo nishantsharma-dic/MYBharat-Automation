@@ -35,7 +35,7 @@
   ║                                                                     ║
   ╚══════════════════════════════════════════════════════════════════════╝
 -->
-<suite name="MYBharat All Modules" parallel="tests" thread-count="3" verbose="1"
+<suite name="MYBharat All Modules" parallel="tests" thread-count="4" verbose="1"
        group-by-instances="true" preserve-order="true">
 
     <listeners>
@@ -91,6 +91,26 @@
         <classes>
             <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
             <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
+<<<<<<< HEAD
+=======
+        </classes>
+    </test>
+
+    <!-- PARALLEL THREAD 4: VO Full Cycle — Login → Template → Create → Event → Youth Apply → Approve (own browser) -->
+    <test name="VO Full Cycle" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.vo.VOLoginTest"/>
+            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
+            <class name="com.mybharat.tests.vo.VOCreateTest"/>
+            <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
+            <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
+            <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
+            <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
+            <class name="com.mybharat.tests.vo.VOYouthLogoutTest"/>
+            <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
+            <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
+            <class name="com.mybharat.tests.vo.VOEventEditTest"/>
+>>>>>>> feature/manojkumar/vo
         </classes>
     </test>
 

@@ -89,6 +89,13 @@ public class VOEventCreatePage extends BasePage {
         return eventName;
     }
 
+    /** Wait for page ready: page load + overlay dismissed + short buffer */
+    private void waitForPageReady() {
+        waitForPageLoad();
+        dismissOverlay();
+        safeSleep(500);
+    }
+
     /**
      * Fill the complete Add Event form and click Preview.
      */
@@ -103,8 +110,7 @@ public class VOEventCreatePage extends BasePage {
             // Navigate back to add event page
             String baseUrl = config.getUrl();
             driver.get(baseUrl + "/orgeventmanagement/add_volunteer?type=vo");
-            Thread.sleep(3000);
-            waitForPageLoad();
+            waitForPageReady();
         }
 
         dismissOverlay();
@@ -203,15 +209,15 @@ public class VOEventCreatePage extends BasePage {
             if (fileInputs.size() >= 2) {
                 // First input = Logo, Second input = Banner
                 fileInputs.get(0).sendKeys(imagePaths.get(0));
-                Thread.sleep(2000);
+                safeSleep(1500);
                 log.info("✅ Logo uploaded: {}", imagePaths.get(0));
 
                 fileInputs.get(1).sendKeys(imagePaths.get(1));
-                Thread.sleep(2000);
+                safeSleep(1500);
                 log.info("✅ Banner uploaded: {}", imagePaths.get(1));
             } else if (fileInputs.size() == 1) {
                 fileInputs.get(0).sendKeys(imagePaths.get(0));
-                Thread.sleep(2000);
+                safeSleep(1500);
                 log.info("✅ Image uploaded (single input)");
             } else {
                 log.warn("No file inputs found for logo/banner upload");
@@ -499,7 +505,14 @@ public class VOEventCreatePage extends BasePage {
             Select sel = new Select(stateDropdown);
             if (sel.getOptions().size() > 1) {
                 sel.selectByIndex(1);
-                Thread.sleep(1000); // Wait for district to load
+                // Wait for district dropdown to populate
+                try {
+                    new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                            d -> new Select(d.findElement(By.xpath("//select[contains(@name,'district') or contains(@id,'district')]")))
+                                    .getOptions().size() > 1);
+                } catch (Exception we) {
+                    safeSleep(1000);
+                }
                 log.info("✅ State selected");
             }
         } catch (Exception e) {
@@ -508,7 +521,6 @@ public class VOEventCreatePage extends BasePage {
 
         // District
         try {
-            Thread.sleep(1000);
             WebElement districtDropdown = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                     ExpectedConditions.presenceOfElementLocated(
                             By.xpath("//select[contains(@name,'district') or contains(@id,'district')]")));
@@ -636,9 +648,8 @@ public class VOEventCreatePage extends BasePage {
         }
 
         // Wait for page to change (preview page loads)
-        Thread.sleep(5000);
-        waitForPageLoad();
-        dismissOverlay();
+        waitForPageReady();
+        safeSleep(1000); // Extra buffer for preview render
 
         String newUrl = driver.getCurrentUrl();
         if (newUrl.contains("preview")) {
@@ -670,7 +681,7 @@ public class VOEventCreatePage extends BasePage {
         }
 
         waitForPageLoad();
-        Thread.sleep(5000); // Wait for event to be indexed/visible on public side
+        safeSleep(2000); // Wait for event to be indexed on public side
         dismissOverlay();
         log.info("✅ Event published successfully");
     }
@@ -682,7 +693,7 @@ public class VOEventCreatePage extends BasePage {
     public void logout() throws InterruptedException {
         log.info("Logging out...");
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-        Thread.sleep(2000);
+        safeSleep(1000);
 
         // Click profile icon / circle (top-right corner) - the "M" circle button
         try {
@@ -718,7 +729,8 @@ public class VOEventCreatePage extends BasePage {
                             + " | //a[contains(text(),'Logout')]"
                             + " | //button[contains(text(),'Log Out')]")));
             safeClick(logoutBtn);
-            Thread.sleep(5000);
+            waitForPageLoad();
+            safeSleep(1000);
             log.info("✅ Clicked Log Out — user logged out");
         } catch (Exception e) {
             // JS fallback for Log Out
@@ -728,7 +740,8 @@ public class VOEventCreatePage extends BasePage {
                         "for(var i=0; i<links.length; i++) {" +
                         "  if(links[i].textContent.trim() === 'Log Out') { links[i].click(); break; }" +
                         "}");
-                Thread.sleep(5000);
+                waitForPageLoad();
+                safeSleep(1000);
                 log.info("✅ Clicked Log Out (JS fallback)");
             } catch (Exception e2) {
                 log.error("Log Out button not found: {}", e2.getMessage());
@@ -737,7 +750,7 @@ public class VOEventCreatePage extends BasePage {
 
         // Wait for page to redirect after logout
         waitForPageLoad();
-        Thread.sleep(2000);
+        safeSleep(500);
     }
 
     /**
