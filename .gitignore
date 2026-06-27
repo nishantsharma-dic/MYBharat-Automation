@@ -52,9 +52,24 @@ screenshots/
 bin/
 
 # ========================
-# Debug/Junk files (never commit)
+# Local scripts (testing only — not for production)
 # ========================
-*.class
-cp.txt
-ReadExcel.java
-WriteExcel.java
+local/
+
+# ========================
+# Kiro AI config (developer-specific)
+# ========================
+.kiro/
+
+# ========================
+# VS Code workspace files
+# ========================
+*.code-workspace
+
+# ========================
+# Large binary/media files
+# ========================
+*.mp4
+*.mp3
+*.avi
+*.mov
