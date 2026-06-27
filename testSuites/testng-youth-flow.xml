@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="Youth Flow Only" parallel="false" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="Youth Flow" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+            <class name="com.mybharat.tests.youth.YouthProfileTest"/>
+            <class name="com.mybharat.tests.youth.RegistrationCertificateVerificationTest"/>
+            <class name="com.mybharat.tests.youth.BasicInfoTest"/>
+            <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
+            <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
+            <class name="com.mybharat.tests.blog.BlogTest"/>
+        </classes>
+    </test>
+</suite>

@@ -28,7 +28,7 @@ jobs:
           REPORT_FILE="target/surefire-reports/testng-results.xml"
           if [ -f "$REPORT_FILE" ]; then
             # Count exactly the 13 test methods shown in the email table
-            TRACKED_METHODS="publicPages registerIndianYouth verifyUserInDatabase logoutUser loginWithOTP completeYouthProfile verifyRegistrationCertificateDownload clickBasicInfoAndExtractEmail attemptCompetitiveQuiz verifyQuizCertificateDownload writeAndPublishBlog step15_submit step19_superAdminApprove"
+            TRACKED_METHODS="publicPages registerIndianYouth verifyUserInDatabase logoutUser loginWithOTP completeYouthProfile verifyRegistrationCertificateDownload clickBasicInfoAndExtractEmail attemptCompetitiveQuiz verifyQuizCertificateDownload writeAndPublishBlog step15_submit step19_superAdminApprove createVOEvent"
             PASSED=0
             FAILED=0
             SKIPPED=0
@@ -145,6 +145,9 @@ jobs:
           # Youth Club — use same get_status function as other rows
           echo "s11=$(get_status 'step15_submit')" >> $GITHUB_OUTPUT
           echo "s12=$(get_status 'step19_superAdminApprove')" >> $GITHUB_OUTPUT
+
+          # VO Full Cycle
+          echo "s13=$(get_status 'createVOEvent')" >> $GITHUB_OUTPUT
 
       - name: Upload ExtentReport as artifact
         if: always()
@@ -352,6 +355,15 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s12 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">14</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Volunteer Opportunity</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">createVOEvent</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">VO Login → Template → Create → Event → Youth Apply → Approve</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
+                    <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s13 }}</td>
+                    <td style="padding: 6px; border: 1px solid #eee;">Alamgeer / Audhesh</td>
                   </tr>
                 </table>
 
