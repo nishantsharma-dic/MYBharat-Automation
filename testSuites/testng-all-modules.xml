@@ -7,7 +7,7 @@
   ╠══════════════════════════════════════════════════════════════════════╣
   ║                                                                     ║
   ║  Execution Mode: PARALLEL (3 threads)                               ║
-  ║  Total Test Cases: 12 (as reported in email)                        ║
+  ║  Total Test Cases: 13 (as reported in email)                        ║
   ║  Approx Duration: ~10 minutes                                       ║
   ║                                                                     ║
   ║  Thread 1 (Public Pages):                                           ║
@@ -20,10 +20,10 @@
   ║    → Blog Creation                                                  ║
   ║    - All steps share the SAME browser session (user stays logged in)║
   ║                                                                     ║
-  ║  Thread 3 (VO Full Cycle):                                          ║
-  ║    - Org Login → Template → Create Event → Youth Apply              ║
-  ║    → Image Approval → Edit Event                                    ║
-  ║    - Independent browser session                                    ║
+  ║  Thread 3 (Youth Club):                                             ║
+  ║    - Register 6 Members → Create Youth Club → Add Members with OTP  ║
+  ║    → Submit → SuperAdmin Approve                                    ║
+  ║    - Own browser instance                                           ║
   ║                                                                     ║
   ║  CI/CD:                                                             ║
   ║    - Scheduled: Runs daily on main branch (email to seniors)        ║
@@ -86,37 +86,11 @@
         </classes>
     </test>
 
-    <!--
-      THREAD 3: VO Full Cycle (independent browser, single session)
-      - Org user logs in → Creates template → Creates event
-      - Youth logs in → Applies on event → Uploads images
-      - Org logs back in → Approves images → Edits event
-      - Developer: Alamgeer
-    -->
-    <test name="VO Full Cycle" preserve-order="true">
+    <!-- PARALLEL THREAD 3: Youth Club — Create Organization + SuperAdmin Approve (own browser) -->
+    <test name="Youth Club Flow" preserve-order="true">
         <classes>
-            <!-- Step 1: Login as VO organization user -->
-            <class name="com.mybharat.tests.vo.VOLoginTest"/>
-            <!-- Step 2: Navigate to Templates and select Nodal/DYO -->
-            <class name="com.mybharat.tests.vo.VOTemplateNodalDyoTest"/>
-            <!-- Step 3: Create a new VO template -->
-            <class name="com.mybharat.tests.vo.VOCreateTest"/>
-            <!-- Step 4: Navigate to Add Event page -->
-            <class name="com.mybharat.tests.vo.VOEventNavigationTest"/>
-            <!-- Step 5: Create a new VO event -->
-            <class name="com.mybharat.tests.vo.VOEventCreateTest"/>
-            <!-- Step 6: Login as youth user (new session) -->
-            <class name="com.mybharat.tests.vo.VOYouthLoginTest"/>
-            <!-- Step 7: Youth applies on the VO event -->
-            <class name="com.mybharat.tests.vo.YouthApplyOnVOTest"/>
-            <!-- Step 8: Youth logs out -->
-            <class name="com.mybharat.tests.vo.VOYouthLogoutTest"/>
-            <!-- Step 9: Org user logs back in -->
-            <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
-            <!-- Step 10: Review and approve uploaded images -->
-            <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
-            <!-- Step 11: Edit event and save as draft -->
-            <class name="com.mybharat.tests.vo.VOEventEditTest"/>
+            <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
+            <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
         </classes>
     </test>
 

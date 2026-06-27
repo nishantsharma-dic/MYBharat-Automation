@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Youth Club Module" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="Register Members for Youth Club">
+        <classes>
+            <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
+        </classes>
+    </test>
+
+    <test name="Create Youth Club Organization">
+        <classes>
+            <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
+        </classes>
+    </test>
+
+</suite>
