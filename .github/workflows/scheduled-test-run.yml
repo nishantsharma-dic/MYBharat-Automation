@@ -145,9 +145,12 @@ jobs:
           # Youth Club — use same get_status function as other rows
           echo "s11=$(get_status 'step15_submit')" >> $GITHUB_OUTPUT
           echo "s12=$(get_status 'step19_superAdminApprove')" >> $GITHUB_OUTPUT
+<<<<<<< HEAD
+=======
 
           # VO Full Cycle
           echo "s13=$(get_status 'createVOEvent')" >> $GITHUB_OUTPUT
+>>>>>>> feature/manojkumar/vo
 
       - name: Upload ExtentReport as artifact
         if: always()
@@ -355,6 +358,8 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s12 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
+<<<<<<< HEAD
+=======
                   </tr>
                   <tr>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">14</td>
@@ -364,6 +369,7 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s13 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Alamgeer / Audhesh</td>
+>>>>>>> feature/manojkumar/vo
                   </tr>
                 </table>
 

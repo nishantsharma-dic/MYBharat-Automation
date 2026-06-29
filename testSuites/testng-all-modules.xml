@@ -91,6 +91,8 @@
         <classes>
             <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
             <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
+<<<<<<< HEAD
+=======
         </classes>
     </test>
 
@@ -108,6 +110,7 @@
             <class name="com.mybharat.tests.vo.VOOrgLoginAgainTest"/>
             <class name="com.mybharat.tests.vo.VOImageApprovalTest"/>
             <class name="com.mybharat.tests.vo.VOEventEditTest"/>
+>>>>>>> feature/manojkumar/vo
         </classes>
     </test>
 
