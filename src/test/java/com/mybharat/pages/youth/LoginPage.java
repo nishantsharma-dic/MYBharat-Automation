@@ -362,8 +362,6 @@ public class LoginPage extends BasePage {
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Login with password — delegates to OTP login for compatibility.
      * NCSNavigationTest uses this method.
      */
@@ -372,7 +370,6 @@ public class LoginPage extends BasePage {
     }
 
     /**
->>>>>>> feature/manojkumar/vo
      * Enter a specific email into the OTP login field.
      */
     public void enterEmailForOTPLogin(String email) {

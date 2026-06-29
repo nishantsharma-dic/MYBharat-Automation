@@ -362,8 +362,6 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s12 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Tejas</td>
-<<<<<<< HEAD
-=======
                   </tr>
                   <tr style="background: #f9f9f9;">
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">14</td>
@@ -373,7 +371,6 @@ jobs:
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">Web</td>
                     <td style="padding: 6px; border: 1px solid #eee; text-align: center;">${{ steps.details.outputs.s13 }}</td>
                     <td style="padding: 6px; border: 1px solid #eee;">Alamgeer / Audhesh</td>
->>>>>>> feature/manojkumar/vo
                   </tr>
                 </table>
                 <h3 style="color: #160363; margin: 0 0 12px; border-bottom: 2px solid #160363; padding-bottom: 5px;">Test Flow</h3>
