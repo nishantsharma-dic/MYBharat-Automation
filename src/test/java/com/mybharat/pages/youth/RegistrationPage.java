@@ -258,6 +258,11 @@ public class RegistrationPage extends BasePage {
         // Enter OTP and verify
         otpField.sendKeys(otp);
         safeClick(verifyOtpBtn);
+
+        // Wait for OTP verification to process and registration form to appear
+        // CI has slower network so the server-side verification + page transition takes longer
+        Thread.sleep(3000);
+        waitForPageLoad();
     }
 
     /**
@@ -265,9 +270,15 @@ public class RegistrationPage extends BasePage {
      */
     public void fillRegistrationForm() throws InterruptedException {
         // Wait for registration form to load (longer on CI due to network latency)
-        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 45 : 15;
-        new WebDriverWait(driver, Duration.ofSeconds(timeout)).until(
-                ExpectedConditions.visibilityOf(firstNameInput));
+        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 15;
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(timeout)).until(
+                    ExpectedConditions.visibilityOf(firstNameInput));
+        } catch (Exception e) {
+            // Fallback: try finding by ID directly (PageFactory ref may be stale after tab switch)
+            new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+                    ExpectedConditions.visibilityOfElementLocated(By.id("firstname")));
+        }
 
         // Personal details
         waitForVisible(firstNameInput);
