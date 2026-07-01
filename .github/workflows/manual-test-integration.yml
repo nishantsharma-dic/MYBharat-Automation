@@ -60,16 +60,8 @@ jobs:
         with:
           chrome-version: stable
 
-      - name: Resolve browser mode
-        id: browser
-        run: |
-          # On GitHub Actions (no display), force headless for chrome/firefox
-          SELECTED="${{ github.event.inputs.browser }}"
-          if [ "$SELECTED" = "chrome" ]; then
-            echo "mode=headless" >> $GITHUB_OUTPUT
-          else
-            echo "mode=${SELECTED}" >> $GITHUB_OUTPUT
-          fi
+      - name: Install xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
 
       - name: Run Test Suite
         id: test_run
@@ -77,12 +69,13 @@ jobs:
         run: |
           echo "Running tests..."
           echo "   Suite: ${{ github.event.inputs.suite }}"
-          echo "   Browser: ${{ steps.browser.outputs.mode }} (selected: ${{ github.event.inputs.browser }})"
+          echo "   Browser: ${{ github.event.inputs.browser }}"
           echo "   Environment: ${{ github.event.inputs.environment }}"
           echo ""
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
           mvn test \
             -Denv=${{ github.event.inputs.environment }} \
-            -Dbrowser=${{ steps.browser.outputs.mode }} \
+            -Dbrowser=${{ github.event.inputs.browser }} \
             -Dsurefire.suiteXmlFiles=${{ github.event.inputs.suite }}
 
       - name: Parse test results
@@ -239,7 +232,7 @@ jobs:
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                   <tr><td style="padding: 8px; font-weight: bold; width: 40%;">Execution Time:</td><td style="padding: 8px;">${{ steps.result.outputs.timestamp }}</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Environment:</td><td style="padding: 8px;">Production (https://mybharat.gov.in)</td></tr>
-                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (Headless — GitHub Actions)</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (Headed — GitHub Actions + xvfb)</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules - Full End-to-End</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Registered User:</td><td style="padding: 8px;">${{ steps.details.outputs.reg_email }}</td></tr>
                 </table>
