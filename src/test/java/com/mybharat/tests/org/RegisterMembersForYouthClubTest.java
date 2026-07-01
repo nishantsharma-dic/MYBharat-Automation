@@ -359,17 +359,21 @@ public class RegisterMembersForYouthClubTest {
 
             // Step 1: Navigate to app
             driver.get(config.getUrl());
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(45));
-            safeSleep(3000);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+            // Wait for page to fully load before interacting
+            wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
+                    .executeScript("return document.readyState").equals("complete"));
+            safeSleep(4000);
 
             // Close popup if present
             closePopup(driver);
+            safeSleep(1000);
 
             // Click Register Now → Register (Indian)
             WebElement registerNow = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//span[@class='fontchange']")));
             registerNow.click();
-            safeSleep(500);
+            safeSleep(1000);
 
             WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));

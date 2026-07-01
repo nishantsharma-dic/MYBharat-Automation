@@ -264,8 +264,9 @@ public class RegistrationPage extends BasePage {
      * Fill the complete registration form for Indian users.
      */
     public void fillRegistrationForm() throws InterruptedException {
-        // Wait for registration form to load
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+        // Wait for registration form to load (longer on CI due to network latency)
+        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 45 : 15;
+        new WebDriverWait(driver, Duration.ofSeconds(timeout)).until(
                 ExpectedConditions.visibilityOf(firstNameInput));
 
         // Personal details

@@ -37,6 +37,7 @@ jobs:
           mvn test \
             -Denv=prod \
             -Dbrowser=chrome \
+            -DciMode=true \
             -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
 
       - name: Parse test results

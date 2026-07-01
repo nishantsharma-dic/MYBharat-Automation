@@ -73,6 +73,7 @@ jobs:
           mvn test \
             -Denv=${{ github.event.inputs.environment }} \
             -Dbrowser=${{ github.event.inputs.browser }} \
+            -DciMode=true \
             -Dsurefire.suiteXmlFiles=${{ github.event.inputs.suite }}
 
       - name: Parse test results

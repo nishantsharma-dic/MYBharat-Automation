@@ -1485,8 +1485,10 @@ public class YouthProfilePage extends BasePage {
 
         WebElement control = controls.get(index);
         scrollToElement(control);
-        control.click();
-        safeSleep(200);
+        safeSleep(500); // Wait for scroll animation to complete before clicking
+        // Use JS click to avoid ElementClickIntercepted from overlapping elements
+        jsClick(control);
+        safeSleep(500);
 
         // Wait for menu to appear
         try {
