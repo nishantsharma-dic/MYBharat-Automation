@@ -582,7 +582,8 @@ public class RegisterMembersForYouthClubTest {
                 "--remote-allow-origins=*",
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
-                "--disable-dev-shm-usage"
+                "--disable-dev-shm-usage",
+                "--start-maximized"
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
@@ -602,7 +603,6 @@ public class RegisterMembersForYouthClubTest {
 
         WebDriver driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
-        driver.manage().window().maximize();
         return driver;
     }
 

@@ -83,7 +83,8 @@ public class BaseTest {
 
         WebDriver newDriver = createDriver(browserName);
         newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
-        newDriver.manage().window().maximize();
+        // Use --start-maximized flag in Chrome options instead of window().maximize()
+        // which fails on Chrome 149+ due to deprecated CDP Runtime.evaluate command
         driverThreadLocal.set(newDriver);
         this.driver = newDriver;
     }
@@ -167,7 +168,8 @@ public class BaseTest {
                     "--remote-allow-origins=*",
                     "--disable-blink-features=AutomationControlled",
                     "--no-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--start-maximized"
                 );
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
