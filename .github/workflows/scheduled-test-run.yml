@@ -29,13 +29,17 @@ jobs:
         with:
           chrome-version: stable
 
+      - name: Install xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Run Full Test Suite
         id: test_run
         continue-on-error: true
         run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
           mvn test \
             -Denv=prod \
-            -Dbrowser=headless \
+            -Dbrowser=chrome \
             -Dsurefire.suiteXmlFiles=testSuites/testng-all-modules.xml
 
       - name: Parse test results
@@ -222,7 +226,7 @@ jobs:
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                   <tr><td style="padding: 8px; font-weight: bold; width: 40%;">Execution Time:</td><td style="padding: 8px;">${{ steps.result.outputs.timestamp }}</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Environment:</td><td style="padding: 8px;">Production (https://mybharat.gov.in)</td></tr>
-                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (Headless — GitHub Actions)</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (Headed — GitHub Actions + xvfb)</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules - Full End-to-End</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Registered User:</td><td style="padding: 8px;">${{ steps.details.outputs.reg_email }}</td></tr>
                 </table>
