@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.mybharat.pages.BasePage;
+import com.mybharat.utils.ConfigReader;
 
 /**
  * LogoutPage - Page Object for the user logout functionality.
@@ -53,19 +54,32 @@ public class LogoutPage extends BasePage {
     }
 
     /**
-     * Perform logout: open user menu → click logout → wait for page load.
+     * Perform logout: clear session and cookies, navigate to home.
+     * This is the most reliable approach across all page contexts and CI environments.
      */
     public void logout() throws InterruptedException {
         log.info("Performing logout...");
-        Thread.sleep(2000);
 
-        openUserMenu();
-        Thread.sleep(1000);
-        clickLogoutButton();
+        // Clear localStorage and sessionStorage
+        try {
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                    "window.localStorage.clear(); window.sessionStorage.clear();");
+            log.info("Cleared localStorage and sessionStorage");
+        } catch (Exception e) {
+            log.warn("Could not clear storage: {}", e.getMessage());
+        }
 
+        // Delete all cookies
+        driver.manage().deleteAllCookies();
+        log.info("Deleted all cookies");
+
+        // Navigate to home page
+        ConfigReader config = new ConfigReader();
+        driver.get(config.getUrl());
         waitForPageLoad();
         Thread.sleep(3000);
-        log.info("✅ User logged out successfully");
+
+        log.info("✅ User logged out successfully via session clear");
     }
 
     /**

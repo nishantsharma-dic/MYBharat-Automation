@@ -259,10 +259,30 @@ public class RegistrationPage extends BasePage {
         otpField.sendKeys(otp);
         safeClick(verifyOtpBtn);
 
-        // Wait for OTP verification to process and registration form to appear
-        // CI has slower network so the server-side verification + page transition takes longer
-        Thread.sleep(3000);
+        // Wait for OTP verification to complete — the server processes the OTP
+        // and then either redirects to the registration form OR shows an error.
+        // On CI (overseas), this server-side processing takes significantly longer.
+        Thread.sleep(5000);
         waitForPageLoad();
+
+        // Additional wait: keep checking until the registration form appears or timeout
+        int verifyTimeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 30 : 10;
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(verifyTimeout)).until(
+                    d -> d.findElements(By.id("firstname")).size() > 0
+                            || d.findElements(By.xpath("//input[@id='firstname']")).size() > 0
+                            || d.getCurrentUrl().contains("register"));
+        } catch (Exception e) {
+            // If still not on form, the OTP verify might have failed — click verify again
+            try {
+                WebElement verifyBtn = driver.findElement(By.xpath("//button[@id='btn-verify-otp']"));
+                if (verifyBtn.isDisplayed()) {
+                    safeClick(verifyBtn);
+                    Thread.sleep(5000);
+                    waitForPageLoad();
+                }
+            } catch (Exception e2) { /* already moved past OTP */ }
+        }
     }
 
     /**
