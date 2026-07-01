@@ -1,21 +1,39 @@
 name: Scheduled Test Execution � MY Bharat (Production)
 
 on:
-  workflow_dispatch:  # Manual trigger only from GitHub UI
+  schedule:
+    # 3 runs per day (IST = UTC+5:30)
+    - cron: '10 4 * * *'   # 9:40 AM IST
+    - cron: '30 7 * * *'   # 1:00 PM IST
+    - cron: '30 11 * * *'  # 5:00 PM IST
+  workflow_dispatch:  # Manual trigger from GitHub UI
 
 jobs:
   run-tests:
-    runs-on: self-hosted
-    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Chrome & xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb google-chrome-stable
+
       - name: Run Full Test Suite
         id: test_run
         continue-on-error: true
         run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
           mvn test \
             -Denv=prod \
             -Dbrowser=chrome \
@@ -205,7 +223,7 @@ jobs:
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                   <tr><td style="padding: 8px; font-weight: bold; width: 40%;">Execution Time:</td><td style="padding: 8px;">${{ steps.result.outputs.timestamp }}</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Environment:</td><td style="padding: 8px;">Production (https://mybharat.gov.in)</td></tr>
-                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (UI Mode)</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td style="padding: 8px;">Google Chrome (Headed — GitHub Actions + xvfb)</td></tr>
                   <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold;">Test Suite:</td><td style="padding: 8px;">All Modules - Full End-to-End</td></tr>
                   <tr><td style="padding: 8px; font-weight: bold;">Registered User:</td><td style="padding: 8px;">${{ steps.details.outputs.reg_email }}</td></tr>
                 </table>
@@ -371,7 +389,7 @@ jobs:
               <div style="background: #f8f9fa; padding: 12px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0; border-top: none;">
                 <p style="color: #888; font-size: 11px; margin: 0;">
                   MY Bharat | QA Automation Team | Nishant Sharma<br>
-                  Scheduled Runs: 9:40 AM | 1:00 PM | 5:00 PM | 8:00 PM IST
+                  Scheduled Runs: 9:40 AM | 1:00 PM | 5:00 PM IST (GitHub Actions)
                 </p>
               </div>
             </div>
