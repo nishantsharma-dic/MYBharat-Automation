@@ -28,10 +28,10 @@
         <env>beta</env>
 
         <!-- Dependency versions – single place to update -->
-        <selenium.version>4.12.1</selenium.version>
+        <selenium.version>4.25.0</selenium.version>
         <testng.version>7.8.0</testng.version>
         <extent.version>5.1.1</extent.version>
-        <webdrivermanager.version>5.6.3</webdrivermanager.version>
+        <webdrivermanager.version>5.9.2</webdrivermanager.version>
         <log4j.version>2.20.0</log4j.version>
         <poi.version>5.2.3</poi.version>
         <pdfbox.version>2.0.29</pdfbox.version>
