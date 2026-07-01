@@ -586,8 +586,22 @@ public class RegisterMembersForYouthClubTest {
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
+        // Respect the -Dbrowser system property for headless mode (CI compatibility)
+        String browserMode = System.getProperty("browser", "chrome");
+        if ("headless".equalsIgnoreCase(browserMode)) {
+            options.addArguments(
+                "--headless=new",
+                "--disable-gpu",
+                "--window-size=1920,1080",
+                "--disable-extensions",
+                "--disable-popup-blocking",
+                "--disable-background-timer-throttling",
+                "--disable-renderer-backgrounding"
+            );
+        }
+
         WebDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
         driver.manage().window().maximize();
         return driver;
     }
