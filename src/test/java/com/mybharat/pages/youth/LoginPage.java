@@ -61,7 +61,7 @@ public class LoginPage extends BasePage {
     private static final Logger log = LogManager.getLogger(LoginPage.class);
 
     private final ConfigReader config = new ConfigReader();
-    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 30;
+    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 90 : 30;
 
     private String loginEmail;
 

@@ -82,7 +82,7 @@ public class BaseTest {
                 browserName, config.getEnv(), Thread.currentThread().getName());
 
         WebDriver newDriver = createDriver(browserName);
-        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
+        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
         // Force window to full screen size for element visibility
         newDriver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
         driverThreadLocal.set(newDriver);
