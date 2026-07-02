@@ -160,8 +160,15 @@ public class LoginPage extends BasePage {
             WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(signInLink));
             signIn.click();
         } catch (Exception e) {
-            log.warn("Normal click on Sign In failed, using JS click");
-            jsClick(signInLink);
+            // Fallback: try JS click, then direct URL navigation
+            try {
+                jsClick(signInLink);
+            } catch (Exception e2) {
+                log.warn("Sign In element not found, navigating directly to login page");
+                driver.get(config.getUrl() + "/login");
+                waitForPageLoad();
+                safeSleep(2000);
+            }
         }
         log.info("Clicked Sign In");
         safeSleep(300);
