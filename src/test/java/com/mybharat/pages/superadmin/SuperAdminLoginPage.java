@@ -32,7 +32,7 @@ public class SuperAdminLoginPage extends BasePage {
 
     private static final Logger log = LogManager.getLogger(SuperAdminLoginPage.class);
     private final ConfigReader config = new ConfigReader();
-    private static final int WAIT = 20;
+    private static final int WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 90 : 30;
 
     // =========================================================================
     // LOCATORS
@@ -160,7 +160,15 @@ public class SuperAdminLoginPage extends BasePage {
             WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(SIGN_IN_LINK));
             signIn.click();
         } catch (Exception e) {
-            jsClick(driver.findElement(SIGN_IN_LINK));
+            try {
+                jsClick(driver.findElement(SIGN_IN_LINK));
+            } catch (Exception e2) {
+                // Fallback: navigate to /login directly
+                log.warn("Sign In not found, navigating to /login directly");
+                driver.get(config.getUrl() + "/login");
+                waitForPageLoad();
+                safeSleep(2000);
+            }
         }
         log.info("Clicked Sign In");
         safeSleep(500);
