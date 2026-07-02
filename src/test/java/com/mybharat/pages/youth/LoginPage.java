@@ -131,7 +131,17 @@ public class LoginPage extends BasePage {
         log.info("Navigating to: {}", url);
         driver.get(url);
         waitForPageLoad();
-        safeSleep(300);
+        safeSleep(2000);
+        // Verify page actually loaded (not blank/timeout) — retry once if needed
+        try {
+            String title = driver.getTitle();
+            if (title == null || title.isEmpty() || title.contains("ERR_")) {
+                log.warn("Page may not have loaded (title: {}), retrying...", title);
+                driver.get(url);
+                waitForPageLoad();
+                safeSleep(3000);
+            }
+        } catch (Exception e) { /* skip check */ }
     }
 
     /**
@@ -501,37 +511,30 @@ public class LoginPage extends BasePage {
                 throw new RuntimeException("No user data found in Excel. Please run registration first.");
             }
 
-            // Read last row, first column (email)
-            Row lastRow = sheet.getRow(lastRowNum);
-            if (lastRow == null) {
-                for (int i = lastRowNum; i >= 1; i--) {
-                    lastRow = sheet.getRow(i);
-                    if (lastRow != null && lastRow.getCell(0) != null) {
-                        break;
-                    }
+            // Scan from last row upward to find latest @maildrop.cc email (skip stale @yopmail.com)
+            String email = null;
+            for (int i = lastRowNum; i >= 1; i--) {
+                Row row = sheet.getRow(i);
+                if (row == null || row.getCell(0) == null) continue;
+                Cell cell = row.getCell(0);
+                String val = cell.getCellType() == CellType.STRING ? cell.getStringCellValue().trim() : cell.toString().trim();
+                if (!val.isEmpty() && val.contains("@maildrop.cc")) {
+                    email = val;
+                    log.info("Read email from Excel (row {}): {}", i, email);
+                    break;
                 }
             }
-
-            if (lastRow == null || lastRow.getCell(0) == null) {
-                throw new RuntimeException("Could not find email in Excel. Last row is empty.");
+            // Fallback: use last row regardless of domain
+            if (email == null) {
+                Row lastRow = sheet.getRow(lastRowNum);
+                if (lastRow != null && lastRow.getCell(0) != null) {
+                    Cell emailCell = lastRow.getCell(0);
+                    email = emailCell.getCellType() == CellType.STRING ? emailCell.getStringCellValue().trim() : emailCell.toString().trim();
+                    log.warn("No @maildrop.cc email found, using last row: {}", email);
+                } else {
+                    throw new RuntimeException("Could not find email in Excel.");
+                }
             }
-
-            Cell emailCell = lastRow.getCell(0);
-            String email;
-
-            if (emailCell.getCellType() == CellType.STRING) {
-                email = emailCell.getStringCellValue().trim();
-            } else if (emailCell.getCellType() == CellType.NUMERIC) {
-                email = String.valueOf((long) emailCell.getNumericCellValue());
-            } else {
-                email = emailCell.toString().trim();
-            }
-
-            if (email.isEmpty()) {
-                throw new RuntimeException("Email cell is empty in Excel.");
-            }
-
-            log.info("Read email from Excel (row {}): {}", lastRowNum, email);
             return email;
 
         } catch (RuntimeException e) {

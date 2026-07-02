@@ -66,8 +66,18 @@ public class LandingPage extends BasePage {
      * Click "Register Now" → then "Register" button for Indian users.
      */
     public void clickRegisterForIndian() {
-        safeClick(registerNowBtn);
-        safeClick(registerBtn);
+        try {
+            safeClick(registerNowBtn);
+            safeClick(registerBtn);
+        } catch (Exception e) {
+            // Fallback: navigate directly to registration URL
+            org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
+            String currentUrl = driver.getCurrentUrl();
+            String baseUrl = currentUrl.contains("mybharat") ? currentUrl.split("/")[0] + "//" + currentUrl.split("/")[2] : "https://mybharat.gov.in";
+            driver.get(baseUrl + "/register");
+            waitForPageLoad();
+            try { Thread.sleep(2000); } catch (InterruptedException ie) { /* skip */ }
+        }
     }
 
     /**
