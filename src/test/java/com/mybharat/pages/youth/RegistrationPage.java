@@ -22,11 +22,11 @@ import com.mybharat.utils.ConfigReader;
  *
  * Purpose: Handles the complete new user registration flow — from entering email and
  *          verifying OTP to filling personal/education/location details and submitting.
- *          Uses JavaFaker for randomized test data and Yopmail for OTP retrieval.
+ *          Uses JavaFaker for randomized test data and Maildrop API for OTP retrieval.
  *
  * Flow:
- *   1. enterEmailAndRequestOTP() — enters generated @yopmail.com email, clicks Get OTP
- *   2. fetchAndVerifyOTP()       — opens Yopmail in new tab, extracts OTP, enters and verifies
+ *   1. enterEmailAndRequestOTP() — enters generated @maildrop.cc email, clicks Get OTP
+ *   2. fetchAndVerifyOTP()       — opens Maildrop API in new tab, extracts OTP, enters and verifies
  *   3. fillRegistrationForm()    — fills all form fields (name, DOB, gender, state, district,
  *                                  address, education, institution, sport, consent checkboxes)
  *   4. submitForm()              — clicks the Register/Submit button
@@ -39,11 +39,11 @@ import com.mybharat.utils.ConfigReader;
  *   - clickSubmitPopup()  — handles the confirmation popup with multiple locator fallbacks
  *
  * Data Generation:
- *   - Email: {randomName}@yopmail.com (via JavaFaker)
+ *   - Email: {randomName}@maildrop.cc (via JavaFaker)
  *   - Mobile: random 10-digit number starting with 9
  *   - Name, DOB, address: randomized via JavaFaker
  *
- * Dependencies: BasePage, ConfigReader, JavaFaker, Apache POI (Excel), Yopmail
+ * Dependencies: BasePage, ConfigReader, JavaFaker, Apache POI (Excel), Maildrop API
  * Developer: Nishant Sharma (QA Team)
  *
  * @see RegistrationTest
@@ -228,7 +228,7 @@ public class RegistrationPage extends BasePage {
     }
 
     /**
-     * Open Yopmail in new tab, fetch OTP, come back and verify.
+     * Open Maildrop API in new tab, fetch OTP, come back and verify.
      */
     public void fetchAndVerifyOTP() throws InterruptedException {
         // Fetch OTP via Maildrop API (no browser tab needed — much more reliable on CI)

@@ -25,7 +25,7 @@ import com.mybharat.utils.ConfigReader;
  *
  * Purpose: Handles the complete login flow using OTP verification. Reads the most
  *          recently registered email from an environment-specific Excel file, sends
- *          an OTP, retrieves it from Yopmail (disposable email service), and verifies it.
+ *          an OTP, retrieves it from Maildrop API (disposable email service), and verifies it.
  *
  * Flow:
  *   1. navigateToHomePage()    — opens the MYBharat home page
@@ -34,12 +34,12 @@ import com.mybharat.utils.ConfigReader;
  *   4. enterEmailForOTPLogin() — reads email from Excel, enters in login form
  *   5. clickConsentCheckbox()  — checks the terms consent checkbox
  *   6. clickLoginToSendOTP()   — clicks Login button to trigger OTP delivery
- *   7. fetchOTPFromYopmail()   — opens Yopmail in new tab, extracts OTP, enters it
+ *   7. fetchOTPFromYopmail()   — opens Maildrop API in new tab, extracts OTP, enters it
  *   8. clickVerifyOTP()        — submits OTP for verification
  *   9. isLoginSuccessful()     — validates login by checking post-login UI elements
  *
  * Data Source: Youth_beta.xlsx or Youth_prod.xlsx (last row = most recent registration)
- * OTP Source: Yopmail.com (disposable email inbox)
+ * OTP Source: Maildrop API.com (disposable email inbox)
  *
  * Key Methods:
  *   - performLogin()          — convenience method that runs the full login flow
@@ -50,7 +50,7 @@ import com.mybharat.utils.ConfigReader;
  *   Beta: https://yuva-beta.mybharats.in
  *   Prod: https://mybharat.gov.in
  *
- * Dependencies: BasePage, ConfigReader, Apache POI (Excel), Yopmail
+ * Dependencies: BasePage, ConfigReader, Apache POI (Excel), Maildrop API
  * Developer: Nishant Sharma (QA Team)
  *
  * @see RegistrationPage
@@ -95,7 +95,7 @@ public class LoginPage extends BasePage {
     private WebElement verifyOTPBtn;
 
     // -------------------------------------------------------------------------
-    // Elements - Yopmail (for OTP retrieval)
+    // Elements - Maildrop API (for OTP retrieval)
     // -------------------------------------------------------------------------
 
     @FindBy(xpath = "//input[@id='login']")
@@ -222,10 +222,10 @@ public class LoginPage extends BasePage {
     }
 
     /**
-     * Open Yopmail in a new tab, fetch the login OTP, switch back and enter it.
+     * Open Maildrop API in a new tab, fetch the login OTP, switch back and enter it.
      */
     /**
-     * Fetch OTP from Yopmail in new tab, extract it, and enter in login form.
+     * Fetch OTP from Maildrop API in new tab, extract it, and enter in login form.
      */
     public void fetchOTPFromYopmail() throws InterruptedException {
         log.info("Fetching OTP from Maildrop API for: {}", loginEmail);
@@ -358,7 +358,7 @@ public class LoginPage extends BasePage {
 
     /**
      * Perform the complete OTP-based login flow in one call.
-     * Reads email from Excel, fetches OTP from Yopmail.
+     * Reads email from Excel, fetches OTP from Maildrop API.
      */
     public void performLogin() throws InterruptedException {
         navigateToHomePage();
@@ -414,7 +414,7 @@ public class LoginPage extends BasePage {
     // -------------------------------------------------------------------------
 
     /**
-     * Extract OTP from the Yopmail email content.
+     * Extract OTP from the Maildrop API email content.
      * Looks for OTP pattern in the email body.
      */
     private String extractOTPFromEmail() {
@@ -461,7 +461,7 @@ public class LoginPage extends BasePage {
                 }
             }
         }
-        throw new RuntimeException("Could not extract OTP from Yopmail email");
+        throw new RuntimeException("Could not extract OTP from Maildrop API email");
     }
 
     /**
