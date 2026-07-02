@@ -100,9 +100,9 @@ jobs:
         if: always()
         run: |
           # Extract registered email from logs
-          REG_EMAIL=$(grep -r '@maildrop.cc' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9._-]*@maildrop.cc' | head -1 || echo "N/A")
+          REG_EMAIL=$(grep -r 'Registration completed.*Email:' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9._-]*@maildrop.cc' | head -1 || echo "N/A")
           if [ "$REG_EMAIL" = "N/A" ] || [ -z "$REG_EMAIL" ]; then
-            REG_EMAIL=$(grep -r 'Registration completed.*Email:' target/surefire-reports/ 2>/dev/null | grep -o '[A-Za-z0-9._-]*@[a-z.]*' | head -1 || echo "N/A")
+            REG_EMAIL=$(grep -r 'Email:.*@maildrop.cc' target/surefire-reports/ 2>/dev/null | grep -v "yco\|Member" | grep -o '[A-Za-z0-9._-]*@maildrop.cc' | head -1 || echo "N/A")
           fi
           echo "reg_email=${REG_EMAIL:-N/A}" >> $GITHUB_OUTPUT
 
