@@ -414,68 +414,15 @@ public class CreateYouthClubTest extends BaseTest {
         loginPage.closePopupIfPresent();
         safeSleep(1000);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-
-        // Sign In - try multiple locators with 40s timeout (server page load varies)
-        WebElement signIn = null;
-        WebDriverWait longWait40 = new WebDriverWait(driver, Duration.ofSeconds(40));
-        for (String loc : new String[]{
-                "//span[normalize-space()='Sign In']",
-                "//a[normalize-space()='Sign In']",
-                "//*[normalize-space()='Sign In']"}) {
-            try { signIn = longWait40.until(ExpectedConditions.elementToBeClickable(By.xpath(loc))); break; }
-            catch (Exception ex) { /* try next */ }
-        }
-        if (signIn == null) throw new RuntimeException("[Step 19] Sign In not found after 40s");
-        try { signIn.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", signIn); }
-        safeSleep(1500);
-
-        // Enter email + consent
-        WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='otp_login_header']")));
-        emailInput.clear();
-        emailInput.sendKeys(member6Email);
-        safeSleep(500);
-        try {
-            WebElement consent = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#consentCheck1")));
-            if (!consent.isSelected()) { try { consent.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", consent); } }
-        } catch (Exception e) { /* skip */ }
-
-        // Click Login
-        WebElement loginBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.firebase-user-sentOtp-btn")));
-        try { loginBtn.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", loginBtn); }
-        log.info("  Login button clicked");
-
-        // Fetch OTP from Maildrop
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        safeSleep(10000);
-        String otp = fetchOTPFromMaildrop(mailbox, mapper, 10);
-        if (otp.isEmpty()) {
-            try {
-                WebElement resendBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                        ExpectedConditions.elementToBeClickable(By.xpath("//*[contains(text(),'Resend OTP')]")));
-                js.executeScript("arguments[0].click();", resendBtn);
-                safeSleep(10000);
-                otp = fetchOTPFromMaildrop(mailbox, mapper, 10);
-            } catch (Exception e) { /* resend not found */ }
-        }
-        Assert.assertFalse(otp.isEmpty(), "[Step 19] Could not fetch OTP for Member 6");
-        log.info("  OTP: {}", otp);
-
-        // Enter OTP + Verify
-        WebElement otpField = null;
-        try { otpField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#otp-field-3"))); }
-        catch (Exception e) { otpField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[contains(@id,'otp-field')]"))); }
-        otpField.clear();
-        otpField.sendKeys(otp);
-        safeSleep(500);
-        WebElement verifyBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@id='btn-otp-verify-header']")));
-        try { verifyBtn.click(); } catch (Exception e) { js.executeScript("arguments[0].click();", verifyBtn); }
-        safeSleep(3000);
+        // Use loginPage.login() which has robust fallbacks for CI
+        loginPage.login(member6Email, null);
+        log.info("  ✅ Member 6 logged in: {}", member6Email);
         Assert.assertTrue(loginPage.isLoginSuccessful(), "[Step 19] Member 6 login failed");
 
         // Handle Update fields popup
         safeSleep(3000);
         try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             WebElement submitPopup = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Submit']")));
             js.executeScript("arguments[0].click();", submitPopup);
             safeSleep(3000);
@@ -488,6 +435,7 @@ public class CreateYouthClubTest extends BaseTest {
         safeSleep(2000);
 
         // Click Accept
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         try {
             WebElement acceptBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Accept')]")));
             js.executeScript("arguments[0].click();", acceptBtn);
