@@ -83,8 +83,8 @@ public class BaseTest {
 
         WebDriver newDriver = createDriver(browserName);
         newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
-        // Use --start-maximized flag in Chrome options instead of window().maximize()
-        // which fails on Chrome 149+ due to deprecated CDP Runtime.evaluate command
+        // Force window to full screen size for element visibility
+        newDriver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
         driverThreadLocal.set(newDriver);
         this.driver = newDriver;
     }
