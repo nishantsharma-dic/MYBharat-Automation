@@ -617,6 +617,7 @@ public class RegisterMembersForYouthClubTest {
 
         WebDriver driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
+        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
         return driver;
     }
 
