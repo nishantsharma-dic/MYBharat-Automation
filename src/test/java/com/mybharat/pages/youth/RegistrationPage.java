@@ -250,7 +250,7 @@ public class RegistrationPage extends BasePage {
         waitForPageLoad();
 
         // Wait for registration form to appear
-        int verifyTimeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 30 : 10;
+        int verifyTimeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 45 : 10;
         try {
             new WebDriverWait(driver, Duration.ofSeconds(verifyTimeout)).until(
                     d -> d.findElements(By.id("firstname")).size() > 0
@@ -273,7 +273,7 @@ public class RegistrationPage extends BasePage {
      */
     public void fillRegistrationForm() throws InterruptedException {
         // Wait for registration form to load (longer on CI due to network latency)
-        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 15;
+        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 90 : 15;
         try {
             new WebDriverWait(driver, Duration.ofSeconds(timeout)).until(
                     ExpectedConditions.visibilityOf(firstNameInput));

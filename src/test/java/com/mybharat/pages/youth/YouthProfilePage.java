@@ -104,7 +104,7 @@ public class YouthProfilePage extends BasePage {
 
     public YouthProfilePage(WebDriver driver) {
         super(driver);
-        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 45 : 15;
+        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 20;
         this.longWait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
     }
 
