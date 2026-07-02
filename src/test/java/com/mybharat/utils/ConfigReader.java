@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
  *   - getProperty(key)   — returns any property value by key
  *   - getEnv()           — returns current environment name (beta/prod)
  *   - getUrl()           — returns the base application URL
- *   - getDummyEmailUrl() — returns the Yopmail URL for OTP retrieval
+ *   - getDummyEmailUrl() — returns the Maildrop API URL for OTP retrieval
  *   - getPassword()      — returns the default test password
  *
  * Usage:

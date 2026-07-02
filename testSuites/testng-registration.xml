@@ -10,15 +10,15 @@
   
   Flow:
     1. Open MYBharat → close popup → click "Register Now" → "Register" (Indian)
-    2. Enter auto-generated @yopmail.com email → Request OTP
-    3. Open Yopmail in new tab → extract OTP → verify OTP
+    2. Enter auto-generated @maildrop.cc email → Request OTP
+    3. Open Maildrop API in new tab → extract OTP → verify OTP
     4. Fill registration form (name, DOB, gender, state, district, education, etc.)
     5. Submit form → handle confirmation popup
     6. Save email to Youth_{env}.xlsx for subsequent login tests
     7. Verify user exists in database via Redash (if credentials provided)
   
   Prerequisites:
-    - Yopmail must be accessible for OTP retrieval
+    - Maildrop API must be accessible for OTP retrieval
     - resources/ folder must be writable for Excel file creation
   
   Run with:

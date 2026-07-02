@@ -538,7 +538,7 @@ public class CreateYouthClubPage extends BasePage {
             }
             safeSleep(2000); // Wait for member row to appear
 
-            // For all 6 members: Send OTP → Get from Yopmail → Enter → Verify
+            // For all 6 members: Send OTP → Get from Maildrop API → Enter → Verify
             // Member 6 (addedCount == 5): Skip OTP — will accept invite by logging in later
             if (addedCount < 5) {
                 try {

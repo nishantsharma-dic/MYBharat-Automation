@@ -17,7 +17,7 @@
     Step 2: Youth Profile Completion — Complete all sections including public profile verification
   
   Prerequisites:
-    - Yopmail must be accessible (for OTP in registration)
+    - Maildrop API must be accessible (for OTP in registration)
     - resources/ folder must be writable (Excel persistence)
     - UploadImages/ folder must contain test images (for profile photo upload)
   
