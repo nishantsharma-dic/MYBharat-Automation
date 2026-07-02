@@ -45,9 +45,11 @@ public class SuperAdminLoginPage extends BasePage {
     private static final By LOGIN_WITH_PASSWORD_LINK = By.xpath(
             "//a[contains(text(),'Login with Password')] | //span[contains(text(),'Login with Password')]");
 
-    // Step 3: Mobile/Username input (password modal)
+    // Step 3: Mobile/Username input (password modal or login page)
     private static final By USERNAME_INPUT = By.xpath(
-            "//input[@id='otp_login_header'] | //input[contains(@placeholder,'Enter here')]");
+            "//input[@id='otp_login_header'] | //input[contains(@placeholder,'Enter here')] | " +
+            "//input[contains(@placeholder,'Enter mobile')] | //input[contains(@placeholder,'Mobile')] | " +
+            "//input[@type='tel'] | //input[@name='mobile'] | //input[@id='mobile']");
 
     // Step 4: Password input
     private static final By PASSWORD_INPUT = By.xpath(
@@ -163,11 +165,17 @@ public class SuperAdminLoginPage extends BasePage {
             try {
                 jsClick(driver.findElement(SIGN_IN_LINK));
             } catch (Exception e2) {
-                // Fallback: navigate to /login directly
-                log.warn("Sign In not found, navigating to /login directly");
-                driver.get(config.getUrl() + "/login");
+                // Fallback: navigate to admin login URL directly
+                log.warn("Sign In not found, navigating to admin login directly");
+                driver.get(config.getUrl() + "/admin/login");
                 waitForPageLoad();
-                safeSleep(2000);
+                safeSleep(3000);
+                // If /admin/login doesn't exist, try /login
+                if (driver.getCurrentUrl().contains("404") || driver.getTitle().contains("Not Found")) {
+                    driver.get(config.getUrl() + "/login");
+                    waitForPageLoad();
+                    safeSleep(3000);
+                }
             }
         }
         log.info("Clicked Sign In");
