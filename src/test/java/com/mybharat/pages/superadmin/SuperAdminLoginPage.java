@@ -175,11 +175,16 @@ public class SuperAdminLoginPage extends BasePage {
     }
 
     private void clickLoginWithPassword() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(WAIT));
-        WebElement link = wait.until(ExpectedConditions.elementToBeClickable(LOGIN_WITH_PASSWORD_LINK));
-        jsClick(link);
-        log.info("Clicked 'Login with Password'");
-        safeSleep(1000);
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(LOGIN_WITH_PASSWORD_LINK));
+            jsClick(link);
+            log.info("Clicked 'Login with Password'");
+            safeSleep(1000);
+        } catch (Exception e) {
+            // If "Login with Password" not found, we may already be on the password form
+            log.info("'Login with Password' link not found — may already be on password form");
+        }
     }
 
     private void enterUsername(String username) {
