@@ -62,13 +62,19 @@ public class CreateYouthClubTest extends BaseTest {
                 + "resources" + File.separator + "Youth_" + env + ".xlsx";
         try (FileInputStream fis = new FileInputStream(youthPath);
              Workbook wb = new XSSFWorkbook(fis)) {
-            Sheet sheet = wb.getSheet("UserData");
-            if (sheet == null) sheet = wb.getSheetAt(0);
-            // Use second-to-last row to avoid collision with Youth Flow (which uses last row)
-            int targetRow = sheet.getLastRowNum() - 1;
-            if (targetRow < 1) targetRow = sheet.getLastRowNum();
-            Row row = sheet.getRow(targetRow);
-            loginEmail = row.getCell(0).getStringCellValue().trim();
+            // First try YouthClubMembers sheet (has fresh @maildrop.cc emails from current run)
+            Sheet sheet = wb.getSheet("YouthClubMembers");
+            if (sheet != null && sheet.getLastRowNum() >= 1) {
+                Row row = sheet.getRow(sheet.getLastRowNum());
+                loginEmail = row.getCell(0).getStringCellValue().trim();
+            } else {
+                // Fallback: UserData sheet (last row)
+                sheet = wb.getSheet("UserData");
+                if (sheet == null) sheet = wb.getSheetAt(0);
+                int targetRow = sheet.getLastRowNum();
+                Row row = sheet.getRow(targetRow);
+                loginEmail = row.getCell(0).getStringCellValue().trim();
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to read Youth_" + env + ".xlsx: " + e.getMessage(), e);
         }
