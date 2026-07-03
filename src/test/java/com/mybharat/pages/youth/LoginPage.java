@@ -256,9 +256,9 @@ public class LoginPage extends BasePage {
                     org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-            // Poll for new email (max 30 seconds)
-            for (int attempt = 1; attempt <= 10; attempt++) {
-                Thread.sleep(3000);
+            // Poll for new email (max 60 seconds)
+            for (int attempt = 1; attempt <= 15; attempt++) {
+                Thread.sleep(4000);
 
                 org.apache.hc.client5.http.classic.methods.HttpPost listReq =
                         new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
