@@ -170,14 +170,25 @@ public class LoginPage extends BasePage {
             WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(signInLink));
             signIn.click();
         } catch (Exception e) {
-            // Fallback: try JS click, then direct URL navigation
+            // Retry: refresh page and try again
+            log.warn("Sign In not found, refreshing page and retrying...");
+            driver.navigate().refresh();
+            waitForPageLoad();
+            safeSleep(3000);
             try {
-                jsClick(signInLink);
+                WebElement signIn = new WebDriverWait(driver, Duration.ofSeconds(30))
+                        .until(ExpectedConditions.elementToBeClickable(signInLink));
+                signIn.click();
             } catch (Exception e2) {
-                log.warn("Sign In element not found, navigating directly to login page");
-                driver.get(config.getUrl() + "/login");
-                waitForPageLoad();
-                safeSleep(2000);
+                // Final fallback: navigate directly to login page
+                try {
+                    jsClick(signInLink);
+                } catch (Exception e3) {
+                    log.warn("Sign In still not found after refresh, navigating to /login");
+                    driver.get(config.getUrl() + "/login");
+                    waitForPageLoad();
+                    safeSleep(2000);
+                }
             }
         }
         log.info("Clicked Sign In");
