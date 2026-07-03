@@ -407,7 +407,23 @@ public class RegisterMembersForYouthClubTest {
             log.info("[Member {}] OTP requested for: {} (prevCount={})", memberNum, email, prevInboxCount);
 
             // Step 3: Fetch OTP — wait for NEW message (count > prevCount)
-            String otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
+            // If Maildrop doesn't deliver within 60s, click Resend OTP and try again
+            String otp = null;
+            try {
+                otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
+            } catch (Exception e) {
+                log.warn("[Member {}] First OTP attempt failed, clicking Resend OTP...", memberNum);
+                try {
+                    WebElement resendBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//*[contains(text(),'Resend') or contains(text(),'resend')]")));
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", resendBtn);
+                    safeSleep(5000);
+                    otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
+                } catch (Exception e2) {
+                    throw new RuntimeException("OTP not received for member " + memberNum + " after resend: " + e2.getMessage());
+                }
+            }
             log.info("[Member {}] OTP fetched: {}", memberNum, otp);
 
             // Step 4: Enter OTP and verify
@@ -541,7 +557,7 @@ public class RegisterMembersForYouthClubTest {
                 safeSleep(3000);
             }
         }
-        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived)");
+        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived after 60s + resend)");
     }
 
     // =========================================================================
