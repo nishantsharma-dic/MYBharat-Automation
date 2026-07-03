@@ -479,12 +479,12 @@ public class RegisterMembersForYouthClubTest {
         String mailbox = email.split("@")[0];
         log.info("[Member {}] Waiting for NEW OTP email (prevCount={})", memberNum, prevInboxCount);
 
-        // Wait for new email to arrive (poll every 2 seconds, max 30 seconds)
-        safeSleep(3000); // initial wait
+        // Wait for new email to arrive (poll every 3 seconds, max 60 seconds)
+        safeSleep(5000); // initial wait — give mybharat server time to send email
 
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        for (int attempt = 1; attempt <= 10; attempt++) {
+        for (int attempt = 1; attempt <= 15; attempt++) {
             try {
                 org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
                         org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
@@ -502,10 +502,10 @@ public class RegisterMembersForYouthClubTest {
                 int currentCount = inbox.size();
 
                 if (currentCount <= prevInboxCount) {
-                    log.info("[Member {}] Waiting for new email (attempt {}/10, count={}/{})",
+                    log.info("[Member {}] Waiting for new email (attempt {}/15, count={}/{})",
                             memberNum, attempt, currentCount, prevInboxCount);
                     client.close();
-                    safeSleep(2000);
+                    safeSleep(3000);
                     continue;
                 }
 
