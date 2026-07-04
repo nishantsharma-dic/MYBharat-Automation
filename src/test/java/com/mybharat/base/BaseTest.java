@@ -82,8 +82,9 @@ public class BaseTest {
                 browserName, config.getEnv(), Thread.currentThread().getName());
 
         WebDriver newDriver = createDriver(browserName);
-        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        newDriver.manage().window().maximize();
+        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+        // Force window to full screen size for element visibility
+        newDriver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
         driverThreadLocal.set(newDriver);
         this.driver = newDriver;
     }
@@ -167,7 +168,8 @@ public class BaseTest {
                     "--remote-allow-origins=*",
                     "--disable-blink-features=AutomationControlled",
                     "--no-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--start-maximized"
                 );
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
@@ -191,8 +193,16 @@ public class BaseTest {
                     "--window-size=1920,1080",
                     "--no-sandbox",
                     "--disable-dev-shm-usage",
-                    "--remote-allow-origins=*"
+                    "--remote-allow-origins=*",
+                    "--disable-blink-features=AutomationControlled",
+                    "--disable-extensions",
+                    "--disable-popup-blocking",
+                    "--disable-infobars",
+                    "--disable-background-timer-throttling",
+                    "--disable-renderer-backgrounding",
+                    "--force-device-scale-factor=1"
                 );
+                options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
                 // Set download directory for headless mode
                 String headlessDownloadDir = System.getProperty("user.dir") + File.separator + "downloads";

@@ -16,13 +16,13 @@
   Flow:
     Step 1: Registration — Register new Indian youth, save email to Excel
     Step 2: Logout — Log out the newly registered user
-    Step 3: Login — Re-login using email from Excel (OTP via Yopmail)
+    Step 3: Login — Re-login using email from Excel (OTP via Maildrop API)
     Step 4: Profile — Complete all profile sections (photo, about, education, etc.)
     Step 5: Quiz — Attempt competitive quiz with random answers, submit with feedback
     Step 6: Blog — Write, preview, and publish a blog post
   
   Prerequisites:
-    - Yopmail must be accessible (for OTP in registration and login)
+    - Maildrop API must be accessible (for OTP in registration and login)
     - resources/ folder must be writable (Excel persistence)
     - UploadImages/ folder must contain test images (for profile photo upload)
   

@@ -27,8 +27,8 @@ import com.mybharat.utils.RedashClient;
  * Flow:
  *   1. registerIndianYouth():
  *      - Open app → close popup → click "Register for Indian"
- *      - Enter generated @yopmail.com email → Request OTP
- *      - Open Yopmail in new tab → fetch OTP → verify OTP
+ *      - Enter generated @maildrop.cc email → Request OTP
+ *      - Open Maildrop API in new tab → fetch OTP → verify OTP
  *      - Fill registration form (name, DOB, gender, location, education, sport)
  *      - Submit form → handle confirmation popup
  *      - Save email to Youth_{env}.xlsx for subsequent login tests
