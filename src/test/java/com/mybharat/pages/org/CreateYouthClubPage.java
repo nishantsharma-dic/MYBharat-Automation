@@ -598,10 +598,10 @@ public class CreateYouthClubPage extends BasePage {
                     // NOW click Send OTP
                     jsClick(sendOtp);
                     log.info("  Send OTP clicked for member {}", i + 1);
-                    safeSleep(5000); // Initial wait for email delivery via AWS SES
+                    safeSleep(8000); // Initial wait for email delivery (AWS SES → Maildrop can take 30-60s from overseas)
 
                     String otp = "";
-                    for (int otpAttempt = 1; otpAttempt <= 8; otpAttempt++) {
+                    for (int otpAttempt = 1; otpAttempt <= 15; otpAttempt++) {
                         try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
                                 org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
 
@@ -618,8 +618,8 @@ public class CreateYouthClubPage extends BasePage {
                             com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
 
                             if (inbox.size() <= prevCount) {
-                                log.info("  No NEW email yet for {} (attempt {}/8, count={})", mailbox, otpAttempt, inbox.size());
-                                safeSleep(3000);
+                                log.info("  No NEW email yet for {} (attempt {}/15, count={})", mailbox, otpAttempt, inbox.size());
+                                safeSleep(4000);
                                 continue;
                             }
 
@@ -649,10 +649,10 @@ public class CreateYouthClubPage extends BasePage {
                                 java.util.regex.Matcher mIs = java.util.regex.Pattern.compile("(?:OTP|is)\\s+(?:<[^>]+>)*(\\d{6})").matcher(body);
                                 if (mIs.find()) { otp = mIs.group(1); break; }
                             }
-                            safeSleep(3000);
+                            safeSleep(4000);
                         } catch (Exception apiEx) {
-                            log.warn("  Maildrop API error (attempt {}/8): {}", otpAttempt, apiEx.getMessage());
-                            safeSleep(3000);
+                            log.warn("  Maildrop API error (attempt {}/15): {}", otpAttempt, apiEx.getMessage());
+                            safeSleep(4000);
                         }
                     }
                     log.info("  OTP extracted via Maildrop API: {}", otp);
