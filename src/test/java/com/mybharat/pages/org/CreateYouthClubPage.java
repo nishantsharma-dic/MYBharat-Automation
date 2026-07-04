@@ -783,6 +783,7 @@ public class CreateYouthClubPage extends BasePage {
         log.info("Clicking SUBMIT");
         js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
         safeSleep(1000);
+
         // Try multiple locators for Submit button
         WebElement btn = null;
         String[] submitXpaths = {
@@ -799,26 +800,74 @@ public class CreateYouthClubPage extends BasePage {
                 if (btn != null) break;
             } catch (Exception e) { /* try next */ }
         }
-        if (btn == null) {
-            // JS fallback
-            js.executeScript(
-                    "var btns = document.querySelectorAll('ion-button, button');" +
-                    "for(var i=0; i<btns.length; i++) {" +
-                    "  var t = (btns[i].textContent||'').trim().toLowerCase();" +
-                    "  if(t.indexOf('submit') >= 0) { btns[i].click(); return; }" +
-                    "}");
-        } else {
-            scrollToElement(btn);
-            jsClick(btn);
+
+        // Click with retry — ensure Angular processes the click
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            if (btn != null) {
+                scrollToElement(btn);
+                safeSleep(500);
+                jsClick(btn);
+                log.info("  Submit clicked (attempt {})", attempt);
+            } else {
+                // JS fallback
+                js.executeScript(
+                        "var btns = document.querySelectorAll('ion-button, button');" +
+                        "for(var i=0; i<btns.length; i++) {" +
+                        "  var t = (btns[i].textContent||'').trim().toLowerCase();" +
+                        "  if(t.indexOf('submit') >= 0) { btns[i].click(); return; }" +
+                        "}");
+                log.info("  Submit clicked via JS fallback (attempt {})", attempt);
+            }
+
+            safeSleep(3000);
+
+            // Check if submission went through (page navigated away from create-org)
+            String currentUrl = driver.getCurrentUrl();
+            String src = driver.getPageSource().toLowerCase();
+            if (!currentUrl.contains("create-org") || src.contains("go to my bharat profile")
+                    || src.contains("successfully")) {
+                log.info("✅ Submitted successfully");
+                waitForPageLoad();
+                return;
+            }
+
+            // Still on create-org page — click might not have registered, retry
+            log.warn("  Still on create-org after attempt {} — retrying", attempt);
+            safeSleep(2000);
         }
-        safeSleep(3000);
-        waitForPageLoad();
-        log.info("✅ Submitted");
+
+        // Final fallback: force click via shadow DOM (ion-button native button)
+        try {
+            js.executeScript(
+                    "var ionBtns = document.querySelectorAll('ion-button');" +
+                    "for(var i=0; i<ionBtns.length; i++) {" +
+                    "  var t = (ionBtns[i].textContent||'').trim().toLowerCase();" +
+                    "  if(t.indexOf('submit') >= 0 && ionBtns[i].shadowRoot) {" +
+                    "    ionBtns[i].shadowRoot.querySelector('button.button-native').click();" +
+                    "    return;" +
+                    "  }" +
+                    "}");
+            safeSleep(3000);
+            waitForPageLoad();
+            log.info("✅ Submitted (shadow DOM fallback)");
+        } catch (Exception e) {
+            log.warn("Shadow DOM submit fallback failed: {}", e.getMessage());
+        }
     }
 
     public boolean isSubmissionSuccessful() {
-        String src = driver.getPageSource().toLowerCase();
-        return src.contains("success") || !driver.getCurrentUrl().contains("create-org");
+        // Wait for actual success indicator — "GO TO MY BHARAT PROFILE" button only appears on real success
+        try {
+            return new WebDriverWait(driver, Duration.ofSeconds(20)).until(d -> {
+                String src = d.getPageSource().toLowerCase();
+                return src.contains("go to my bharat profile")
+                        || src.contains("successfully submitted")
+                        || src.contains("organization has been submitted");
+            });
+        } catch (Exception e) {
+            log.warn("Submission success not confirmed — page source check failed");
+            return false;
+        }
     }
 
     public void clickGoToProfile() {
