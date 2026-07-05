@@ -55,15 +55,12 @@ public class CreateYouthClubTest extends BaseTest {
         loginPage = new LoginPage(driver);
         logoutPage = new LogoutPage(driver);
         createOrgPage = new CreateYouthClubPage(driver);
-
-        // Generate creator email: ycpartnera{N}@maildrop.cc (auto-increment from Partner Excel)
-        loginEmail = generateCreatorEmail();
-        log.info("[SETUP] Creator email (will register): {}", loginEmail);
+        log.info("[SETUP] Pages initialized — creator email will be generated at test start");
     }
 
     /**
      * Generate next ycpartnera{timestamp}{N}@maildrop.cc email.
-     * Timestamp ensures uniqueness — never reuses an existing email.
+     * Timestamp includes seconds — ensures uniqueness even on retry.
      */
     private String generateCreatorEmail() {
         ConfigReader cfg = new ConfigReader();
@@ -83,11 +80,11 @@ public class CreateYouthClubTest extends BaseTest {
                 log.warn("Could not read Partner Excel for creator number: {}", e.getMessage());
             }
         }
-        // Format: ycpartnera + YYMMDDHHmm + N (e.g., ycpartnera2607041930n1@maildrop.cc)
+        // Format: ycpartnera + YYMMDDHHmmss + N (includes seconds for uniqueness)
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        String timestamp = String.format("%02d%02d%02d%02d%02d",
+        String timestamp = String.format("%02d%02d%02d%02d%02d%02d",
                 now.getYear() % 100, now.getMonthValue(), now.getDayOfMonth(),
-                now.getHour(), now.getMinute());
+                now.getHour(), now.getMinute(), now.getSecond());
         return "ycpartnera" + timestamp + "n" + nextNum + "@maildrop.cc";
     }
 
@@ -99,13 +96,17 @@ public class CreateYouthClubTest extends BaseTest {
     public void step15_submit() throws Exception {
         log.info("═══ CREATE YOUTH CLUB — Full Flow ═══");
 
+        // Generate fresh creator email (ensures uniqueness even on retry)
+        loginEmail = generateCreatorEmail();
+        log.info("[SETUP] Creator email: {}", loginEmail);
+
         // Ensure clean state (handles retry scenario)
         try {
             driver.get(new ConfigReader().getUrl());
             safeSleep(2000);
         } catch (Exception e) { /* ignore */ }
 
-        // Step 1: Register creator user (ycpartnera{N}@maildrop.cc)
+        // Step 1: Register creator user (ycpartnera{timestamp}n{N}@maildrop.cc)
         log.info("▶ Step 1: Register creator: {}", loginEmail);
         registerCreatorUser();
 
