@@ -28,7 +28,7 @@
         <env>beta</env>
 
         <!-- Dependency versions – single place to update -->
-        <selenium.version>4.12.1</selenium.version>
+        <selenium.version>4.27.0</selenium.version>
         <testng.version>7.8.0</testng.version>
         <extent.version>5.1.1</extent.version>
         <webdrivermanager.version>5.6.3</webdrivermanager.version>
