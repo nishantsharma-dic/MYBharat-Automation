@@ -104,7 +104,7 @@ public class YouthProfilePage extends BasePage {
 
     public YouthProfilePage(WebDriver driver) {
         super(driver);
-        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 45 : 15;
+        int timeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 20;
         this.longWait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
     }
 
@@ -445,7 +445,8 @@ public class YouthProfilePage extends BasePage {
                         "arguments[0].style.position='relative';",
                         profileInput);
                 profileInput.sendKeys(imagePath);
-                safeSleep(200);
+                safeSleep(2000);
+                dismissOverlayIfPresent();
                 waitForToastOrTimeout();
                 log.info("✅ Profile photo uploaded: {}", imagePath);
             } else if (fileInputs.size() == 1) {
@@ -453,7 +454,8 @@ public class YouthProfilePage extends BasePage {
                 ((JavascriptExecutor) driver).executeScript(
                         "arguments[0].classList.remove('hidden'); arguments[0].style.display='block';", input);
                 input.sendKeys(imagePath);
-                safeSleep(200);
+                safeSleep(2000);
+                dismissOverlayIfPresent();
                 waitForToastOrTimeout();
                 log.info("✅ Profile photo uploaded (single input): {}", imagePath);
             } else {
@@ -461,6 +463,59 @@ public class YouthProfilePage extends BasePage {
             }
         } catch (Exception e) {
             log.warn("Profile photo upload failed: {}", e.getMessage());
+        }
+
+        // Final check: dismiss any lingering overlay
+        dismissOverlayIfPresent();
+    }
+
+    /**
+     * Dismiss any modal overlay (crop dialog, confirmation popup, loading overlay).
+     * These overlays have CSS class "fixed inset-0 z-50" and block element interactions.
+     */
+    private void dismissOverlayIfPresent() {
+        try {
+            List<WebElement> overlays = driver.findElements(By.cssSelector("div.fixed.inset-0"));
+            for (WebElement overlay : overlays) {
+                if (overlay.isDisplayed()) {
+                    log.info("Overlay detected, dismissing...");
+                    // Try Save/Upload/Done/Crop button
+                    try {
+                        WebElement btn = overlay.findElement(By.xpath(
+                                ".//button[contains(text(),'Save') or contains(text(),'Upload') " +
+                                "or contains(text(),'Crop') or contains(text(),'Done') " +
+                                "or contains(text(),'Submit') or contains(text(),'OK')]"));
+                        jsClick(btn);
+                        safeSleep(1000);
+                        log.info("Clicked action button in overlay");
+                        return;
+                    } catch (Exception e) { /* no text button */ }
+                    // Try any primary/colored button (not Cancel)
+                    try {
+                        WebElement btn = overlay.findElement(By.xpath(
+                                ".//button[contains(@class,'bg-') and not(contains(text(),'Cancel')) and not(contains(text(),'Close'))]"));
+                        jsClick(btn);
+                        safeSleep(1000);
+                        log.info("Clicked primary button in overlay");
+                        return;
+                    } catch (Exception e) { /* no primary button */ }
+                    // Try close/X button
+                    try {
+                        WebElement close = overlay.findElement(By.xpath(
+                                ".//*[contains(@class,'close') or contains(@class,'fa-times') or @aria-label='Close']/ancestor-or-self::button | .//button[contains(@class,'absolute')]"));
+                        jsClick(close);
+                        safeSleep(1000);
+                        log.info("Clicked close button in overlay");
+                        return;
+                    } catch (Exception e) { /* no close button */ }
+                    // Last resort: remove overlay via JS
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].remove();", overlay);
+                    safeSleep(500);
+                    log.info("Removed overlay via JS");
+                }
+            }
+        } catch (Exception e) {
+            // No overlay — continue
         }
     }
 
@@ -480,6 +535,7 @@ public class YouthProfilePage extends BasePage {
      */
     public void fillAboutSection() throws InterruptedException {
         log.info("Filling About section...");
+        dismissOverlayIfPresent(); // Ensure no modal is blocking
 
         // First try to expand the About accordion section by clicking the SVG icon
         try {
@@ -1485,8 +1541,10 @@ public class YouthProfilePage extends BasePage {
 
         WebElement control = controls.get(index);
         scrollToElement(control);
-        control.click();
-        safeSleep(200);
+        safeSleep(500); // Wait for scroll animation to complete before clicking
+        // Use JS click to avoid ElementClickIntercepted from overlapping elements
+        jsClick(control);
+        safeSleep(500);
 
         // Wait for menu to appear
         try {

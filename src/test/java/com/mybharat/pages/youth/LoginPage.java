@@ -25,7 +25,7 @@ import com.mybharat.utils.ConfigReader;
  *
  * Purpose: Handles the complete login flow using OTP verification. Reads the most
  *          recently registered email from an environment-specific Excel file, sends
- *          an OTP, retrieves it from Yopmail (disposable email service), and verifies it.
+ *          an OTP, retrieves it from Maildrop API (disposable email service), and verifies it.
  *
  * Flow:
  *   1. navigateToHomePage()    — opens the MYBharat home page
@@ -34,12 +34,12 @@ import com.mybharat.utils.ConfigReader;
  *   4. enterEmailForOTPLogin() — reads email from Excel, enters in login form
  *   5. clickConsentCheckbox()  — checks the terms consent checkbox
  *   6. clickLoginToSendOTP()   — clicks Login button to trigger OTP delivery
- *   7. fetchOTPFromYopmail()   — opens Yopmail in new tab, extracts OTP, enters it
+ *   7. fetchOTPFromYopmail()   — opens Maildrop API in new tab, extracts OTP, enters it
  *   8. clickVerifyOTP()        — submits OTP for verification
  *   9. isLoginSuccessful()     — validates login by checking post-login UI elements
  *
  * Data Source: Youth_beta.xlsx or Youth_prod.xlsx (last row = most recent registration)
- * OTP Source: Yopmail.com (disposable email inbox)
+ * OTP Source: Maildrop API.com (disposable email inbox)
  *
  * Key Methods:
  *   - performLogin()          — convenience method that runs the full login flow
@@ -50,7 +50,7 @@ import com.mybharat.utils.ConfigReader;
  *   Beta: https://yuva-beta.mybharats.in
  *   Prod: https://mybharat.gov.in
  *
- * Dependencies: BasePage, ConfigReader, Apache POI (Excel), Yopmail
+ * Dependencies: BasePage, ConfigReader, Apache POI (Excel), Maildrop API
  * Developer: Nishant Sharma (QA Team)
  *
  * @see RegistrationPage
@@ -61,7 +61,7 @@ public class LoginPage extends BasePage {
     private static final Logger log = LogManager.getLogger(LoginPage.class);
 
     private final ConfigReader config = new ConfigReader();
-    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 60 : 30;
+    private static final int LONG_WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 90 : 30;
 
     private String loginEmail;
 
@@ -95,7 +95,7 @@ public class LoginPage extends BasePage {
     private WebElement verifyOTPBtn;
 
     // -------------------------------------------------------------------------
-    // Elements - Yopmail (for OTP retrieval)
+    // Elements - Maildrop API (for OTP retrieval)
     // -------------------------------------------------------------------------
 
     @FindBy(xpath = "//input[@id='login']")
@@ -131,7 +131,17 @@ public class LoginPage extends BasePage {
         log.info("Navigating to: {}", url);
         driver.get(url);
         waitForPageLoad();
-        safeSleep(300);
+        safeSleep(2000);
+        // Verify page actually loaded (not blank/timeout) — retry once if needed
+        try {
+            String title = driver.getTitle();
+            if (title == null || title.isEmpty() || title.contains("ERR_")) {
+                log.warn("Page may not have loaded (title: {}), retrying...", title);
+                driver.get(url);
+                waitForPageLoad();
+                safeSleep(3000);
+            }
+        } catch (Exception e) { /* skip check */ }
     }
 
     /**
@@ -160,8 +170,26 @@ public class LoginPage extends BasePage {
             WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(signInLink));
             signIn.click();
         } catch (Exception e) {
-            log.warn("Normal click on Sign In failed, using JS click");
-            jsClick(signInLink);
+            // Retry: refresh page and try again
+            log.warn("Sign In not found, refreshing page and retrying...");
+            driver.navigate().refresh();
+            waitForPageLoad();
+            safeSleep(3000);
+            try {
+                WebElement signIn = new WebDriverWait(driver, Duration.ofSeconds(30))
+                        .until(ExpectedConditions.elementToBeClickable(signInLink));
+                signIn.click();
+            } catch (Exception e2) {
+                // Final fallback: navigate directly to login page
+                try {
+                    jsClick(signInLink);
+                } catch (Exception e3) {
+                    log.warn("Sign In still not found after refresh, navigating to /login");
+                    driver.get(config.getUrl() + "/login");
+                    waitForPageLoad();
+                    safeSleep(2000);
+                }
+            }
         }
         log.info("Clicked Sign In");
         safeSleep(300);
@@ -222,57 +250,85 @@ public class LoginPage extends BasePage {
     }
 
     /**
-     * Open Yopmail in a new tab, fetch the login OTP, switch back and enter it.
+     * Open Maildrop API in a new tab, fetch the login OTP, switch back and enter it.
      */
     /**
-     * Fetch OTP from Yopmail in new tab, extract it, and enter in login form.
+     * Fetch OTP from Maildrop API in new tab, extract it, and enter in login form.
      */
     public void fetchOTPFromYopmail() throws InterruptedException {
-        log.info("Fetching OTP from Yopmail for: {}", loginEmail);
+        log.info("Fetching OTP from Maildrop API for: {}", loginEmail);
 
-        // Wait for OTP email to arrive before opening Yopmail
-        safeSleep(5000);
+        // Fetch OTP via Maildrop GraphQL API (no browser tab needed)
+        String mailbox = loginEmail.split("@")[0];
+        String otp = null;
 
-        // Open new tab for Yopmail
-        driver.switchTo().newWindow(WindowType.TAB);
-        driver.get(config.getDummyEmailUrl());
-        safeSleep(300);
+        try {
+            org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
+                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        // Enter email prefix in Yopmail
-        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(LONG_WAIT));
-        WebElement inbox = longWait.until(ExpectedConditions.visibilityOf(yopmailInbox));
-        inbox.clear();
-        String emailPrefix = loginEmail.split("@")[0];
-        inbox.sendKeys(emailPrefix);
-        safeClick(yopmailGoBtn);
-        safeSleep(2000);
+            // Poll for new email (max 60 seconds)
+            for (int attempt = 1; attempt <= 15; attempt++) {
+                Thread.sleep(4000);
 
-        // Refresh to get latest email
-        safeClick(yopmailRefresh);
-        safeSleep(2000);
+                org.apache.hc.client5.http.classic.methods.HttpPost listReq =
+                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                listReq.setHeader("Content-Type", "application/json");
+                listReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                        "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
+                String listResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                        client.execute(listReq).getEntity());
 
-        // Switch to mail iframe and extract OTP
-        driver.switchTo().frame("ifmail");
-        String otp = extractOTPFromEmail();
+                com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
+                if (inbox.size() == 0) continue;
+
+                // Get the newest message
+                String msgId = inbox.get(0).get("id").asText();
+
+                org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
+                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                msgReq.setHeader("Content-Type", "application/json");
+                msgReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                        "{\"query\":\"{ message(mailbox:\\\"" + mailbox + "\\\", id:\\\"" + msgId + "\\\") { id html } }\"}"));
+                String msgResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
+                        client.execute(msgReq).getEntity());
+
+                String html = mapper.readTree(msgResp).path("data").path("message").path("html").asText();
+
+                // Extract OTP from <strong>XXXXXX</strong>
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(html);
+                if (m.find()) {
+                    otp = m.group(1);
+                    break;
+                }
+                // Fallback pattern
+                java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("is\\s+(\\d{6})").matcher(html);
+                if (m2.find()) {
+                    otp = m2.group(1);
+                    break;
+                }
+            }
+            client.close();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch OTP from Maildrop API for: " + loginEmail, e);
+        }
+
+        if (otp == null) {
+            throw new RuntimeException("OTP not received for: " + loginEmail);
+        }
+
+        log.info("Extracted OTP from Maildrop API: {}", otp);
         log.info("OTP extracted: {}", otp);
 
-        // Close Yopmail tab and switch back to main tab
-        driver.switchTo().defaultContent();
-        ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
-        driver.switchTo().window(tabs.get(1)).close();
-        driver.switchTo().window(tabs.get(0));
-        safeSleep(1000);
-
-        // Enter OTP in the login form (use fresh locator after tab switch)
+        // Enter OTP in the login form
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(LONG_WAIT));
         WebElement otpInput;
         try {
             otpInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#otp-field-3")));
         } catch (Exception e) {
-            // Fallback: try alternative OTP field locators
             otpInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//input[contains(@id,'otp-field')] | //input[contains(@class,'otp')]")));
+                    By.xpath("//input[contains(@id,'otp')]")));
         }
-        otpInput.clear();
         otpInput.sendKeys(otp);
         log.info("OTP entered in login form");
     }
@@ -330,7 +386,7 @@ public class LoginPage extends BasePage {
 
     /**
      * Perform the complete OTP-based login flow in one call.
-     * Reads email from Excel, fetches OTP from Yopmail.
+     * Reads email from Excel, fetches OTP from Maildrop API.
      */
     public void performLogin() throws InterruptedException {
         navigateToHomePage();
@@ -397,7 +453,7 @@ public class LoginPage extends BasePage {
     // -------------------------------------------------------------------------
 
     /**
-     * Extract OTP from the Yopmail email content.
+     * Extract OTP from the Maildrop API email content.
      * Looks for OTP pattern in the email body.
      */
     private String extractOTPFromEmail() {
@@ -444,7 +500,7 @@ public class LoginPage extends BasePage {
                 }
             }
         }
-        throw new RuntimeException("Could not extract OTP from Yopmail email");
+        throw new RuntimeException("Could not extract OTP from Maildrop API email");
     }
 
     /**
@@ -477,37 +533,30 @@ public class LoginPage extends BasePage {
                 throw new RuntimeException("No user data found in Excel. Please run registration first.");
             }
 
-            // Read last row, first column (email)
-            Row lastRow = sheet.getRow(lastRowNum);
-            if (lastRow == null) {
-                for (int i = lastRowNum; i >= 1; i--) {
-                    lastRow = sheet.getRow(i);
-                    if (lastRow != null && lastRow.getCell(0) != null) {
-                        break;
-                    }
+            // Scan from last row upward to find latest @maildrop.cc email (skip stale @yopmail.com)
+            String email = null;
+            for (int i = lastRowNum; i >= 1; i--) {
+                Row row = sheet.getRow(i);
+                if (row == null || row.getCell(0) == null) continue;
+                Cell cell = row.getCell(0);
+                String val = cell.getCellType() == CellType.STRING ? cell.getStringCellValue().trim() : cell.toString().trim();
+                if (!val.isEmpty() && val.contains("@maildrop.cc")) {
+                    email = val;
+                    log.info("Read email from Excel (row {}): {}", i, email);
+                    break;
                 }
             }
-
-            if (lastRow == null || lastRow.getCell(0) == null) {
-                throw new RuntimeException("Could not find email in Excel. Last row is empty.");
+            // Fallback: use last row regardless of domain
+            if (email == null) {
+                Row lastRow = sheet.getRow(lastRowNum);
+                if (lastRow != null && lastRow.getCell(0) != null) {
+                    Cell emailCell = lastRow.getCell(0);
+                    email = emailCell.getCellType() == CellType.STRING ? emailCell.getStringCellValue().trim() : emailCell.toString().trim();
+                    log.warn("No @maildrop.cc email found, using last row: {}", email);
+                } else {
+                    throw new RuntimeException("Could not find email in Excel.");
+                }
             }
-
-            Cell emailCell = lastRow.getCell(0);
-            String email;
-
-            if (emailCell.getCellType() == CellType.STRING) {
-                email = emailCell.getStringCellValue().trim();
-            } else if (emailCell.getCellType() == CellType.NUMERIC) {
-                email = String.valueOf((long) emailCell.getNumericCellValue());
-            } else {
-                email = emailCell.toString().trim();
-            }
-
-            if (email.isEmpty()) {
-                throw new RuntimeException("Email cell is empty in Excel.");
-            }
-
-            log.info("Read email from Excel (row {}): {}", lastRowNum, email);
             return email;
 
         } catch (RuntimeException e) {

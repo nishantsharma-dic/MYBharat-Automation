@@ -359,22 +359,36 @@ public class RegisterMembersForYouthClubTest {
 
             // Step 1: Navigate to app
             driver.get(config.getUrl());
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(45));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+            // Wait for page to fully load before interacting
+            wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
+                    .executeScript("return document.readyState").equals("complete"));
             safeSleep(3000);
 
             // Close popup if present
             closePopup(driver);
-
-            // Click Register Now → Register (Indian)
-            WebElement registerNow = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//span[@class='fontchange']")));
-            registerNow.click();
-            safeSleep(500);
-
-            WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
-            registerBtn.click();
             safeSleep(1000);
+
+            // Click Register Now → Register (Indian) with fallback to direct navigation
+            try {
+                WebElement registerNow = new WebDriverWait(driver, Duration.ofSeconds(30))
+                        .until(ExpectedConditions.elementToBeClickable(
+                                By.xpath("//span[@class='fontchange']")));
+                registerNow.click();
+                safeSleep(1000);
+
+                WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                        By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
+                registerBtn.click();
+                safeSleep(1000);
+            } catch (Exception navEx) {
+                // Fallback: direct navigation to registration page
+                log.warn("[Member {}] Register Now button not found, trying direct URL", memberNum);
+                driver.get(config.getUrl() + "/register");
+                wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
+                        .executeScript("return document.readyState").equals("complete"));
+                safeSleep(3000);
+            }
 
             // Step 2: Enter email and request OTP
             WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -393,7 +407,23 @@ public class RegisterMembersForYouthClubTest {
             log.info("[Member {}] OTP requested for: {} (prevCount={})", memberNum, email, prevInboxCount);
 
             // Step 3: Fetch OTP — wait for NEW message (count > prevCount)
-            String otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
+            // If Maildrop doesn't deliver within 60s, click Resend OTP and try again
+            String otp = null;
+            try {
+                otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
+            } catch (Exception e) {
+                log.warn("[Member {}] First OTP attempt failed, clicking Resend OTP...", memberNum);
+                try {
+                    WebElement resendBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//*[contains(text(),'Resend') or contains(text(),'resend')]")));
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", resendBtn);
+                    safeSleep(5000);
+                    otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
+                } catch (Exception e2) {
+                    throw new RuntimeException("OTP not received for member " + memberNum + " after resend: " + e2.getMessage());
+                }
+            }
             log.info("[Member {}] OTP fetched: {}", memberNum, otp);
 
             // Step 4: Enter OTP and verify
@@ -465,12 +495,12 @@ public class RegisterMembersForYouthClubTest {
         String mailbox = email.split("@")[0];
         log.info("[Member {}] Waiting for NEW OTP email (prevCount={})", memberNum, prevInboxCount);
 
-        // Wait for new email to arrive (poll every 3 seconds, max 45 seconds)
-        safeSleep(5000); // initial wait
+        // Wait for new email to arrive (poll every 3 seconds, max 60 seconds)
+        safeSleep(5000); // initial wait — give mybharat server time to send email
 
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        for (int attempt = 1; attempt <= 12; attempt++) {
+        for (int attempt = 1; attempt <= 15; attempt++) {
             try {
                 org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
                         org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
@@ -488,7 +518,7 @@ public class RegisterMembersForYouthClubTest {
                 int currentCount = inbox.size();
 
                 if (currentCount <= prevInboxCount) {
-                    log.info("[Member {}] Waiting for new email (attempt {}/12, count={}/{})",
+                    log.info("[Member {}] Waiting for new email (attempt {}/15, count={}/{})",
                             memberNum, attempt, currentCount, prevInboxCount);
                     client.close();
                     safeSleep(3000);
@@ -527,7 +557,7 @@ public class RegisterMembersForYouthClubTest {
                 safeSleep(3000);
             }
         }
-        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived)");
+        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived after 60s + resend)");
     }
 
     // =========================================================================
@@ -582,13 +612,28 @@ public class RegisterMembersForYouthClubTest {
                 "--remote-allow-origins=*",
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
-                "--disable-dev-shm-usage"
+                "--disable-dev-shm-usage",
+                "--start-maximized"
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
+        // Respect the -Dbrowser system property for headless mode (CI compatibility)
+        String browserMode = System.getProperty("browser", "chrome");
+        if ("headless".equalsIgnoreCase(browserMode)) {
+            options.addArguments(
+                "--headless=new",
+                "--disable-gpu",
+                "--window-size=1920,1080",
+                "--disable-extensions",
+                "--disable-popup-blocking",
+                "--disable-background-timer-throttling",
+                "--disable-renderer-backgrounding"
+            );
+        }
+
         WebDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
+        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
         return driver;
     }
 

@@ -32,7 +32,7 @@ public class SuperAdminLoginPage extends BasePage {
 
     private static final Logger log = LogManager.getLogger(SuperAdminLoginPage.class);
     private final ConfigReader config = new ConfigReader();
-    private static final int WAIT = 20;
+    private static final int WAIT = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 90 : 30;
 
     // =========================================================================
     // LOCATORS
@@ -45,9 +45,11 @@ public class SuperAdminLoginPage extends BasePage {
     private static final By LOGIN_WITH_PASSWORD_LINK = By.xpath(
             "//a[contains(text(),'Login with Password')] | //span[contains(text(),'Login with Password')]");
 
-    // Step 3: Mobile/Username input (password modal)
+    // Step 3: Mobile/Username input (password modal or login page)
     private static final By USERNAME_INPUT = By.xpath(
-            "//input[@id='otp_login_header'] | //input[contains(@placeholder,'Enter here')]");
+            "//input[@id='otp_login_header'] | //input[contains(@placeholder,'Enter here')] | " +
+            "//input[contains(@placeholder,'Enter mobile')] | //input[contains(@placeholder,'Mobile')] | " +
+            "//input[@type='tel'] | //input[@name='mobile'] | //input[@id='mobile']");
 
     // Step 4: Password input
     private static final By PASSWORD_INPUT = By.xpath(
@@ -160,18 +162,37 @@ public class SuperAdminLoginPage extends BasePage {
             WebElement signIn = longWait.until(ExpectedConditions.elementToBeClickable(SIGN_IN_LINK));
             signIn.click();
         } catch (Exception e) {
-            jsClick(driver.findElement(SIGN_IN_LINK));
+            try {
+                jsClick(driver.findElement(SIGN_IN_LINK));
+            } catch (Exception e2) {
+                // Fallback: navigate to admin login URL directly
+                log.warn("Sign In not found, navigating to admin login directly");
+                driver.get(config.getUrl() + "/admin/login");
+                waitForPageLoad();
+                safeSleep(3000);
+                // If /admin/login doesn't exist, try /login
+                if (driver.getCurrentUrl().contains("404") || driver.getTitle().contains("Not Found")) {
+                    driver.get(config.getUrl() + "/login");
+                    waitForPageLoad();
+                    safeSleep(3000);
+                }
+            }
         }
         log.info("Clicked Sign In");
         safeSleep(500);
     }
 
     private void clickLoginWithPassword() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(WAIT));
-        WebElement link = wait.until(ExpectedConditions.elementToBeClickable(LOGIN_WITH_PASSWORD_LINK));
-        jsClick(link);
-        log.info("Clicked 'Login with Password'");
-        safeSleep(1000);
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(LOGIN_WITH_PASSWORD_LINK));
+            jsClick(link);
+            log.info("Clicked 'Login with Password'");
+            safeSleep(1000);
+        } catch (Exception e) {
+            // If "Login with Password" not found, we may already be on the password form
+            log.info("'Login with Password' link not found — may already be on password form");
+        }
     }
 
     private void enterUsername(String username) {

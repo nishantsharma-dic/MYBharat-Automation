@@ -10,7 +10,7 @@
   ║  No prerequisites needed (creates fresh user each run)              ║
   ║                                                                     ║
   ║  Flow:                                                              ║
-  ║    1. Register new Indian youth (random email via Yopmail)          ║
+  ║    1. Register new Indian youth (random email via Maildrop API)          ║
   ║    2. Submit popup → User is on quiz page                           ║
   ║    3. Play competitive quiz (dynamic question count)                ║
   ║    4. Submit quiz + provide feedback                                ║
@@ -37,7 +37,7 @@
 
     <test name="Register and Play Quiz" preserve-order="true">
         <classes>
-            <!-- Register new youth user (email + OTP from Yopmail, saves to Excel) -->
+            <!-- Register new youth user (email + OTP from Maildrop API, saves to Excel) -->
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
             <!-- Play quiz immediately after registration (user already logged in) -->
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
