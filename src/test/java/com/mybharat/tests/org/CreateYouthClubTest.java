@@ -55,30 +55,37 @@ public class CreateYouthClubTest extends BaseTest {
         loginPage = new LoginPage(driver);
         logoutPage = new LogoutPage(driver);
         createOrgPage = new CreateYouthClubPage(driver);
+        log.info("[SETUP] Pages initialized — creator email will be generated at test start");
+    }
 
+    /**
+     * Generate next ycpartnera{timestamp}{N}@maildrop.cc email.
+     * Timestamp includes seconds — ensures uniqueness even on retry.
+     */
+    private String generateCreatorEmail() {
         ConfigReader cfg = new ConfigReader();
         String env = cfg.getEnv();
-        String youthPath = System.getProperty("user.dir") + File.separator
-                + "resources" + File.separator + "Youth_" + env + ".xlsx";
-        try (FileInputStream fis = new FileInputStream(youthPath);
-             Workbook wb = new XSSFWorkbook(fis)) {
-            // First try YouthClubMembers sheet (has fresh @maildrop.cc emails from current run)
-            Sheet sheet = wb.getSheet("YouthClubMembers");
-            if (sheet != null && sheet.getLastRowNum() >= 1) {
-                Row row = sheet.getRow(sheet.getLastRowNum());
-                loginEmail = row.getCell(0).getStringCellValue().trim();
-            } else {
-                // Fallback: UserData sheet (last row)
-                sheet = wb.getSheet("UserData");
-                if (sheet == null) sheet = wb.getSheetAt(0);
-                int targetRow = sheet.getLastRowNum();
-                Row row = sheet.getRow(targetRow);
-                loginEmail = row.getCell(0).getStringCellValue().trim();
+        String filePath = System.getProperty("user.dir") + File.separator
+                + "resources" + File.separator + "Partner_" + env + ".xlsx";
+        int nextNum = 1;
+        File file = new File(filePath);
+        if (file.exists()) {
+            try (FileInputStream fis = new FileInputStream(file);
+                 Workbook wb = new XSSFWorkbook(fis)) {
+                Sheet sheet = wb.getSheet("YouthClubData");
+                if (sheet != null) {
+                    nextNum = sheet.getLastRowNum() + 1;
+                }
+            } catch (Exception e) {
+                log.warn("Could not read Partner Excel for creator number: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read Youth_" + env + ".xlsx: " + e.getMessage(), e);
         }
-        log.info("[SETUP] Login email: {}", loginEmail);
+        // Format: ycpartnera + YYMMDDHHmmss + N (includes seconds for uniqueness)
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        String timestamp = String.format("%02d%02d%02d%02d%02d%02d",
+                now.getYear() % 100, now.getMonthValue(), now.getDayOfMonth(),
+                now.getHour(), now.getMinute(), now.getSecond());
+        return "ycpartnera" + timestamp + "n" + nextNum + "@maildrop.cc";
     }
 
     // =========================================================================
@@ -89,11 +96,19 @@ public class CreateYouthClubTest extends BaseTest {
     public void step15_submit() throws Exception {
         log.info("═══ CREATE YOUTH CLUB — Full Flow ═══");
 
-        // Step 1: Login
-        log.info("▶ Step 1: Login");
-        loginPage.login(loginEmail, null);
-        Assert.assertTrue(loginPage.isLoginSuccessful(), "[Step 1] Login failed");
-        log.info("✅ Login passed: {}", loginEmail);
+        // Generate fresh creator email (ensures uniqueness even on retry)
+        loginEmail = generateCreatorEmail();
+        log.info("[SETUP] Creator email: {}", loginEmail);
+
+        // Ensure clean state (handles retry scenario)
+        try {
+            driver.get(new ConfigReader().getUrl());
+            safeSleep(2000);
+        } catch (Exception e) { /* ignore */ }
+
+        // Step 1: Register creator user (ycpartnera{timestamp}n{N}@maildrop.cc)
+        log.info("▶ Step 1: Register creator: {}", loginEmail);
+        registerCreatorUser();
 
         // Step 2: Navigate to Create Org
         log.info("▶ Step 2: Navigate to Create Org");
@@ -248,6 +263,233 @@ public class CreateYouthClubTest extends BaseTest {
     // =========================================================================
     // PRIVATE HELPER METHODS
     // =========================================================================
+
+    /**
+     * Register the creator user (ycpartnera{N}@maildrop.cc) using the same pattern as RegisterMembersForYouthClubTest.
+     * After registration, user is logged in and on the profile/landing page.
+     */
+    private void registerCreatorUser() throws Exception {
+        ConfigReader cfg = new ConfigReader();
+        org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
+        com.github.javafaker.Faker faker = new com.github.javafaker.Faker();
+
+        // Navigate to app
+        driver.get(cfg.getUrl());
+        safeSleep(3000);
+
+        // Close popup
+        try {
+            WebElement popup = driver.findElement(By.xpath("//i[@class='fa fa-times']"));
+            if (popup.isDisplayed()) popup.click();
+            safeSleep(500);
+        } catch (Exception e) { /* no popup */ }
+
+        // Click Register Now
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        WebElement registerNow = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//span[@class='fontchange']")));
+        registerNow.click();
+        safeSleep(500);
+
+        // Click Register (Indian)
+        WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
+        registerBtn.click();
+        safeSleep(1000);
+
+        // Enter email
+        WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("(//input[@id='user_mobile'])[1]")));
+        emailInput.clear();
+        emailInput.sendKeys(loginEmail);
+
+        // Get prevCount before requesting OTP
+        String mailbox = loginEmail.split("@")[0];
+        int prevCount = 0;
+        try {
+            org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
+                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+            org.apache.hc.client5.http.classic.methods.HttpPost req =
+                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+            req.setHeader("Content-Type", "application/json");
+            req.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                    "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
+            String resp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(client.execute(req).getEntity());
+            prevCount = new com.fasterxml.jackson.databind.ObjectMapper().readTree(resp).path("data").path("inbox").size();
+            client.close();
+        } catch (Exception e) { /* use 0 */ }
+
+        // Click Get OTP
+        WebElement getOtpBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.generate_otp")));
+        getOtpBtn.click();
+        safeSleep(2000);
+        log.info("  OTP requested for creator: {} (prevCount={})", loginEmail, prevCount);
+
+        // Fetch OTP from Maildrop (wait for new message)
+        String otp = fetchCreatorOTP(mailbox, prevCount);
+        Assert.assertFalse(otp.isEmpty(), "[Step 1] Could not fetch OTP for creator: " + loginEmail);
+        log.info("  Creator OTP: {}", otp);
+
+        // Enter OTP and verify
+        WebElement otpField = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("(//input[@id='otp-field-1'])[1]")));
+        otpField.sendKeys(otp);
+        WebElement verifyBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button[@id='btn-verify-otp']")));
+        verifyBtn.click();
+        safeSleep(1000);
+
+        // Fill registration form (same as RegisterMembersForYouthClubTest)
+        fillCreatorRegistrationForm(faker);
+
+        // Submit
+        WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button[@id='registrationButton']")));
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", submitBtn);
+        submitBtn.click();
+        safeSleep(5000);
+
+        // Handle submit popup
+        try {
+            WebElement popupBtn = new WebDriverWait(driver, Duration.ofSeconds(30)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector("body > div:nth-child(1) > div:nth-child(1) > main:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > main:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > div:nth-child(3) > button:nth-child(1)")));
+            js.executeScript("arguments[0].click();", popupBtn);
+        } catch (Exception e1) {
+            try {
+                WebElement popupAlt = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                        ExpectedConditions.elementToBeClickable(By.xpath("(//button[contains(@class,'bg-[#bc4717]')])[1]")));
+                js.executeScript("arguments[0].click();", popupAlt);
+            } catch (Exception e2) { /* no popup */ }
+        }
+        safeSleep(3000);
+        try { driver.switchTo().alert().accept(); } catch (Exception e) { /* no alert */ }
+
+        log.info("✅ Creator registered and logged in: {}", loginEmail);
+    }
+
+    /**
+     * Fetch OTP for creator from Maildrop with prevCount logic.
+     */
+    private String fetchCreatorOTP(String mailbox, int prevCount) {
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        safeSleep(5000); // Initial wait
+
+        for (int attempt = 1; attempt <= 15; attempt++) {
+            try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
+                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
+                org.apache.hc.client5.http.classic.methods.HttpPost listReq =
+                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                listReq.setHeader("Content-Type", "application/json");
+                listReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                        "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
+                String listResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(client.execute(listReq).getEntity());
+                com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
+
+                if (inbox.size() <= prevCount) {
+                    log.info("  Waiting for creator OTP (attempt {}/15, count={})", attempt, inbox.size());
+                    safeSleep(4000);
+                    continue;
+                }
+
+                // New message — fetch it
+                String msgId = inbox.get(0).get("id").asText();
+                org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
+                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
+                msgReq.setHeader("Content-Type", "application/json");
+                msgReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
+                        "{\"query\":\"{ message(mailbox:\\\"" + mailbox + "\\\", id:\\\"" + msgId + "\\\") { id html } }\"}"));
+                String msgResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(client.execute(msgReq).getEntity());
+                String html = mapper.readTree(msgResp).path("data").path("message").path("html").asText();
+
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(html);
+                if (m.find()) return m.group(1);
+                java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("(\\d{6})").matcher(html);
+                if (m2.find()) return m2.group(1);
+
+                safeSleep(4000);
+            } catch (Exception e) {
+                safeSleep(4000);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Fill the registration form for creator (minimal — same fields as RegisterMembersForYouthClubTest).
+     */
+    private void fillCreatorRegistrationForm(com.github.javafaker.Faker faker) throws InterruptedException {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
+
+        WebElement firstName = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("firstname")));
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", firstName);
+        firstName.clear();
+        String fName = faker.name().firstName().replaceAll("[^a-zA-Z]", "");
+        if (fName.length() < 4) fName = fName + "test";
+        firstName.sendKeys(fName);
+
+        WebElement lastName = driver.findElement(By.id("lastname"));
+        lastName.clear();
+        String lName = faker.name().lastName().replaceAll("[^a-zA-Z]", "");
+        if (lName.length() < 4) lName = lName + "user";
+        lastName.sendKeys(lName);
+
+        driver.findElement(By.id("dobDD")).sendKeys(String.valueOf(faker.number().numberBetween(1, 28)));
+        driver.findElement(By.id("dobMM")).sendKeys(String.valueOf(faker.number().numberBetween(1, 12)));
+        driver.findElement(By.id("dobYYYY")).sendKeys(String.valueOf(faker.number().numberBetween(1970, 2003)));
+
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("gender"))).selectByVisibleText(faker.options().option("Male", "Female"));
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.xpath("//select[contains(.,'Select Category')]"))).selectByIndex(faker.number().numberBetween(2, 5));
+
+        // State: UTTAR PRADESH
+        org.openqa.selenium.support.ui.Select stateSelect = new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("state")));
+        try { stateSelect.selectByVisibleText("UTTAR PRADESH"); }
+        catch (Exception e) { try { stateSelect.selectByVisibleText("Uttar Pradesh"); } catch (Exception e2) { stateSelect.selectByIndex(32); } }
+        safeSleep(1000);
+
+        new org.openqa.selenium.support.ui.Select(wait.until(ExpectedConditions.elementToBeClickable(By.id("district")))).selectByIndex(1);
+        safeSleep(500);
+
+        js.executeScript("arguments[0].click();", driver.findElement(By.xpath("(//input[@id='flexRadioDefault1'])[1]")));
+        safeSleep(500);
+
+        org.openqa.selenium.support.ui.Select ulb = new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("ulb")));
+        if (ulb.getOptions().size() > 1) ulb.selectByIndex(1);
+
+        driver.findElement(By.xpath("(//input[@id='pincode_urban'])[1]"))
+                .sendKeys(String.valueOf(faker.number().numberBetween(100000, 999999)));
+
+        js.executeScript("arguments[0].click();", driver.findElement(By.xpath("(//input[@id='NSS'])[1]")));
+
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("qualification"))).selectByIndex(4);
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("institution_type"))).selectByIndex(1);
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("institution_state"))).selectByIndex(6);
+        safeSleep(500);
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("institution_district"))).selectByIndex(1);
+        safeSleep(500);
+
+        driver.findElement(By.xpath("//div[contains(text(),'Search and select an institution')]")).click();
+        WebElement instInput = driver.findElement(By.xpath("(//div[contains(@class,'choices')]/input)[4]"));
+        instInput.sendKeys("s");
+        instInput.sendKeys(org.openqa.selenium.Keys.ENTER);
+
+        driver.findElement(By.xpath("//div[contains(text(),'Search and select a sport')]")).click();
+        WebElement sportInput = driver.findElement(By.xpath("(//div[contains(@class,'choices')]/input)[5]"));
+        sportInput.sendKeys("B");
+        sportInput.sendKeys(org.openqa.selenium.Keys.ENTER);
+
+        try {
+            WebElement participate = driver.findElement(By.id("khel_participate"));
+            if (participate.isDisplayed()) js.executeScript("arguments[0].click();", participate);
+        } catch (Exception e) { /* skip */ }
+
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", driver.findElement(By.cssSelector("#defaultCheck1")));
+        js.executeScript("arguments[0].click();", driver.findElement(By.cssSelector("#defaultCheck1")));
+        js.executeScript("arguments[0].click();", driver.findElement(By.id("ncs_consent")));
+
+        log.info("  Creator registration form filled");
+    }
 
     private void loadMemberEmails() {
         // Priority 1: Static list from registration (same JVM)
