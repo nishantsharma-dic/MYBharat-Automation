@@ -10,13 +10,13 @@
   Prerequisites:
     - Registration must have been run at least once on the target environment
     - Youth_{env}.xlsx must contain at least one email entry
-    - Yopmail must be accessible for OTP retrieval
+    - Maildrop API must be accessible for OTP retrieval
   
   Flow:
     1. Navigate to MYBharat home page
     2. Click "Sign In"
     3. Enter email (read from Youth_beta.xlsx or Youth_prod.xlsx)
-    4. Send OTP → Fetch from Yopmail → Verify OTP
+    4. Send OTP → Fetch from Maildrop API → Verify OTP
     5. Assert login success
   
   Run with:

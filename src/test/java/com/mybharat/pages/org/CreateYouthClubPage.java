@@ -538,7 +538,7 @@ public class CreateYouthClubPage extends BasePage {
             }
             safeSleep(2000); // Wait for member row to appear
 
-            // For all 6 members: Send OTP → Get from Yopmail → Enter → Verify
+            // For all 6 members: Send OTP → Get from Maildrop API → Enter → Verify
             // Member 6 (addedCount == 5): Skip OTP — will accept invite by logging in later
             if (addedCount < 5) {
                 try {
@@ -598,10 +598,10 @@ public class CreateYouthClubPage extends BasePage {
                     // NOW click Send OTP
                     jsClick(sendOtp);
                     log.info("  Send OTP clicked for member {}", i + 1);
-                    safeSleep(5000); // Initial wait for email delivery via AWS SES
+                    safeSleep(8000); // Initial wait for email delivery (AWS SES → Maildrop can take 30-60s from overseas)
 
                     String otp = "";
-                    for (int otpAttempt = 1; otpAttempt <= 8; otpAttempt++) {
+                    for (int otpAttempt = 1; otpAttempt <= 15; otpAttempt++) {
                         try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
                                 org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
 
@@ -618,8 +618,8 @@ public class CreateYouthClubPage extends BasePage {
                             com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
 
                             if (inbox.size() <= prevCount) {
-                                log.info("  No NEW email yet for {} (attempt {}/8, count={})", mailbox, otpAttempt, inbox.size());
-                                safeSleep(3000);
+                                log.info("  No NEW email yet for {} (attempt {}/15, count={})", mailbox, otpAttempt, inbox.size());
+                                safeSleep(4000);
                                 continue;
                             }
 
@@ -649,10 +649,10 @@ public class CreateYouthClubPage extends BasePage {
                                 java.util.regex.Matcher mIs = java.util.regex.Pattern.compile("(?:OTP|is)\\s+(?:<[^>]+>)*(\\d{6})").matcher(body);
                                 if (mIs.find()) { otp = mIs.group(1); break; }
                             }
-                            safeSleep(3000);
+                            safeSleep(4000);
                         } catch (Exception apiEx) {
-                            log.warn("  Maildrop API error (attempt {}/8): {}", otpAttempt, apiEx.getMessage());
-                            safeSleep(3000);
+                            log.warn("  Maildrop API error (attempt {}/15): {}", otpAttempt, apiEx.getMessage());
+                            safeSleep(4000);
                         }
                     }
                     log.info("  OTP extracted via Maildrop API: {}", otp);
@@ -783,6 +783,7 @@ public class CreateYouthClubPage extends BasePage {
         log.info("Clicking SUBMIT");
         js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
         safeSleep(1000);
+
         // Try multiple locators for Submit button
         WebElement btn = null;
         String[] submitXpaths = {
@@ -799,26 +800,74 @@ public class CreateYouthClubPage extends BasePage {
                 if (btn != null) break;
             } catch (Exception e) { /* try next */ }
         }
-        if (btn == null) {
-            // JS fallback
-            js.executeScript(
-                    "var btns = document.querySelectorAll('ion-button, button');" +
-                    "for(var i=0; i<btns.length; i++) {" +
-                    "  var t = (btns[i].textContent||'').trim().toLowerCase();" +
-                    "  if(t.indexOf('submit') >= 0) { btns[i].click(); return; }" +
-                    "}");
-        } else {
-            scrollToElement(btn);
-            jsClick(btn);
+
+        // Click with retry — ensure Angular processes the click
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            if (btn != null) {
+                scrollToElement(btn);
+                safeSleep(500);
+                jsClick(btn);
+                log.info("  Submit clicked (attempt {})", attempt);
+            } else {
+                // JS fallback
+                js.executeScript(
+                        "var btns = document.querySelectorAll('ion-button, button');" +
+                        "for(var i=0; i<btns.length; i++) {" +
+                        "  var t = (btns[i].textContent||'').trim().toLowerCase();" +
+                        "  if(t.indexOf('submit') >= 0) { btns[i].click(); return; }" +
+                        "}");
+                log.info("  Submit clicked via JS fallback (attempt {})", attempt);
+            }
+
+            safeSleep(3000);
+
+            // Check if submission went through (page navigated away from create-org)
+            String currentUrl = driver.getCurrentUrl();
+            String src = driver.getPageSource().toLowerCase();
+            if (!currentUrl.contains("create-org") || src.contains("go to my bharat profile")
+                    || src.contains("successfully")) {
+                log.info("✅ Submitted successfully");
+                waitForPageLoad();
+                return;
+            }
+
+            // Still on create-org page — click might not have registered, retry
+            log.warn("  Still on create-org after attempt {} — retrying", attempt);
+            safeSleep(2000);
         }
-        safeSleep(3000);
-        waitForPageLoad();
-        log.info("✅ Submitted");
+
+        // Final fallback: force click via shadow DOM (ion-button native button)
+        try {
+            js.executeScript(
+                    "var ionBtns = document.querySelectorAll('ion-button');" +
+                    "for(var i=0; i<ionBtns.length; i++) {" +
+                    "  var t = (ionBtns[i].textContent||'').trim().toLowerCase();" +
+                    "  if(t.indexOf('submit') >= 0 && ionBtns[i].shadowRoot) {" +
+                    "    ionBtns[i].shadowRoot.querySelector('button.button-native').click();" +
+                    "    return;" +
+                    "  }" +
+                    "}");
+            safeSleep(3000);
+            waitForPageLoad();
+            log.info("✅ Submitted (shadow DOM fallback)");
+        } catch (Exception e) {
+            log.warn("Shadow DOM submit fallback failed: {}", e.getMessage());
+        }
     }
 
     public boolean isSubmissionSuccessful() {
-        String src = driver.getPageSource().toLowerCase();
-        return src.contains("success") || !driver.getCurrentUrl().contains("create-org");
+        // Wait for actual success indicator — "GO TO MY BHARAT PROFILE" button only appears on real success
+        try {
+            return new WebDriverWait(driver, Duration.ofSeconds(20)).until(d -> {
+                String src = d.getPageSource().toLowerCase();
+                return src.contains("go to my bharat profile")
+                        || src.contains("successfully submitted")
+                        || src.contains("organization has been submitted");
+            });
+        } catch (Exception e) {
+            log.warn("Submission success not confirmed — page source check failed");
+            return false;
+        }
     }
 
     public void clickGoToProfile() {

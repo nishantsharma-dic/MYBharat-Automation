@@ -1,0 +1,418 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - text:   
+    - banner [ref=e2]:
+      - generic "Translate this page!" [ref=e4]:
+        - combobox "Language Translator" [ref=e5] [cursor=pointer]:
+          - img [ref=e7]
+      - generic [ref=e12]:
+        - link "Government of India" [ref=e14] [cursor=pointer]:
+          - /url: https://www.india.gov.in/
+          - img [ref=e15]
+          - strong [ref=e16]: Government of India
+        - generic [ref=e18]:
+          - button "-A" [ref=e19] [cursor=pointer]
+          - button "A" [ref=e20] [cursor=pointer]
+          - button "A+" [ref=e21] [cursor=pointer]
+          - text: "|"
+          - 'link "Toll Free : 14472 Or 18002122729" [ref=e22] [cursor=pointer]':
+            - /url: tel:18002122729
+          - text: "|"
+          - link "support.mybharat.gov.in" [ref=e23] [cursor=pointer]:
+            - /url: /pages/support
+          - text: "|"
+      - generic [ref=e26]:
+        - text:  
+        - generic [ref=e28]:
+          - link [ref=e29] [cursor=pointer]:
+            - /url: ""
+            - img [ref=e30]
+          - link [ref=e32] [cursor=pointer]:
+            - /url: /
+            - img [ref=e33]
+        - generic [ref=e34]:
+          - navigation [ref=e36]:
+            - list [ref=e37]:
+              - listitem [ref=e38]:
+                - link "Youth" [ref=e39] [cursor=pointer]:
+                  - /url: https://web-beta.mybharats.in/youth-public-profile
+              - listitem [ref=e40]:
+                - link "Quiz & Essay" [ref=e41] [cursor=pointer]:
+                  - /url: /quiz
+              - listitem [ref=e42]:
+                - link "Resources" [ref=e43] [cursor=pointer]:
+                  - /url: javascript:void(0);
+                  - text: Resources
+                  - generic [ref=e44]: 
+                - text: 
+              - generic [ref=e45]:
+                - button "Events & Program" [ref=e46] [cursor=pointer]:
+                  - text: Events & Program
+                  - generic [ref=e47]: 
+                - text: 
+              - listitem [ref=e48]:
+                - link "MY Bharat Icon" [ref=e49] [cursor=pointer]:
+                  - /url: /my-bharat-icons
+              - listitem [ref=e50]:
+                - link "Nation First" [ref=e51] [cursor=pointer]:
+                  - /url: /pages/nation_first
+              - listitem [ref=e52]:
+                - link "VVVP 2026" [ref=e53] [cursor=pointer]:
+                  - /url: /pages/vvvp_2026
+            - button "Sign In" [ref=e54] [cursor=pointer]
+            - link "Register Now" [ref=e55] [cursor=pointer]:
+              - /url: /yuva_register
+              - button "Register Now" [ref=e56]
+            - group
+          - text: 
+  - text:        
+  - generic [ref=e57]:
+    - generic [ref=e60]:
+      - generic [ref=e62]:
+        - heading "Exploring, posting and verifying opportunities made easy with MY Bharat" [level=1] [ref=e63]
+        - list [ref=e64]:
+          - listitem [ref=e65]:
+            - link "Explore Explore Register Now" [ref=e66] [cursor=pointer]:
+              - /url: /yuva_register
+              - img "Explore" [ref=e67]
+              - img "Explore" [ref=e68]
+              - heading "Register Now" [level=4] [ref=e69]
+      - generic [ref=e71]:
+        - listbox [ref=e72]:
+          - link "PMIS" [ref=e78] [cursor=pointer]:
+            - /url: javascript:void(0);
+            - img "PMIS" [ref=e79]
+        - button [ref=e80] [cursor=pointer]
+        - button [ref=e83] [cursor=pointer]
+    - text:     
+    - generic [ref=e86]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - listbox
+    - generic [ref=e87]:
+      - img "Circle Dot" [ref=e88]
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - heading "What We Offer" [level=3] [ref=e92]
+          - paragraph [ref=e93]: Opportunities tailored to the goals, aspirations, and skilling needs of the youth
+        - generic [ref=e95]:
+          - link "Experiential Learning Experiential Learning" [ref=e98] [cursor=pointer]:
+            - /url: /elp/listing
+            - img "Experiential Learning" [ref=e99]
+            - paragraph [ref=e100]: Experiential Learning
+          - link "Volunteer for Bharat Volunteer for Bharat" [ref=e103] [cursor=pointer]:
+            - /url: /pages/events
+            - img "Volunteer for Bharat" [ref=e104]
+            - paragraph [ref=e105]: Volunteer for Bharat
+    - generic [ref=e106]:
+      - img "Circle Dot" [ref=e107]
+      - generic [ref=e109]:
+        - heading "MY Bharat connects you with" [level=3] [ref=e110]
+        - link "MY Bharat Government Government" [ref=e112] [cursor=pointer]:
+          - /url: /government
+          - img "MY Bharat Government" [ref=e113]
+          - heading "Government" [level=4] [ref=e114]
+        - link "MY Bharat Knowledge Institutions Knowledge Institutions" [ref=e116] [cursor=pointer]:
+          - /url: /KnowledgeInstitutions
+          - img "MY Bharat Knowledge Institutions" [ref=e117]
+          - heading "Knowledge Institutions" [level=4] [ref=e118]
+        - link "MY Bharat Youth Connect Youth" [ref=e120] [cursor=pointer]:
+          - /url: https://web-beta.mybharats.in/youth-public-profile
+          - img "MY Bharat Youth Connect" [ref=e121]
+          - heading "Youth" [level=4] [ref=e122]
+        - link "MY Bharat Not for Profits Not for Profits" [ref=e124] [cursor=pointer]:
+          - /url: /NotForProfit
+          - img "MY Bharat Not for Profits" [ref=e125]
+          - heading "Not for Profits" [level=4] [ref=e126]
+        - link "MY Bharat For Profits For Profits" [ref=e128] [cursor=pointer]:
+          - /url: /ForProfit
+          - img "MY Bharat For Profits" [ref=e129]
+          - heading "For Profits" [level=4] [ref=e130]
+    - generic [ref=e133]:
+      - generic [ref=e135]:
+        - heading "Experiential Learning Program" [level=3] [ref=e136]
+        - paragraph [ref=e137]: MY Bharat offers a range of Experiential Learning Programmes across various sectors, empowering young individuals to learn and grow through practical application. These programs provide hands-on opportunities to gain real-world experience, develop essential skills, and contribute meaningfully to society. By immersing themselves in diverse fields, participants can bridge the gap between theoretical knowledge and practical implementation, fostering a deeper understanding and appreciation for their chosen career paths.
+        - link "Explore" [ref=e138] [cursor=pointer]:
+          - /url: /elp/listing
+          - button "Explore" [ref=e139]
+      - img "ELP" [ref=e141]
+    - generic [ref=e144]:
+      - img "ELP" [ref=e146]
+      - generic [ref=e148]:
+        - heading "MY Bharat Stories" [level=3] [ref=e149]
+        - paragraph [ref=e150]: Empowering youth is empowering the nation. MY Bharat is your platform to connect, learn, and contribute to India's progress. Together, let us build a vibrant and resilient future. Join hands, make an impact!
+        - link "Explore" [ref=e151] [cursor=pointer]:
+          - /url: /pages/mb_stories
+          - button "Explore" [ref=e152]
+    - generic [ref=e153]:
+      - img "circle_dot" [ref=e154]
+      - generic [ref=e157]:
+        - heading "Get Started" [level=4] [ref=e158]
+        - tablist [ref=e159]:
+          - tab "Register" [selected] [ref=e160] [cursor=pointer]:
+            - img [ref=e161]
+            - text: Register
+          - tab "Participate in Events" [ref=e164] [cursor=pointer]:
+            - img [ref=e165]
+            - text: Participate in Events
+          - tab "Apply for Experiential Learning" [ref=e168] [cursor=pointer]:
+            - img [ref=e169]
+            - text: Apply for Experiential Learning
+        - tabpanel "Register" [ref=e174]:
+          - list [ref=e175]:
+            - listitem [ref=e176]:
+              - img "How to Register" [ref=e177] [cursor=pointer]
+              - paragraph [ref=e178]:
+                - text: Click Register on
+                - text: Homepage
+            - listitem [ref=e179]:
+              - img "Ellipse 2" [ref=e180]
+            - listitem [ref=e181]:
+              - img "Mobile Message" [ref=e182] [cursor=pointer]
+              - paragraph [ref=e183]:
+                - text: Use Email or Phone
+                - text: Number
+            - listitem [ref=e184]:
+              - img "Ellipse 1" [ref=e185]
+            - listitem [ref=e186]:
+              - img "Article" [ref=e187] [cursor=pointer]
+              - paragraph [ref=e188]:
+                - text: Enter Required
+                - text: Details to Finish
+    - generic [ref=e191]:
+      - generic [ref=e194]:
+        - heading "Change requires action. Start here!" [level=4] [ref=e195]
+        - generic [ref=e196] [cursor=pointer]:
+          - radio "Experiential Learning" [ref=e197]
+          - text: Experiential Learning
+        - generic [ref=e198] [cursor=pointer]:
+          - radio "Volunteer for Bharat" [ref=e199]
+          - text: Volunteer for Bharat
+        - textbox "Search by keyword, skill or interest" [ref=e201]
+        - generic [ref=e202]:
+          - generic [ref=e204]: 
+          - combobox [ref=e205]:
+            - option "State" [disabled] [selected]
+            - option "ANDAMAN AND NICOBAR ISLANDS"
+            - option "Andhra Pradesh"
+            - option "ARUNACHAL PRADESH"
+            - option "ASSAM"
+            - option "BIHAR"
+            - option "CHANDIGARH"
+            - option "CHHATTISGARH"
+            - option "DELHI"
+            - option "GOA"
+            - option "GUJARAT"
+            - option "HARYANA"
+            - option "HIMACHAL PRADESH"
+            - option "JAMMU AND KASHMIR"
+            - option "JHARKHAND"
+            - option "KARNATAKA"
+            - option "KERALA"
+            - option "LADAKH"
+            - option "LAKSHADWEEP"
+            - option "MADHYA PRADESH"
+            - option "MAHARASHTRA"
+            - option "MANIPUR"
+            - option "MEGHALAYA"
+            - option "MIZORAM"
+            - option "NAGALAND"
+            - option "ODISHA"
+            - option "PUDUCHERRY"
+            - option "PUNJAB"
+            - option "RAJASTHAN"
+            - option "SIKKIM"
+            - option "TAMIL NADU"
+            - option "TELANGANA"
+            - option "THE DADRA AND NAGAR HAVELI AND DAMAN AND DIU"
+            - option "TRIPURA"
+            - option "UTTARAKHAND"
+            - option "UTTAR PRADESH"
+            - option "WEST BENGAL"
+        - generic [ref=e206]:
+          - button "Search" [ref=e207] [cursor=pointer]:
+            - generic [ref=e208]: 
+            - text: Search
+          - paragraph [ref=e209]:
+            - link "Login" [ref=e210] [cursor=pointer]:
+              - /url: javascript:void(0);
+            - text: "|"
+            - link "Sign Up" [ref=e211] [cursor=pointer]:
+              - /url: /yuva_register
+      - img "Change requires action" [ref=e213]
+    - generic [ref=e216]:
+      - generic [ref=e217]:
+        - heading "Join MY Bharat as" [level=3] [ref=e218]
+        - tablist [ref=e219]:
+          - listitem [ref=e220]:
+            - tab "Youth" [selected] [ref=e221] [cursor=pointer]
+          - listitem [ref=e222]:
+            - tab "Partner" [ref=e223] [cursor=pointer]
+      - generic [ref=e225]:
+        - paragraph [ref=e226]: If you are a young citizen between the ages of 15 and 29, MY Bharat is an excellent opportunity to progress your profession and cultivate a positive personality. You may learn about chances for occupational skill development, youth leadership, and community participation here. Participate in activities of national importance and make a significant contribution to the country's growth.
+        - link "Register Now" [ref=e227] [cursor=pointer]:
+          - /url: /yuva_register
+          - button "Register Now" [ref=e228]
+      - img "Join MY Bharat as" [ref=e230]
+    - generic [ref=e231]:
+      - img "Circle Dot 1" [ref=e232]
+      - generic [ref=e233]:
+        - heading "Frequently Asked Questions" [level=3] [ref=e236]
+        - generic [ref=e238]:
+          - tablist [ref=e240]:
+            - tab "Youth" [ref=e241] [cursor=pointer]
+            - tab "Academic institution" [ref=e242] [cursor=pointer]
+            - tab "Businesses" [ref=e243] [cursor=pointer]
+            - tab "Resources" [ref=e244] [cursor=pointer]
+          - generic [ref=e245]:
+            - tabpanel "Youth" [ref=e246]:
+              - generic [ref=e247]:
+                - heading "1. What is the Minimum educational qualification for the Experiential Learning Program?" [level=2] [ref=e249]:
+                  - button "1. What is the Minimum educational qualification for the Experiential Learning Program?" [ref=e250] [cursor=pointer]:
+                    - generic [ref=e251]: 1. What is the Minimum educational qualification for the Experiential Learning Program?
+                - heading "2. What conditions must non-students meet to enroll in this program?" [level=2] [ref=e253]:
+                  - button "2. What conditions must non-students meet to enroll in this program?" [ref=e254] [cursor=pointer]:
+                    - generic [ref=e255]: 2. What conditions must non-students meet to enroll in this program?
+                - heading "3. Is there any restriction of age/gender?" [level=2] [ref=e257]:
+                  - button "3. Is there any restriction of age/gender?" [ref=e258] [cursor=pointer]:
+                    - generic [ref=e259]: 3. Is there any restriction of age/gender?
+                - heading "4. Will the business provide any mode for conveyance/ conveyance allowance from residence to the establishment?" [level=2] [ref=e261]:
+                  - button "4. Will the business provide any mode for conveyance/ conveyance allowance from residence to the establishment?" [ref=e262] [cursor=pointer]:
+                    - generic [ref=e263]: 4. Will the business provide any mode for conveyance/ conveyance allowance from residence to the establishment?
+                - heading "5. Is there any stipend for students for participating in the program?" [level=2] [ref=e265]:
+                  - button "5. Is there any stipend for students for participating in the program?" [ref=e266] [cursor=pointer]:
+                    - generic [ref=e267]: 5. Is there any stipend for students for participating in the program?
+                - heading "6. How can students choose the business as per their field of interest?" [level=2] [ref=e269]:
+                  - button "6. How can students choose the business as per their field of interest?" [ref=e270] [cursor=pointer]:
+                    - generic [ref=e271]: 6. How can students choose the business as per their field of interest?
+                - heading "7. Can students of Diploma/ITI/12th become a part of this experiential learning program?" [level=2] [ref=e273]:
+                  - button "7. Can students of Diploma/ITI/12th become a part of this experiential learning program?" [ref=e274] [cursor=pointer]:
+                    - generic [ref=e275]: 7. Can students of Diploma/ITI/12th become a part of this experiential learning program?
+                - heading "8. How will this Experiential Learning Program help me in my academic credits?" [level=2] [ref=e277]:
+                  - button "8. How will this Experiential Learning Program help me in my academic credits?" [ref=e278] [cursor=pointer]:
+                    - generic [ref=e279]: 8. How will this Experiential Learning Program help me in my academic credits?
+                - heading "9. Who will verify my candidature?" [level=2] [ref=e281]:
+                  - button "9. Who will verify my candidature?" [ref=e282] [cursor=pointer]:
+                    - generic [ref=e283]: 9. Who will verify my candidature?
+                - heading "10. I am a student of a postgraduate course, how can I join the program?" [level=2] [ref=e285]:
+                  - button "10. I am a student of a postgraduate course, how can I join the program?" [ref=e286] [cursor=pointer]:
+                    - generic [ref=e287]: 10. I am a student of a postgraduate course, how can I join the program?
+                - heading "11. What is the process after completion of training?" [level=2] [ref=e289]:
+                  - button "11. What is the process after completion of training?" [ref=e290] [cursor=pointer]:
+                    - generic [ref=e291]: 11. What is the process after completion of training?
+                - heading "12. Will there be any interviews that Students have to face for enrollment to the program?" [level=2] [ref=e293]:
+                  - button "12. Will there be any interviews that Students have to face for enrollment to the program?" [ref=e294] [cursor=pointer]:
+                    - generic [ref=e295]: 12. Will there be any interviews that Students have to face for enrollment to the program?
+                - heading "13. Is there any cost/application fees of this program?" [level=2] [ref=e297]:
+                  - button "13. Is there any cost/application fees of this program?" [ref=e298] [cursor=pointer]:
+                    - generic [ref=e299]: 13. Is there any cost/application fees of this program?
+                - heading "14. Will I get a certificate after completion of the Program?" [level=2] [ref=e301]:
+                  - button "14. Will I get a certificate after completion of the Program?" [ref=e302] [cursor=pointer]:
+                    - generic [ref=e303]: 14. Will I get a certificate after completion of the Program?
+                - heading "15. In case of any further queries, whom should I contact?" [level=2] [ref=e305]:
+                  - button "15. In case of any further queries, whom should I contact?" [ref=e306] [cursor=pointer]:
+                    - generic [ref=e307]: 15. In case of any further queries, whom should I contact?
+                - heading "16. Whether any fee involved in registration or applying for Experiential learning Program?" [level=2] [ref=e309]:
+                  - button "16. Whether any fee involved in registration or applying for Experiential learning Program?" [ref=e310] [cursor=pointer]:
+                    - generic [ref=e311]: 16. Whether any fee involved in registration or applying for Experiential learning Program?
+                - heading "17. Is MY Bharat a Jobs portal?" [level=2] [ref=e313]:
+                  - button "17. Is MY Bharat a Jobs portal?" [ref=e314] [cursor=pointer]:
+                    - generic [ref=e315]: 17. Is MY Bharat a Jobs portal?
+            - text:    
+  - link [ref=e317] [cursor=pointer]:
+    - /url: http://wa.me/917289001515?text=Hi
+    - img [ref=e318]
+  - contentinfo [ref=e322]:
+    - generic [ref=e326]:
+      - generic [ref=e327]:
+        - link "Logo" [ref=e328] [cursor=pointer]:
+          - /url: ""
+          - img "Logo" [ref=e329]
+        - text: "|"
+        - link "Logo" [ref=e330] [cursor=pointer]:
+          - /url: /
+          - img "Logo" [ref=e331]
+        - paragraph [ref=e332]: MY Bharat is an initiative of Ministry of Youth Affairs & Sports to empower Indian youth through social mobility, educational equity, and practical skills.
+        - paragraph [ref=e333]: "Last updated: 03-06-2026"
+      - list [ref=e335]:
+        - heading "Important Links" [level=6] [ref=e336]
+        - listitem [ref=e337]:
+          - link "Mega Events" [ref=e338] [cursor=pointer]:
+            - /url: /mega_events
+        - listitem [ref=e339]:
+          - link "Experiential Learning" [ref=e340] [cursor=pointer]:
+            - /url: /elp/listing
+        - listitem [ref=e341]:
+          - link "Volunteer for Bharat" [ref=e342] [cursor=pointer]:
+            - /url: /pages/events
+        - listitem [ref=e343]:
+          - link "About" [ref=e344] [cursor=pointer]:
+            - /url: /pages/about_mybharat
+      - list [ref=e346]:
+        - heading "Useful Links" [level=6] [ref=e347]
+        - listitem [ref=e348]:
+          - link "Privacy Policy" [ref=e349] [cursor=pointer]:
+            - /url: /pages/policy
+        - listitem [ref=e350]:
+          - link "Resources" [ref=e351] [cursor=pointer]:
+            - /url: /resources-list
+        - listitem [ref=e352]:
+          - link "Support" [ref=e353] [cursor=pointer]:
+            - /url: /pages/support
+        - listitem [ref=e354]:
+          - link "Sitemap" [ref=e355] [cursor=pointer]:
+            - /url: /sitemap
+        - listitem [ref=e356]:
+          - paragraph [ref=e357] [cursor=pointer]: Feedback
+      - generic [ref=e358]:
+        - heading "Follow Us" [level=6] [ref=e359]
+        - generic [ref=e360]:
+          - link "Twitter Twitter" [ref=e361] [cursor=pointer]:
+            - /url: https://x.com/MYBharatHQ
+            - generic [ref=e362]:
+              - img "Twitter" [ref=e363]
+              - generic [ref=e364]: Twitter
+          - link "Instagram Instagram" [ref=e365] [cursor=pointer]:
+            - /url: https://www.instagram.com/mybharatgov/
+            - generic [ref=e366]:
+              - img "Instagram" [ref=e367]
+              - generic [ref=e368]: Instagram
+          - link "Facebook Facebook" [ref=e369] [cursor=pointer]:
+            - /url: https://www.facebook.com/mybharathq/
+            - generic [ref=e370]:
+              - img "Facebook" [ref=e371]
+              - generic [ref=e372]: Facebook
+          - link "Linkedin Linkedin" [ref=e373] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/mybharatgov/
+            - generic [ref=e374]:
+              - img "Linkedin" [ref=e375]
+              - generic [ref=e376]: Linkedin
+          - link "Instagram WhatsApp" [ref=e377] [cursor=pointer]:
+            - /url: https://whatsapp.com/channel/0029VaI9Yoj9WtCA717aAd0h
+            - generic [ref=e378]:
+              - img "Instagram" [ref=e379]
+              - generic [ref=e380]: WhatsApp
+          - link "Instagram YouTube" [ref=e381] [cursor=pointer]:
+            - /url: https://www.youtube.com/@MyBharatHQ
+            - generic [ref=e382]:
+              - img "Instagram" [ref=e383]
+              - generic [ref=e384]: YouTube
+        - paragraph [ref=e385]:
+          - generic [ref=e386]:
+            - text: "Powered by:"
+            - link "Digital India" [ref=e387] [cursor=pointer]:
+              - /url: https://digitalindia.gov.in/
+              - img "Digital India" [ref=e388]
+        - paragraph [ref=e389]: Digital India Corporation (DIC) Ministry of Electronics & IT (MeitY) Government of India
+    - generic [ref=e392]:
+      - link "© 2023 - MY Bharat @ All rights reserved | Ministry of Youth Affairs and Sports, Govt. of India®" [ref=e394] [cursor=pointer]:
+        - /url: https://yas.gov.in/
+      - list [ref=e397]:
+        - listitem [ref=e398]:
+          - link "Terms & Conditions" [ref=e399] [cursor=pointer]:
+            - /url: /pages/terms_of_use
+        - listitem [ref=e400]:
+          - link "Privacy Policy" [ref=e401] [cursor=pointer]:
+            - /url: /pages/policy

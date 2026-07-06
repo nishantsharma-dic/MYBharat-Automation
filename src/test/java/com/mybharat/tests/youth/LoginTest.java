@@ -17,7 +17,7 @@ import com.mybharat.pages.youth.LoginPage;
  *
  * Purpose: Verifies that a previously registered user can log in using their email
  *          and OTP verification. Reads the email from the Excel file saved during
- *          registration, sends OTP, retrieves it from Yopmail, and completes login.
+ *          registration, sends OTP, retrieves it from Maildrop API, and completes login.
  *
  * Prerequisites: RegistrationTest must have run first (saves email to Youth_{env}.xlsx).
  *                This test runs AFTER LogoutTest in the testng-youth.xml suite.
@@ -29,7 +29,7 @@ import com.mybharat.pages.youth.LoginPage;
  *   4. Enter email (read from Excel — most recent registration)
  *   5. Check consent checkbox
  *   6. Click Login (sends OTP)
- *   7. Open Yopmail → fetch OTP → enter OTP
+ *   7. Open Maildrop API → fetch OTP → enter OTP
  *   8. Click Verify OTP
  *   9. Assert login was successful (user menu visible or URL indicates logged-in state)
  *
@@ -57,7 +57,7 @@ public class LoginTest extends BaseTest {
     }
 
     @Test(priority = 1, groups = {"smoke", "login"}, retryAnalyzer = Retry.class,
-          description = "Login with OTP: Navigate → Sign In → Enter email from Excel → Send OTP → Fetch OTP from Yopmail → Verify → Login success")
+          description = "Login with OTP: Navigate → Sign In → Enter email from Excel → Send OTP → Fetch OTP from Maildrop API → Verify → Login success")
     public void loginWithOTP() throws Exception {
         log.info("=== Starting: Login with OTP ===");
 
@@ -86,9 +86,9 @@ public class LoginTest extends BaseTest {
         loginPage.clickLoginToSendOTP();
         log.info("Step 6: OTP sent");
 
-        // Step 7: Fetch OTP from Yopmail
+        // Step 7: Fetch OTP from Maildrop API
         loginPage.fetchOTPFromYopmail();
-        log.info("Step 7: OTP fetched from Yopmail and entered");
+        log.info("Step 7: OTP fetched from Maildrop API and entered");
 
         // Step 8: Click Verify OTP
         loginPage.clickVerifyOTP();

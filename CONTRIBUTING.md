@@ -59,7 +59,7 @@ resources/
 └── Partner_prod.xlsx              ← ELP/Partner admin emails (prod)
 
 testSuites/
-├── testng-all-modules.xml         ← Full E2E (parallel: Public Pages + Youth Flow)
+├── testng-all-modules.xml         ← Full E2E (parallel: Youth Flow + Youth Club)
 ├── testng-youth.xml               ← Youth flow only
 ├── testng-registration.xml        ← Registration only
 ├── testng-registration-quiz.xml   ← Registration + Quiz

@@ -100,12 +100,14 @@ public class QuizAttemptPage extends BasePage {
         ConfigReader config = new ConfigReader();
         driver.get(config.getUrl());
         waitForPageLoad();
-        Thread.sleep(2000);
+        Thread.sleep(3000);
 
         // Close popup if present
         try {
-            WebElement popup = driver.findElement(By.xpath("//i[@class='fa fa-times']"));
-            if (popup.isDisplayed()) popup.click();
+            WebElement popup = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath("//i[@class='fa fa-times']")));
+            popup.click();
+            Thread.sleep(1000);
         } catch (Exception e) { /* no popup */ }
 
         // Click Quiz & Essay tab
@@ -327,14 +329,17 @@ public class QuizAttemptPage extends BasePage {
         // Verify quiz questions page loaded — use STRICT selectors that only exist on quiz page
         // The quiz page has: question text, radio options with save_button, timer countdown
         try {
-            new WebDriverWait(driver, Duration.ofSeconds(20)).until(
+            int quizTimeout = Boolean.parseBoolean(System.getProperty("ciMode", "false")) ? 45 : 20;
+            new WebDriverWait(driver, Duration.ofSeconds(quizTimeout)).until(
                     ExpectedConditions.presenceOfElementLocated(By.xpath(
                             "//button[@id='save_button'] | " +
                             "//button[@id='submit_button'] | " +
                             "//div[@id='timer'] | " +
                             "//span[contains(@class,'timer')] | " +
-                            "//div[contains(@class,'quiz-question')]")));
-            System.out.println("✅ Quiz questions page loaded — timer/save button found");
+                            "//div[contains(@class,'quiz-question')] | " +
+                            "//input[@name='answer'] | " +
+                            "//input[@type='radio' and contains(@id,'option')]")));
+            System.out.println("Quiz questions page loaded — timer/save button found");
         } catch (Exception e) {
             // Check if we're still on the quiz listing page (quiz didn't start)
             String currentUrl = driver.getCurrentUrl();
