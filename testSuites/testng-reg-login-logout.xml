@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Registration → Logout → Login (single cycle)
+  Run 5 times: for /L %i in (1,1,5) do mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-reg-login-logout.xml
+-->
+<suite name="Registration Login Logout" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="Reg-Login-Logout Flow" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+        </classes>
+    </test>
+
+</suite>
