@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  ============================================================
+  NCS (National Career Service) Navigation Test Suite
+  ============================================================
+  Purpose: Verifies that a logged-in user can navigate to the NCS page
+           by clicking "National Career Service" link in the profile sidebar.
+
+  Flow:
+    Step 1: Login as valid user (ki_nodal_p1@sharklasers.com)
+    Step 2: Navigate to Youth Profile page
+    Step 3: Click "National Career Service" in sidebar "Links for Me"
+    Step 4: Verify NCS page opens at /ncs/ URL
+
+  Run with:
+    mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-ncs.xml
+    mvn test -Denv=beta -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-ncs.xml
+
+  Developer: Manoj Kumar (QA Team)
+  ============================================================
+-->
+<suite name="NCS Navigation Suite" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <test name="NCS Navigation Test" preserve-order="true">
+        <classes>
+            <!-- Login + Navigate to NCS + Verify -->
+            <class name="com.mybharat.tests.youth.NCSNavigationTest"/>
+        </classes>
+    </test>
+
+</suite>
