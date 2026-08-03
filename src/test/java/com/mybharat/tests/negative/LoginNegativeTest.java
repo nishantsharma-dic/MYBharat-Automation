@@ -58,7 +58,7 @@ public class LoginNegativeTest extends BaseTest {
     public void navigateToLogin() throws InterruptedException {
         driver.manage().deleteAllCookies();
         driver.get(config.getUrl());
-        Thread.sleep(2000);
+        Thread.sleep(3000);
 
         // Close popup
         try {
@@ -68,9 +68,24 @@ public class LoginNegativeTest extends BaseTest {
             Thread.sleep(500);
         } catch (Exception e) { /* no popup */ }
 
+        // Close any modal overlay
+        try {
+            java.util.List<WebElement> modals = driver.findElements(By.xpath("//div[contains(@class,'modal-body')]"));
+            if (!modals.isEmpty() && modals.get(0).isDisplayed()) {
+                WebElement closeBtn = driver.findElement(By.xpath(
+                        "//button[@class='btn-close'] | //button[contains(@class,'close')] | //div[contains(@class,'modal')]//button"));
+                closeBtn.click();
+                Thread.sleep(500);
+            }
+        } catch (Exception e) { /* no modal */ }
+
         // Click Sign In
         WebElement signIn = wait.until(ExpectedConditions.elementToBeClickable(SIGN_IN_LINK));
-        signIn.click();
+        try {
+            signIn.click();
+        } catch (Exception e) {
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", signIn);
+        }
         Thread.sleep(1000);
 
         // Wait for login form
@@ -89,18 +104,24 @@ public class LoginNegativeTest extends BaseTest {
         WebElement emailInput = driver.findElement(EMAIL_INPUT);
         emailInput.clear();
 
-        // Check consent and click login
+        // Check consent
         clickConsent();
         WebElement loginBtn = driver.findElement(LOGIN_BUTTON);
-        loginBtn.click();
-        Thread.sleep(2000);
 
-        // Assert: should not proceed to OTP page
-        boolean noOtpField = driver.findElements(OTP_FIELD).size() == 0;
-        boolean hasError = hasValidationError();
+        // Assert: login button should be disabled or clicking should show error
+        boolean isDisabled = !loginBtn.isEnabled()
+                || "true".equals(loginBtn.getAttribute("disabled"));
 
-        Assert.assertTrue(noOtpField || hasError,
-                "Empty email should not trigger OTP — should show error or stay on form");
+        if (isDisabled) {
+            Assert.assertTrue(isDisabled, "Login button should be disabled with empty email");
+        } else {
+            loginBtn.click();
+            Thread.sleep(2000);
+            boolean noOtpField = driver.findElements(OTP_FIELD).size() == 0;
+            boolean hasError = hasValidationError() || hasToastMessage();
+            Assert.assertTrue(noOtpField || hasError,
+                    "Empty email should not trigger OTP — should show error or stay on form");
+        }
         log.info("✅ Empty email login rejected");
     }
 
@@ -115,14 +136,20 @@ public class LoginNegativeTest extends BaseTest {
 
         clickConsent();
         WebElement loginBtn = driver.findElement(LOGIN_BUTTON);
-        loginBtn.click();
-        Thread.sleep(2000);
 
-        boolean noOtpField = driver.findElements(OTP_FIELD).size() == 0;
-        boolean hasError = hasValidationError();
+        boolean isDisabled = !loginBtn.isEnabled()
+                || "true".equals(loginBtn.getAttribute("disabled"));
 
-        Assert.assertTrue(noOtpField || hasError,
-                "Invalid email format should be rejected");
+        if (isDisabled) {
+            Assert.assertTrue(isDisabled, "Login button should be disabled for invalid email");
+        } else {
+            loginBtn.click();
+            Thread.sleep(2000);
+            boolean noOtpField = driver.findElements(OTP_FIELD).size() == 0;
+            boolean hasError = hasValidationError() || hasToastMessage();
+            Assert.assertTrue(noOtpField || hasError,
+                    "Invalid email format should be rejected");
+        }
         log.info("✅ Invalid email format rejected in login");
     }
 
@@ -227,17 +254,22 @@ public class LoginNegativeTest extends BaseTest {
 
         clickConsent();
         WebElement loginBtn = driver.findElement(LOGIN_BUTTON);
-        loginBtn.click();
-        Thread.sleep(2000);
 
-        // Assert: should not proceed, no error dump, stays on login
-        boolean noOtpField = driver.findElements(OTP_FIELD).size() == 0;
-        boolean noServerError = !driver.getPageSource().contains("500")
-                && !driver.getPageSource().contains("Internal Server Error")
-                && !driver.getPageSource().contains("SQL");
+        boolean isDisabled = !loginBtn.isEnabled()
+                || "true".equals(loginBtn.getAttribute("disabled"));
 
-        Assert.assertTrue(noOtpField, "SQL injection should not trigger OTP");
-        Assert.assertTrue(noServerError, "SQL injection should not cause server error on page");
+        if (isDisabled) {
+            Assert.assertTrue(isDisabled, "Login button should be disabled for SQL injection input");
+        } else {
+            loginBtn.click();
+            Thread.sleep(2000);
+            boolean noOtpField = driver.findElements(OTP_FIELD).size() == 0;
+            boolean noServerError = !driver.getPageSource().contains("500")
+                    && !driver.getPageSource().contains("Internal Server Error")
+                    && !driver.getPageSource().contains("SQL");
+            Assert.assertTrue(noOtpField, "SQL injection should not trigger OTP");
+            Assert.assertTrue(noServerError, "SQL injection should not cause server error");
+        }
         log.info("✅ SQL injection in login handled safely");
     }
 

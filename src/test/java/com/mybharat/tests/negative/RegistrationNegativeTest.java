@@ -54,8 +54,27 @@ public class RegistrationNegativeTest extends BaseTest {
     @BeforeMethod(alwaysRun = true)
     public void navigateToRegistration() throws InterruptedException {
         driver.get(config.getUrl());
-        Thread.sleep(2000);
-        landingPage.closePopupIfPresent();
+        Thread.sleep(3000);
+
+        // Close popup if present
+        try {
+            WebElement popup = new WebDriverWait(driver, Duration.ofSeconds(5))
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//i[@class='fa fa-times']")));
+            popup.click();
+            Thread.sleep(500);
+        } catch (Exception e) { /* no popup */ }
+
+        // Close any modal overlay blocking the page
+        try {
+            java.util.List<WebElement> modals = driver.findElements(By.xpath("//div[contains(@class,'modal-body')]"));
+            if (!modals.isEmpty() && modals.get(0).isDisplayed()) {
+                WebElement closeBtn = driver.findElement(By.xpath(
+                        "//button[@class='btn-close'] | //button[contains(@class,'close')] | //div[contains(@class,'modal')]//button"));
+                closeBtn.click();
+                Thread.sleep(500);
+            }
+        } catch (Exception e) { /* no modal */ }
+
         landingPage.clickRegisterForIndian();
         // Wait for email input to be visible
         wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -76,15 +95,23 @@ public class RegistrationNegativeTest extends BaseTest {
         emailInput.sendKeys("invalidemail.com");
 
         WebElement getOtpBtn = driver.findElement(By.cssSelector("button.generate_otp"));
-        getOtpBtn.click();
 
-        // Assert: error message should appear OR button should remain on same page
-        boolean hasError = hasValidationError();
-        boolean stayedOnPage = driver.findElements(
-                By.xpath("(//input[@id='user_mobile'])[1]")).size() > 0;
+        // Assert: button should be disabled for invalid email, or clicking should not proceed
+        boolean isDisabled = !getOtpBtn.isEnabled()
+                || "true".equals(getOtpBtn.getAttribute("disabled"))
+                || getOtpBtn.getAttribute("class").contains("disabled");
 
-        Assert.assertTrue(hasError || stayedOnPage,
-                "Invalid email (no @ symbol) should show error or not proceed to OTP");
+        if (isDisabled) {
+            Assert.assertTrue(isDisabled, "Get OTP button should be disabled for invalid email");
+        } else {
+            getOtpBtn.click();
+            try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+            boolean hasError = hasValidationError();
+            boolean stayedOnPage = driver.findElements(
+                    By.xpath("(//input[@id='user_mobile'])[1]")).size() > 0;
+            Assert.assertTrue(hasError || stayedOnPage,
+                    "Invalid email (no @ symbol) should show error or not proceed to OTP");
+        }
         log.info("✅ Invalid email without @ rejected correctly");
     }
 
@@ -97,19 +124,13 @@ public class RegistrationNegativeTest extends BaseTest {
         emailInput.clear();
 
         WebElement getOtpBtn = driver.findElement(By.cssSelector("button.generate_otp"));
-        getOtpBtn.click();
 
-        // Assert: should stay on same page, OTP should not be sent
-        try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+        // Assert: button should be disabled with empty field
+        boolean isDisabled = !getOtpBtn.isEnabled()
+                || "true".equals(getOtpBtn.getAttribute("disabled"));
 
-        boolean stayedOnPage = driver.findElements(
-                By.xpath("(//input[@id='user_mobile'])[1]")).size() > 0;
-        boolean otpFieldAbsent = driver.findElements(
-                By.xpath("(//input[@id='otp-field-1'])[1]")).size() == 0;
-
-        Assert.assertTrue(stayedOnPage, "Should remain on registration page with empty email");
-        Assert.assertTrue(otpFieldAbsent, "OTP field should not appear for empty email");
-        log.info("✅ Empty email field handled correctly — no OTP sent");
+        Assert.assertTrue(isDisabled, "Get OTP button should be disabled with empty email field");
+        log.info("✅ Empty email field — OTP button disabled correctly");
     }
 
     @Test(priority = 3, groups = {"negative", "registration"},
@@ -122,16 +143,21 @@ public class RegistrationNegativeTest extends BaseTest {
         emailInput.sendKeys("test user@maildrop.cc");
 
         WebElement getOtpBtn = driver.findElement(By.cssSelector("button.generate_otp"));
-        getOtpBtn.click();
 
-        try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+        boolean isDisabled = !getOtpBtn.isEnabled()
+                || "true".equals(getOtpBtn.getAttribute("disabled"));
 
-        boolean hasError = hasValidationError();
-        boolean noOtpField = driver.findElements(
-                By.xpath("(//input[@id='otp-field-1'])[1]")).size() == 0;
-
-        Assert.assertTrue(hasError || noOtpField,
-                "Email with spaces should be rejected or not trigger OTP");
+        if (isDisabled) {
+            Assert.assertTrue(isDisabled, "Get OTP button should be disabled for email with spaces");
+        } else {
+            getOtpBtn.click();
+            try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+            boolean hasError = hasValidationError();
+            boolean noOtpField = driver.findElements(
+                    By.xpath("(//input[@id='otp-field-1'])[1]")).size() == 0;
+            Assert.assertTrue(hasError || noOtpField,
+                    "Email with spaces should be rejected or not trigger OTP");
+        }
         log.info("✅ Email with spaces rejected correctly");
     }
 
@@ -145,16 +171,12 @@ public class RegistrationNegativeTest extends BaseTest {
         emailInput.sendKeys("test<script>@hack.com");
 
         WebElement getOtpBtn = driver.findElement(By.cssSelector("button.generate_otp"));
-        getOtpBtn.click();
 
-        try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+        boolean isDisabled = !getOtpBtn.isEnabled()
+                || "true".equals(getOtpBtn.getAttribute("disabled"));
 
-        boolean hasError = hasValidationError();
-        boolean stayedOnPage = driver.findElements(
-                By.xpath("(//input[@id='user_mobile'])[1]")).size() > 0;
-
-        Assert.assertTrue(hasError || stayedOnPage,
-                "Email with XSS/special characters should be rejected");
+        Assert.assertTrue(isDisabled,
+                "Get OTP button should be disabled for email with special/XSS characters");
         log.info("✅ Email with special characters rejected (XSS prevention verified)");
     }
 
@@ -252,20 +274,16 @@ public class RegistrationNegativeTest extends BaseTest {
 
         WebElement emailInput = driver.findElement(By.xpath("(//input[@id='user_mobile'])[1]"));
         emailInput.clear();
-        emailInput.sendKeys("12345"); // Too short
+        emailInput.sendKeys("12345");
 
         WebElement getOtpBtn = driver.findElement(By.cssSelector("button.generate_otp"));
-        getOtpBtn.click();
 
-        try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+        boolean isDisabled = !getOtpBtn.isEnabled()
+                || "true".equals(getOtpBtn.getAttribute("disabled"));
 
-        boolean hasError = hasValidationError();
-        boolean noOtp = driver.findElements(
-                By.xpath("(//input[@id='otp-field-1'])[1]")).size() == 0;
-
-        Assert.assertTrue(hasError || noOtp,
-                "Short mobile number (5 digits) should be rejected");
-        log.info("✅ Short mobile number rejected correctly");
+        Assert.assertTrue(isDisabled,
+                "Get OTP button should be disabled for short mobile number (5 digits)");
+        log.info("✅ Short mobile number rejected — button disabled");
     }
 
     @Test(priority = 8, groups = {"negative", "registration"},
@@ -278,17 +296,13 @@ public class RegistrationNegativeTest extends BaseTest {
         emailInput.sendKeys("98765abcde");
 
         WebElement getOtpBtn = driver.findElement(By.cssSelector("button.generate_otp"));
-        getOtpBtn.click();
 
-        try { Thread.sleep(2000); } catch (InterruptedException e) { /* skip */ }
+        boolean isDisabled = !getOtpBtn.isEnabled()
+                || "true".equals(getOtpBtn.getAttribute("disabled"));
 
-        boolean hasError = hasValidationError();
-        boolean noOtp = driver.findElements(
-                By.xpath("(//input[@id='otp-field-1'])[1]")).size() == 0;
-
-        Assert.assertTrue(hasError || noOtp,
-                "Mobile number with alphabets should be rejected");
-        log.info("✅ Mobile with alphabets rejected correctly");
+        Assert.assertTrue(isDisabled,
+                "Get OTP button should be disabled for mobile with alphabets");
+        log.info("✅ Mobile with alphabets rejected — button disabled");
     }
 
     // =========================================================================

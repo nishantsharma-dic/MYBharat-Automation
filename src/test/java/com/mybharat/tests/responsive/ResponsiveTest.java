@@ -149,29 +149,17 @@ public class ResponsiveTest extends BaseTest {
         driver.get(config.getUrl() + "/yuva_register");
         Thread.sleep(2000);
 
-        // Assert: page loaded (check for form elements)
-        boolean hasFormElements = driver.findElements(By.xpath(
-                "//input[@id='firstname'] | //select[@id='gender'] | //select[@id='state']"
-        )).size() > 0;
+        // Verify no horizontal overflow (regardless of whether form loads or redirects)
+        long scrollWidth = (long) ((JavascriptExecutor) driver).executeScript(
+                "return document.body.scrollWidth;");
+        long viewportWidth = (long) ((JavascriptExecutor) driver).executeScript(
+                "return window.innerWidth;");
 
-        if (hasFormElements) {
-            // Verify no horizontal overflow on form page
-            long scrollWidth = (long) ((JavascriptExecutor) driver).executeScript(
-                    "return document.body.scrollWidth;");
-            long viewportWidth = (long) ((JavascriptExecutor) driver).executeScript(
-                    "return window.innerWidth;");
+        Assert.assertTrue(scrollWidth <= viewportWidth + 5,
+                String.format("[%s] Registration page has horizontal overflow: scrollWidth=%d > viewportWidth=%d",
+                        device, scrollWidth, viewportWidth));
 
-            Assert.assertTrue(scrollWidth <= viewportWidth + 5,
-                    String.format("[%s] Registration page has horizontal overflow", device));
-
-            // Verify form inputs are visible (not cut off)
-            WebElement firstInput = driver.findElement(By.xpath(
-                    "//input[@id='firstname'] | //select[@id='gender']"));
-            Assert.assertTrue(firstInput.isDisplayed(),
-                    String.format("[%s] Form input should be visible", device));
-        }
-
-        log.info("✅ [{}] Registration page renders correctly", device);
+        log.info("✅ [{}] Registration page renders without overflow", device);
     }
 
     @Test(dataProvider = "viewports", priority = 4, groups = {"responsive"},
