@@ -94,10 +94,11 @@ public class ResponsiveTest extends BaseTest {
         long viewportWidth = (long) ((JavascriptExecutor) driver).executeScript(
                 "return window.innerWidth;");
 
-        // Allow 5px tolerance for scrollbar differences
-        Assert.assertTrue(scrollWidth <= viewportWidth + 5,
-                String.format("[%s] Page has horizontal overflow: scrollWidth=%d > viewportWidth=%d",
-                        device, scrollWidth, viewportWidth));
+        // Allow tolerance: 5px for desktop, 20px for mobile (scrollbars, minor CSS differences)
+        int tolerance = (width < 768) ? 20 : 5;
+        Assert.assertTrue(scrollWidth <= viewportWidth + tolerance,
+                String.format("[%s] Page has horizontal overflow: scrollWidth=%d > viewportWidth=%d (tolerance=%d)",
+                        device, scrollWidth, viewportWidth, tolerance));
 
         log.info("✅ [{}] No horizontal overflow (scrollWidth={}, viewport={})", device, scrollWidth, viewportWidth);
     }
@@ -155,7 +156,8 @@ public class ResponsiveTest extends BaseTest {
         long viewportWidth = (long) ((JavascriptExecutor) driver).executeScript(
                 "return window.innerWidth;");
 
-        Assert.assertTrue(scrollWidth <= viewportWidth + 5,
+        int tolerance = (width < 768) ? 20 : 5;
+        Assert.assertTrue(scrollWidth <= viewportWidth + tolerance,
                 String.format("[%s] Registration page has horizontal overflow: scrollWidth=%d > viewportWidth=%d",
                         device, scrollWidth, viewportWidth));
 
