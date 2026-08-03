@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MYBharat Negative Tests" parallel="false" verbose="1">
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+    <test name="Registration Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.RegistrationNegativeTest"/>
+        </classes>
+    </test>
+    <test name="Login Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.LoginNegativeTest"/>
+        </classes>
+    </test>
+    <test name="Blog Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.BlogNegativeTest"/>
+        </classes>
+    </test>
+</suite>

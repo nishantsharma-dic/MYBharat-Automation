@@ -2,6 +2,7 @@ package com.mybharat.tests.youth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -61,10 +62,20 @@ public class YouthProfileTest extends BaseTest {
         // User should be on dashboard after registration (already logged in)
         // Navigate to profile page
         profilePage.navigateToProfilePage();
+
+        // Assert: verify we're on the profile page
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.contains("youth-profile"),
+                "Should be on youth-profile page. URL: " + currentUrl);
         log.info("Navigated to profile page");
 
         // Now complete the profile
         profilePage.completeYouthProfile();
+
+        // Assert: verify profile page is still accessible (no crash/redirect)
+        String postUrl = driver.getCurrentUrl();
+        Assert.assertTrue(postUrl.contains("youth-profile") || postUrl.contains("profile"),
+                "After profile completion, should remain on profile page. URL: " + postUrl);
 
         log.info("✅ Youth profile completed successfully");
     }

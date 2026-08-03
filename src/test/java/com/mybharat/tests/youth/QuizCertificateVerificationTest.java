@@ -2,6 +2,7 @@ package com.mybharat.tests.youth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -59,6 +60,25 @@ public class QuizCertificateVerificationTest extends BaseTest {
 
         quizPage.downloadQuizCertificateAndClose();
 
-        log.info("✅ Quiz certificate downloaded and modal closed");
+        // Assert: verify a certificate file was downloaded in the downloads folder
+        java.io.File downloadDir = new java.io.File(System.getProperty("user.dir") + "/downloads");
+        boolean certFound = false;
+        if (downloadDir.exists()) {
+            java.io.File[] files = downloadDir.listFiles();
+            if (files != null) {
+                for (java.io.File file : files) {
+                    if ((file.getName().toLowerCase().contains("certificate") || file.getName().endsWith(".png"))
+                            && file.lastModified() > (System.currentTimeMillis() - 60000)
+                            && file.length() > 0) {
+                        certFound = true;
+                        log.info("Quiz certificate file found: {} ({}KB)", file.getName(), file.length() / 1024);
+                        break;
+                    }
+                }
+            }
+        }
+        Assert.assertTrue(certFound, "Quiz certificate file should exist in downloads folder with non-zero size");
+
+        log.info("✅ Quiz certificate downloaded and verified");
     }
 }

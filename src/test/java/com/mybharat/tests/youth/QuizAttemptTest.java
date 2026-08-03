@@ -2,6 +2,7 @@ package com.mybharat.tests.youth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -63,8 +64,19 @@ public class QuizAttemptTest extends BaseTest {
             return;
         }
 
+        // Assert: quiz name should be populated
+        String quizName = quizPage.getQuizName();
+        Assert.assertNotNull(quizName, "Quiz name should not be null after starting");
+        Assert.assertFalse(quizName.isEmpty(), "Quiz name should not be empty");
+        log.info("Quiz started: {}", quizName);
+
         quizPage.attemptAllQuestionsAndSubmit();
 
-        log.info("✅ Quiz completed successfully");
+        // Assert: after submission, page should show result/certificate/feedback
+        String postQuizUrl = driver.getCurrentUrl();
+        Assert.assertFalse(postQuizUrl.contains("/quiz/play"),
+                "After quiz submission, should not be on quiz play page anymore. URL: " + postQuizUrl);
+
+        log.info("✅ Quiz '{}' completed and submitted successfully", quizName);
     }
 }
