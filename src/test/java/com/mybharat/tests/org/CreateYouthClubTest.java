@@ -284,18 +284,51 @@ public class CreateYouthClubTest extends BaseTest {
             safeSleep(500);
         } catch (Exception e) { /* no popup */ }
 
-        // Click Register Now
+        // Click Register Now → Register (Indian) with retry logic
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        WebElement registerNow = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//span[@class='fontchange']")));
-        registerNow.click();
-        safeSleep(500);
+        boolean reachedOtpPage = false;
+        for (int attempt = 1; attempt <= 3 && !reachedOtpPage; attempt++) {
+            try {
+                if (attempt > 1) {
+                    log.info("Retry attempt {} to reach registration page for member6...", attempt);
+                    driver.get(cfg.getUrl());
+                    new WebDriverWait(driver, Duration.ofSeconds(30)).until(d ->
+                            ((org.openqa.selenium.JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+                    safeSleep(3000);
+                    try {
+                        WebElement popup2 = driver.findElement(By.xpath("//i[@class='fa fa-times']"));
+                        if (popup2.isDisplayed()) popup2.click();
+                        safeSleep(500);
+                    } catch (Exception ex) { /* no popup */ }
+                }
 
-        // Click Register (Indian)
-        WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
-        registerBtn.click();
-        safeSleep(1000);
+                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0);");
+                safeSleep(500);
+
+                WebElement registerNow = new WebDriverWait(driver, Duration.ofSeconds(20))
+                        .until(ExpectedConditions.presenceOfElementLocated(
+                                By.xpath("//span[@class='fontchange']")));
+                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", registerNow);
+                safeSleep(1000);
+
+                WebElement registerBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.presenceOfElementLocated(
+                                By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
+                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", registerBtn);
+                safeSleep(1000);
+
+                // Verify OTP page reached
+                new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.visibilityOfElementLocated(
+                                By.xpath("(//input[@id='user_mobile'])[1]")));
+                reachedOtpPage = true;
+            } catch (Exception navEx) {
+                log.warn("Attempt {} to reach registration page failed: {}", attempt, navEx.getMessage().split("\n")[0]);
+            }
+        }
+        if (!reachedOtpPage) {
+            throw new RuntimeException("Could not reach registration OTP page for member6 after 3 attempts");
+        }
 
         // Enter email
         WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
