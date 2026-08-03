@@ -273,6 +273,10 @@ public class CreateYouthClubTest extends BaseTest {
         org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
         com.github.javafaker.Faker faker = new com.github.javafaker.Faker();
 
+        // Clear cookies and session to ensure we see the Register Now button
+        driver.manage().deleteAllCookies();
+        safeSleep(500);
+
         // Navigate to app
         driver.get(cfg.getUrl());
         safeSleep(3000);
