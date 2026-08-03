@@ -74,9 +74,9 @@ public class LandingPage extends BasePage {
             org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
             String currentUrl = driver.getCurrentUrl();
             String baseUrl = currentUrl.contains("mybharat") ? currentUrl.split("/")[0] + "//" + currentUrl.split("/")[2] : "https://mybharat.gov.in";
-            driver.get(baseUrl + "/register");
+            driver.get(baseUrl + "/yuva_register");
             waitForPageLoad();
-            try { Thread.sleep(2000); } catch (InterruptedException ie) { /* skip */ }
+            try { Thread.sleep(1000); } catch (InterruptedException ie) { /* skip */ }
         }
     }
 

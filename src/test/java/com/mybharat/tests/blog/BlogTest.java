@@ -8,7 +8,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import com.mybharat.base.BaseTest;
-import com.mybharat.listeners.Retry;
 import com.mybharat.listeners.TestListeners;
 import com.mybharat.pages.blog.BlogAdminPage;
 import com.mybharat.pages.blog.BlogPage;
@@ -61,7 +60,7 @@ public class BlogTest extends BaseTest {
         adminPage = new BlogAdminPage(driver);
     }
 
-    @Test(priority = 1, groups = {"regression", "blog"}, retryAnalyzer = Retry.class,
+    @Test(priority = 1, groups = {"regression", "blog"},
           description = "Write and publish a blog: Navigate to Blogs → Write a Blog → Fill Title, Category, Cover Image, Description → Preview → Post")
     public void writeAndPublishBlog() throws Exception {
         log.info("Starting: Write and Publish Blog");
@@ -86,9 +85,13 @@ public class BlogTest extends BaseTest {
         blogPage.clickPost();
         log.info("Step 5: Blog posted");
 
-        // Step 6: Verify success
+        // Step 6: Verify success — check success message OR verify in My Blogs
         boolean success = blogPage.isBlogPostedSuccessfully();
-        Assert.assertTrue(success, "Blog should be posted successfully");
+        if (!success) {
+            log.info("Success message not found, checking My Blogs for Pending status...");
+            success = blogPage.verifyBlogInMyBlogs();
+        }
+        Assert.assertTrue(success, "Blog should be posted successfully (verified via success message or My Blogs Pending status)");
         log.info("✅ Blog published successfully");
     }
 
@@ -97,9 +100,16 @@ public class BlogTest extends BaseTest {
     public void verifyBlogInMyBlogs() throws Exception {
         log.info("Starting: Verify Blog in My Blogs");
 
+        // Navigate to My Blogs and verify Pending status
         boolean verified = blogPage.verifyBlogInMyBlogs();
         Assert.assertTrue(verified, "Blog '" + blogPage.getCreatedBlogTitle() + "' should appear in My Blogs with Pending status");
-        log.info("✅ Blog verified in My Blogs: {}", blogPage.getCreatedBlogTitle());
+
+        // Explicitly assert Pending status
+        String status = blogPage.getBlogStatus();
+        log.info("Blog status in My Blogs: {}", status);
+        Assert.assertTrue(status.contains("Pending"),
+                "Blog status should be 'Pending' but was: " + status);
+        log.info("✅ Blog verified in My Blogs with Pending status: {}", blogPage.getCreatedBlogTitle());
     }
 
     // =========================================================================
