@@ -1,5 +1,7 @@
 package com.mybharat.pages;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -31,6 +33,8 @@ import org.openqa.selenium.support.FindBy;
  * @see BasePage
  */
 public class LandingPage extends BasePage {
+
+    private static final Logger log = LogManager.getLogger(LandingPage.class);
 
     @FindBy(xpath = "//i[@class='fa fa-times']")
     private WebElement closePopup;
@@ -70,13 +74,25 @@ public class LandingPage extends BasePage {
             safeClick(registerNowBtn);
             safeClick(registerBtn);
         } catch (Exception e) {
-            // Fallback: navigate directly to registration URL
-            org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
-            String currentUrl = driver.getCurrentUrl();
-            String baseUrl = currentUrl.contains("mybharat") ? currentUrl.split("/")[0] + "//" + currentUrl.split("/")[2] : "https://mybharat.gov.in";
-            driver.get(baseUrl + "/yuva_register");
+            // Fallback: refresh page, close popup, and retry with JS click
+            log.warn("Register Now button click failed, refreshing and retrying...");
+            driver.navigate().refresh();
             waitForPageLoad();
-            try { Thread.sleep(1000); } catch (InterruptedException ie) { /* skip */ }
+            try { Thread.sleep(2000); } catch (InterruptedException ie) { /* skip */ }
+            closePopupIfPresent();
+            try {
+                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
+                org.openqa.selenium.WebElement regNow = new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(30))
+                        .until(org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable(registerNowBtn));
+                js.executeScript("arguments[0].click();", regNow);
+                try { Thread.sleep(1000); } catch (InterruptedException ie) { /* skip */ }
+                org.openqa.selenium.WebElement regBtn = new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(30))
+                        .until(org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable(registerBtn));
+                js.executeScript("arguments[0].click();", regBtn);
+            } catch (Exception e2) {
+                log.error("Could not click Register buttons after retry: {}", e2.getMessage());
+                throw new RuntimeException("Registration navigation failed: " + e2.getMessage());
+            }
         }
     }
 

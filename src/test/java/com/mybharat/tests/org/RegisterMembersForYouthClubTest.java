@@ -381,12 +381,29 @@ public class RegisterMembersForYouthClubTest {
                 registerBtn.click();
                 safeSleep(500);
             } catch (Exception navEx) {
-                // Fallback: direct navigation to registration page
-                log.warn("[Member {}] Register Now button not found, trying direct URL", memberNum);
-                driver.get(config.getUrl() + "/yuva_register");
+                // Fallback: refresh page, close popup, and try again with longer wait
+                log.warn("[Member {}] Register Now button not found, refreshing and retrying...", memberNum);
+                driver.get(config.getUrl());
                 wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
                         .executeScript("return document.readyState").equals("complete"));
+                safeSleep(2000);
+                closePopup(driver);
                 safeSleep(1000);
+
+                try {
+                    WebElement registerNow = new WebDriverWait(driver, Duration.ofSeconds(30))
+                            .until(ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//span[@class='fontchange']")));
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", registerNow);
+                    safeSleep(1000);
+
+                    WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", registerBtn);
+                    safeSleep(1000);
+                } catch (Exception e2) {
+                    throw new RuntimeException("[Member " + memberNum + "] Could not navigate to registration page after retry: " + e2.getMessage());
+                }
             }
 
             // Step 2: Enter email and request OTP
