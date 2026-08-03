@@ -80,7 +80,7 @@ public class BlogPage extends BasePage {
      */
     public void handlePostLoginPopup() throws InterruptedException {
         log.info("Handling post-login popup...");
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         String[] popupButtons = {
             "//button[normalize-space()='Submit']",
@@ -99,7 +99,7 @@ public class BlogPage extends BasePage {
                 if (btn.isDisplayed()) {
                     try { btn.click(); } catch (Exception e) { jsClick(btn); }
                     log.info("✅ Popup handled with: {}", xpath);
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                     return;
                 }
             } catch (Exception e) { /* try next */ }
@@ -131,14 +131,12 @@ public class BlogPage extends BasePage {
     public void clickWriteABlog() throws InterruptedException {
         log.info("Clicking 'Write a Blog'...");
         scrollPage(500);
-        Thread.sleep(500);
 
         WebElement writeBtn = longWait.until(ExpectedConditions.elementToBeClickable(WRITE_BLOG_BUTTON));
         scrollToElement(writeBtn);
-        Thread.sleep(500);
         jsClick(writeBtn);
         waitForPageLoad();
-        Thread.sleep(500);
+        Thread.sleep(300);
         log.info("Blog creation form opened");
     }
 
@@ -168,7 +166,7 @@ public class BlogPage extends BasePage {
         titleInput.sendKeys(selectedTitle);
         createdBlogTitle = selectedTitle;
         log.info("Title entered: {}", selectedTitle);
-        Thread.sleep(500);
+        Thread.sleep(300);
 
         // Category
         WebElement categoryInput = longWait.until(ExpectedConditions.visibilityOfElementLocated(CATEGORY_INPUT));
@@ -177,19 +175,18 @@ public class BlogPage extends BasePage {
                 "Culture", "Sports", "Career", "Innovation", "Volunteering"};
         categoryInput.sendKeys(categories[new java.util.Random().nextInt(categories.length)]);
         log.info("Category entered");
-        Thread.sleep(500);
+        Thread.sleep(300);
 
         // Cover Image
         uploadCoverImage();
-        Thread.sleep(500);
+        Thread.sleep(300);
 
         // Blog Description (Rich Text Editor)
         fillBlogDescription();
-        Thread.sleep(500);
+        Thread.sleep(300);
 
         // Author Bio (optional)
         fillAuthorBio();
-        Thread.sleep(500);
 
         log.info("Blog form filled successfully");
     }
@@ -321,11 +318,9 @@ public class BlogPage extends BasePage {
     public void clickPreview() throws InterruptedException {
         log.info("Clicking Preview...");
         scrollPage(300);
-        Thread.sleep(500);
 
         WebElement previewBtn = longWait.until(ExpectedConditions.elementToBeClickable(PREVIEW_BUTTON));
         scrollToElement(previewBtn);
-        Thread.sleep(500);
         jsClick(previewBtn);
         Thread.sleep(500);
         log.info("Preview opened");
@@ -339,7 +334,6 @@ public class BlogPage extends BasePage {
 
         WebElement postBtn = longWait.until(ExpectedConditions.elementToBeClickable(POST_BUTTON));
         scrollToElement(postBtn);
-        Thread.sleep(500);
         jsClick(postBtn);
         Thread.sleep(500);
         log.info("Blog posted");
@@ -375,14 +369,13 @@ public class BlogPage extends BasePage {
         }
         driver.get(profileUrl);
         waitForPageLoad();
-        Thread.sleep(500);
 
         // Click My Blogs link in sidebar
         WebElement myBlogs = longWait.until(ExpectedConditions.elementToBeClickable(MY_BLOGS_LINK));
         scrollToElement(myBlogs);
         jsClick(myBlogs);
         waitForPageLoad();
-        Thread.sleep(1000); // Wait for table data to load
+        Thread.sleep(500); // Wait for table data to load
         log.info("Navigated to My Blogs");
 
         // Verify the blog title exists in the table

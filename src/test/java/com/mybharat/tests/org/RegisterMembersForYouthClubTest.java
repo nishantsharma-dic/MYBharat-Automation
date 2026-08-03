@@ -363,31 +363,56 @@ public class RegisterMembersForYouthClubTest {
             // Wait for page to fully load before interacting
             wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
                     .executeScript("return document.readyState").equals("complete"));
-            safeSleep(3000);
+            safeSleep(2000);
 
             // Close popup if present
             closePopup(driver);
             safeSleep(1000);
 
-            // Click Register Now → Register (Indian) with fallback to direct navigation
-            try {
-                WebElement registerNow = new WebDriverWait(driver, Duration.ofSeconds(30))
-                        .until(ExpectedConditions.elementToBeClickable(
-                                By.xpath("//span[@class='fontchange']")));
-                registerNow.click();
-                safeSleep(1000);
+            // Click Register Now → Register (Indian) using JS clicks for reliability
+            // The homepage is JS-heavy and may load slowly with concurrent browsers
+            boolean reachedOtpPage = false;
+            for (int attempt = 1; attempt <= 3 && !reachedOtpPage; attempt++) {
+                try {
+                    if (attempt > 1) {
+                        log.info("[Member {}] Retry attempt {} to reach registration page...", memberNum, attempt);
+                        driver.get(config.getUrl());
+                        wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
+                                .executeScript("return document.readyState").equals("complete"));
+                        safeSleep(3000);
+                        closePopup(driver);
+                        safeSleep(1000);
+                    }
 
-                WebElement registerBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                        By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
-                registerBtn.click();
-                safeSleep(1000);
-            } catch (Exception navEx) {
-                // Fallback: direct navigation to registration page
-                log.warn("[Member {}] Register Now button not found, trying direct URL", memberNum);
-                driver.get(config.getUrl() + "/register");
-                wait.until(d -> ((org.openqa.selenium.JavascriptExecutor) d)
-                        .executeScript("return document.readyState").equals("complete"));
-                safeSleep(3000);
+                    // Scroll to top to ensure Register Now button is visible
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0);");
+                    safeSleep(500);
+
+                    WebElement registerNow = new WebDriverWait(driver, Duration.ofSeconds(20))
+                            .until(ExpectedConditions.presenceOfElementLocated(
+                                    By.xpath("//span[@class='fontchange']")));
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", registerNow);
+                    safeSleep(1000);
+
+                    WebElement registerBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.presenceOfElementLocated(
+                                    By.xpath("//button[@class='btn btn_login lang_yuva_register_as_youth_btn fontchange']")));
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", registerBtn);
+                    safeSleep(1000);
+
+                    // Verify we reached the OTP page by checking for the email input
+                    new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.visibilityOfElementLocated(
+                                    By.xpath("(//input[@id='user_mobile'])[1]")));
+                    reachedOtpPage = true;
+                    log.info("[Member {}] Successfully reached OTP page on attempt {}", memberNum, attempt);
+                } catch (Exception navEx) {
+                    log.warn("[Member {}] Attempt {} failed: {}", memberNum, attempt, navEx.getMessage().split("\n")[0]);
+                }
+            }
+
+            if (!reachedOtpPage) {
+                throw new RuntimeException("[Member " + memberNum + "] Could not reach registration OTP page after 3 attempts");
             }
 
             // Step 2: Enter email and request OTP
@@ -403,7 +428,7 @@ public class RegisterMembersForYouthClubTest {
             int prevInboxCount = getMaildropInboxCount(email.split("@")[0]);
 
             getOtpBtn.click();
-            safeSleep(2000);
+            safeSleep(1000);
             log.info("[Member {}] OTP requested for: {} (prevCount={})", memberNum, email, prevInboxCount);
 
             // Step 3: Fetch OTP — wait for NEW message (count > prevCount)
@@ -418,7 +443,7 @@ public class RegisterMembersForYouthClubTest {
                             .until(ExpectedConditions.elementToBeClickable(
                                     By.xpath("//*[contains(text(),'Resend') or contains(text(),'resend')]")));
                     ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", resendBtn);
-                    safeSleep(5000);
+                    safeSleep(2000);
                     otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
                 } catch (Exception e2) {
                     throw new RuntimeException("OTP not received for member " + memberNum + " after resend: " + e2.getMessage());
@@ -434,7 +459,7 @@ public class RegisterMembersForYouthClubTest {
             WebElement verifyBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[@id='btn-verify-otp']")));
             verifyBtn.click();
-            safeSleep(1000);
+            safeSleep(500);
 
             // Step 5: Fill registration form
             fillRegistrationForm(driver, wait, faker);
@@ -445,11 +470,11 @@ public class RegisterMembersForYouthClubTest {
                     By.xpath("//button[@id='registrationButton']")));
             scrollToElement(driver, submitBtn);
             submitBtn.click();
-            safeSleep(5000);
+            safeSleep(3000);
 
             // Step 7: Handle submit popup
             handleSubmitPopup(driver);
-            safeSleep(2000);
+            safeSleep(1000);
 
             log.info("[Member {}] ✅ Registration PASSED: {}", memberNum, email);
 
@@ -613,7 +638,12 @@ public class RegisterMembersForYouthClubTest {
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
-                "--start-maximized"
+                "--start-maximized",
+                "--force-device-scale-factor=1",
+                "--window-size=1920,1080",
+                "--disable-background-timer-throttling",
+                "--disable-renderer-backgrounding",
+                "--disable-backgrounding-occluded-windows"
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
@@ -623,7 +653,6 @@ public class RegisterMembersForYouthClubTest {
             options.addArguments(
                 "--headless=new",
                 "--disable-gpu",
-                "--window-size=1920,1080",
                 "--disable-extensions",
                 "--disable-popup-blocking",
                 "--disable-background-timer-throttling",
@@ -633,7 +662,7 @@ public class RegisterMembersForYouthClubTest {
 
         WebDriver driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
-        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
+        driver.manage().window().maximize();
         return driver;
     }
 
