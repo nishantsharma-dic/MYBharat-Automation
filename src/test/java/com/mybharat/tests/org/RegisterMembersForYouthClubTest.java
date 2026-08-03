@@ -640,7 +640,10 @@ public class RegisterMembersForYouthClubTest {
                 "--disable-dev-shm-usage",
                 "--start-maximized",
                 "--force-device-scale-factor=1",
-                "--window-size=1920,1080"
+                "--window-size=1920,1080",
+                "--disable-background-timer-throttling",
+                "--disable-renderer-backgrounding",
+                "--disable-backgrounding-occluded-windows"
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 

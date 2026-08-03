@@ -82,8 +82,8 @@ public class BaseTest {
                 browserName, config.getEnv(), Thread.currentThread().getName());
 
         WebDriver newDriver = createDriver(browserName);
-        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        newDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+        newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
+        newDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(120));
         // Maximize window to use full screen — avoids content going out of bounds
         newDriver.manage().window().maximize();
         driverThreadLocal.set(newDriver);
@@ -172,7 +172,10 @@ public class BaseTest {
                     "--disable-dev-shm-usage",
                     "--start-maximized",
                     "--force-device-scale-factor=1",
-                    "--window-size=1920,1080"
+                    "--window-size=1920,1080",
+                    "--disable-background-timer-throttling",
+                    "--disable-renderer-backgrounding",
+                    "--disable-backgrounding-occluded-windows"
                 );
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
