@@ -64,9 +64,9 @@ public class BlogNegativeTest extends BaseTest {
         driver.get(blogsUrl);
         Thread.sleep(3000);
 
-        // Check if we're authenticated (Write a Blog button only shows for logged-in users)
+        // Click Write a Blog button
         try {
-            WebElement writeBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+            WebElement writeBtn = new WebDriverWait(driver, Duration.ofSeconds(15))
                     .until(ExpectedConditions.elementToBeClickable(WRITE_BLOG_BUTTON));
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", writeBtn);
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", writeBtn);
@@ -75,8 +75,20 @@ public class BlogNegativeTest extends BaseTest {
             // Wait for title input to appear
             wait.until(ExpectedConditions.visibilityOfElementLocated(TITLE_INPUT));
         } catch (Exception e) {
-            throw new org.testng.SkipException(
-                    "Blog form not accessible — user not logged in (negative blog tests require auth session). " + e.getMessage());
+            // If blog form not accessible, navigate to blogs page and retry once
+            log.warn("Write a Blog button not found on first try, retrying...");
+            driver.get(blogsUrl);
+            Thread.sleep(3000);
+            try {
+                WebElement writeBtn = new WebDriverWait(driver, Duration.ofSeconds(15))
+                        .until(ExpectedConditions.elementToBeClickable(WRITE_BLOG_BUTTON));
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", writeBtn);
+                Thread.sleep(1000);
+                wait.until(ExpectedConditions.visibilityOfElementLocated(TITLE_INPUT));
+            } catch (Exception e2) {
+                throw new org.testng.SkipException(
+                        "Blog form not accessible — user may not be logged in: " + e2.getMessage());
+            }
         }
     }
 

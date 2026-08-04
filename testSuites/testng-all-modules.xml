@@ -23,6 +23,7 @@
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
             <class name="com.mybharat.tests.blog.BlogTest"/>
+            <class name="com.mybharat.tests.negative.BlogNegativeTest"/>
         </classes>
     </test>
 
@@ -49,11 +50,7 @@
         </classes>
     </test>
 
-    <test name="Blog Negative Tests" preserve-order="true">
-        <classes>
-            <class name="com.mybharat.tests.negative.BlogNegativeTest"/>
-        </classes>
-    </test>
+    <!-- Blog Negative Tests run in the Youth Flow test block since they need auth -->
 
     <!-- ================================================================== -->
     <!-- RESPONSIVE / VIEWPORT TESTS                                         -->
