@@ -647,16 +647,20 @@ public class RegisterMembersForYouthClubTest {
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
-        // Respect the -Dbrowser system property for headless mode (CI compatibility)
+        // When running via self-hosted runner (ciMode), use headless so Chrome
+        // doesn't steal focus from user's active work on the same machine
+        if (Boolean.parseBoolean(System.getProperty("ciMode", "false"))) {
+            options.addArguments("--headless=new");
+        }
+
+        // Also respect explicit -Dbrowser=headless
         String browserMode = System.getProperty("browser", "chrome");
         if ("headless".equalsIgnoreCase(browserMode)) {
             options.addArguments(
                 "--headless=new",
                 "--disable-gpu",
                 "--disable-extensions",
-                "--disable-popup-blocking",
-                "--disable-background-timer-throttling",
-                "--disable-renderer-backgrounding"
+                "--disable-popup-blocking"
             );
         }
 

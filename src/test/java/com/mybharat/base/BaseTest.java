@@ -181,6 +181,13 @@ public class BaseTest {
                     "--disable-renderer-backgrounding",
                     "--disable-backgrounding-occluded-windows"
                 );
+
+                // When running via self-hosted runner (ciMode), use new headless
+                // so Chrome doesn't steal focus from user's active work
+                if (Boolean.parseBoolean(System.getProperty("ciMode", "false"))) {
+                    options.addArguments("--headless=new");
+                }
+
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
                 // Set download directory to project-local folder
