@@ -647,12 +647,6 @@ public class RegisterMembersForYouthClubTest {
         );
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
-        // When running via self-hosted runner (ciMode), use headless so Chrome
-        // doesn't steal focus from user's active work on the same machine
-        if (Boolean.parseBoolean(System.getProperty("ciMode", "false"))) {
-            options.addArguments("--headless=new");
-        }
-
         // Also respect explicit -Dbrowser=headless
         String browserMode = System.getProperty("browser", "chrome");
         if ("headless".equalsIgnoreCase(browserMode)) {
