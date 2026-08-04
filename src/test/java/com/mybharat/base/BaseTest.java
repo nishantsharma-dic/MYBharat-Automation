@@ -166,6 +166,13 @@ public class BaseTest {
     private WebDriver createDriver(String browserName) {
         if (browserName == null) browserName = "chrome";
 
+        // "headed-chrome" forces headed mode (used by Youth Club for Ionic app)
+        boolean forceHeaded = false;
+        if ("headed-chrome".equalsIgnoreCase(browserName)) {
+            browserName = "chrome";
+            forceHeaded = true;
+        }
+
         switch (browserName.toLowerCase()) {
             case "chrome": {
                 WebDriverManager.chromedriver().setup();
@@ -183,10 +190,10 @@ public class BaseTest {
                     "--disable-backgrounding-occluded-windows"
                 );
 
-                // Note: We intentionally do NOT use headless mode for CI runs because
-                // the Youth Club Ionic app (web.mybharat.gov.in) doesn't render properly
-                // in headless Chrome. The --disable-backgrounding-occluded-windows flag
-                // prevents Chrome from stealing focus while running in the background.
+                // In CI mode, run headless unless force-headed (for Ionic app)
+                if (Boolean.parseBoolean(System.getProperty("ciMode", "false")) && !forceHeaded) {
+                    options.addArguments("--headless=new");
+                }
 
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 

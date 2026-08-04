@@ -28,6 +28,7 @@
     </test>
 
     <test name="Youth Club Flow" preserve-order="true">
+        <parameter name="browser" value="headed-chrome"/>
         <classes>
             <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
             <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
