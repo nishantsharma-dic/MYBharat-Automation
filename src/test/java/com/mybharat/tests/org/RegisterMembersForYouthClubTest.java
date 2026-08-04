@@ -666,6 +666,7 @@ public class RegisterMembersForYouthClubTest {
 
         WebDriver driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(60));
         driver.manage().window().maximize();
         return driver;
     }

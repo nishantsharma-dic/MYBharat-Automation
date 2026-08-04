@@ -88,6 +88,7 @@ public class BaseTest {
         WebDriver newDriver = createDriver(browserName);
         newDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
         newDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(120));
+        newDriver.manage().timeouts().scriptTimeout(Duration.ofSeconds(60));
         // Maximize window to use full screen — avoids content going out of bounds
         newDriver.manage().window().maximize();
         driverThreadLocal.set(newDriver);

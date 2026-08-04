@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Comprehensive Test Suite — includes ALL tests (positive + negative + responsive).
+  Use for MANUAL runs only (not scheduled) since negative tests need headed browser.
 
-<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1"
+  Usage:
+    mvn test -Denv=prod -Dbrowser=chrome \
+      -Dsurefire.suiteXmlFiles=testSuites/testng-comprehensive.xml
+-->
+<suite name="MYBharat Comprehensive Suite" parallel="tests" thread-count="2" verbose="1"
        group-by-instances="true" preserve-order="true">
 
     <listeners>
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
-    <!-- ================================================================== -->
-    <!-- POSITIVE FLOW TESTS (Core — runs in scheduled + manual)             -->
-    <!-- ================================================================== -->
-
+    <!-- Core Positive Flow -->
     <test name="Youth Flow" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
@@ -31,6 +35,26 @@
         <classes>
             <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
             <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
+        </classes>
+    </test>
+
+    <!-- Negative Tests -->
+    <test name="Registration Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.RegistrationNegativeTest"/>
+        </classes>
+    </test>
+
+    <test name="Login Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.LoginNegativeTest"/>
+        </classes>
+    </test>
+
+    <!-- Responsive Tests -->
+    <test name="Responsive Layout Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.responsive.ResponsiveTest"/>
         </classes>
     </test>
 
