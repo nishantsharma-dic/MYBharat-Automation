@@ -364,6 +364,22 @@ public class CreateYouthClubTest extends BaseTest {
 
         // Fetch OTP from Maildrop (wait for new message)
         String otp = fetchCreatorOTP(mailbox, prevCount);
+
+        // If OTP not received, try resending
+        if (otp.isEmpty()) {
+            log.warn("  OTP not received, clicking Resend...");
+            try {
+                WebElement resendBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.elementToBeClickable(
+                                By.xpath("//*[contains(text(),'Resend') or contains(text(),'resend')]")));
+                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", resendBtn);
+                safeSleep(5000);
+                otp = fetchCreatorOTP(mailbox, prevCount);
+            } catch (Exception resendEx) {
+                log.warn("  Resend button not found: {}", resendEx.getMessage());
+            }
+        }
+
         Assert.assertFalse(otp.isEmpty(), "[Step 1] Could not fetch OTP for creator: " + loginEmail);
         log.info("  Creator OTP: {}", otp);
 
@@ -412,7 +428,7 @@ public class CreateYouthClubTest extends BaseTest {
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
         safeSleep(5000); // Initial wait
 
-        for (int attempt = 1; attempt <= 15; attempt++) {
+        for (int attempt = 1; attempt <= 20; attempt++) {
             try (org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
                     org.apache.hc.client5.http.impl.classic.HttpClients.createDefault()) {
                 org.apache.hc.client5.http.classic.methods.HttpPost listReq =
@@ -424,7 +440,7 @@ public class CreateYouthClubTest extends BaseTest {
                 com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
 
                 if (inbox.size() <= prevCount) {
-                    log.info("  Waiting for creator OTP (attempt {}/15, count={})", attempt, inbox.size());
+                    log.info("  Waiting for creator OTP (attempt {}/20, count={})", attempt, inbox.size());
                     safeSleep(4000);
                     continue;
                 }

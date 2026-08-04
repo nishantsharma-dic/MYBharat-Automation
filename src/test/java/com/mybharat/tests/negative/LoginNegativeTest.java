@@ -51,7 +51,7 @@ public class LoginNegativeTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() {
         config = new ConfigReader();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -79,12 +79,34 @@ public class LoginNegativeTest extends BaseTest {
             }
         } catch (Exception e) { /* no modal */ }
 
-        // Click Sign In
-        WebElement signIn = wait.until(ExpectedConditions.elementToBeClickable(SIGN_IN_LINK));
-        try {
-            signIn.click();
-        } catch (Exception e) {
-            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", signIn);
+        // Click Sign In — with retry (page may load slowly in headless mode)
+        boolean signInClicked = false;
+        for (int attempt = 1; attempt <= 2 && !signInClicked; attempt++) {
+            try {
+                WebElement signIn = new WebDriverWait(driver, Duration.ofSeconds(20))
+                        .until(ExpectedConditions.elementToBeClickable(SIGN_IN_LINK));
+                try {
+                    signIn.click();
+                } catch (Exception e) {
+                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", signIn);
+                }
+                signInClicked = true;
+            } catch (Exception e) {
+                if (attempt == 1) {
+                    // Refresh and retry
+                    driver.navigate().refresh();
+                    Thread.sleep(3000);
+                    try {
+                        WebElement popup = new WebDriverWait(driver, Duration.ofSeconds(3))
+                                .until(ExpectedConditions.elementToBeClickable(By.xpath("//i[@class='fa fa-times']")));
+                        popup.click();
+                        Thread.sleep(500);
+                    } catch (Exception ex) { /* no popup */ }
+                }
+            }
+        }
+        if (!signInClicked) {
+            throw new RuntimeException("Could not find Sign In link after 2 attempts");
         }
         Thread.sleep(1000);
 
