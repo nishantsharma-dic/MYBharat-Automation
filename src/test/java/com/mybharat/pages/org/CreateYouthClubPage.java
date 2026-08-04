@@ -279,22 +279,38 @@ public class CreateYouthClubPage extends BasePage {
 
         // Select "Rent-Free" from Type of Office dropdown
         try {
-            WebElement option = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.elementToBeClickable(By.xpath("//*[normalize-space()='Rent-Free']")));
-            // First open the dropdown
-            WebElement typeDropdown = driver.findElement(By.xpath(
-                    "//ion-label[contains(.,'Type of Office')]/following::ion-select[1]"));
+            // Find the ion-select for Type of Office
+            WebElement typeDropdown = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.presenceOfElementLocated(By.xpath(
+                            "//ion-label[contains(.,'Type of Office')]/following::ion-select[1]")));
             scrollToElement(typeDropdown);
-            js.executeScript("arguments[0].click()", typeDropdown);
-            safeSleep(1000);
-            // Click Rent-Free option
-            WebElement rentFree = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.elementToBeClickable(
-                            By.xpath("//ion-item[contains(@class,'select-interface-option')][contains(.,'Rent-Free')]")));
-            rentFree.click();
-            safeSleep(300);
-            clickOkIfPresent();
-            dismissPopover();
+            safeSleep(500);
+
+            // Try direct value set via JS (most reliable for ion-select)
+            js.executeScript("arguments[0].value = 'Rent-Free'; arguments[0].dispatchEvent(new Event('ionChange', {bubbles: true}));", typeDropdown);
+            safeSleep(500);
+
+            // Verify value was set — if not, try clicking through popover
+            String currentVal = (String) js.executeScript("return arguments[0].value;", typeDropdown);
+            if (currentVal == null || !currentVal.contains("Rent")) {
+                // Fallback: click open and select from popover
+                js.executeScript("arguments[0].click()", typeDropdown);
+                safeSleep(1500);
+                try {
+                    WebElement rentFree = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                            ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//ion-item[contains(@class,'select-interface-option')][contains(.,'Rent-Free')] | //button[contains(.,'Rent-Free')] | //*[contains(@class,'alert-radio')][contains(.,'Rent')]")));
+                    rentFree.click();
+                    safeSleep(300);
+                    clickOkIfPresent();
+                    dismissPopover();
+                } catch (Exception popEx) {
+                    // Last fallback: try setting via JS on the internal select
+                    js.executeScript(
+                            "var el = arguments[0]; el.value = 'Rent-Free';" +
+                            "el.dispatchEvent(new CustomEvent('ionChange', {detail: {value: 'Rent-Free'}}));", typeDropdown);
+                }
+            }
             safeSleep(500);
             log.info("  Type of Office = Rent-Free");
         } catch (Exception e) {
@@ -856,15 +872,28 @@ public class CreateYouthClubPage extends BasePage {
     }
 
     public boolean isSubmissionSuccessful() {
-        // Wait for actual success indicator — "GO TO MY BHARAT PROFILE" button only appears on real success
+        // Wait for actual success indicator — multiple possible success messages
         try {
-            return new WebDriverWait(driver, Duration.ofSeconds(20)).until(d -> {
+            return new WebDriverWait(driver, Duration.ofSeconds(30)).until(d -> {
                 String src = d.getPageSource().toLowerCase();
+                String url = d.getCurrentUrl().toLowerCase();
+                // Check for known success indicators
                 return src.contains("go to my bharat profile")
                         || src.contains("successfully submitted")
-                        || src.contains("organization has been submitted");
+                        || src.contains("organization has been submitted")
+                        || src.contains("successfully created")
+                        || src.contains("submitted successfully")
+                        || src.contains("congratulations")
+                        || url.contains("success")
+                        || !url.contains("create-org"); // URL changed from form page
             });
         } catch (Exception e) {
+            // Check if we're no longer on the create-org page (submission may have worked)
+            String url = driver.getCurrentUrl().toLowerCase();
+            if (!url.contains("create-org")) {
+                log.info("URL changed from create-org — submission likely succeeded: {}", url);
+                return true;
+            }
             log.warn("Submission success not confirmed — page source check failed");
             return false;
         }

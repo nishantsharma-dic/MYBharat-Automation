@@ -2,6 +2,7 @@ package com.mybharat.tests.youth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -54,6 +55,17 @@ public class LogoutTest extends BaseTest {
     public void logoutUser() throws Exception {
         log.info("Starting: Logout current user");
         logoutPage.logout();
-        log.info("✅ Logout completed successfully");
+
+        // Assert: after logout, user should be on home page and Sign In should be visible
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertFalse(currentUrl.contains("profile") || currentUrl.contains("dashboard"),
+                "After logout, should NOT be on profile/dashboard page. URL: " + currentUrl);
+
+        // Verify Sign In link is visible (indicates logged-out state)
+        boolean signInVisible = driver.findElements(
+                org.openqa.selenium.By.xpath("//span[normalize-space()='Sign In']")).size() > 0;
+        Assert.assertTrue(signInVisible, "After logout, 'Sign In' link should be visible on homepage");
+
+        log.info("✅ Logout verified — user is on homepage with Sign In visible");
     }
 }

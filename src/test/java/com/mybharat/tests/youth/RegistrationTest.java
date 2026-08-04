@@ -79,18 +79,40 @@ public class RegistrationTest extends BaseTest {
 
         // Step 2: Enter email and verify OTP
         registrationPage.enterEmailAndRequestOTP();
+        String email = registrationPage.getEmail();
+        Assert.assertNotNull(email, "Generated email should not be null");
+        Assert.assertTrue(email.contains("@"), "Generated email should be valid format");
+        log.info("Step 2: Email generated and OTP requested: {}", email);
+
         registrationPage.fetchAndVerifyOTP();
+
+        // Verify we landed on registration form (firstname field visible)
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(
+                currentUrl.contains("register") || currentUrl.contains("yuva_register")
+                        || driver.findElements(org.openqa.selenium.By.id("firstname")).size() > 0,
+                "After OTP verification, should be on registration form page. URL: " + currentUrl);
+        log.info("Step 2: OTP verified, on registration form");
 
         // Step 3: Fill registration form and submit
         registrationPage.fillRegistrationForm();
         registrationPage.submitForm();
+        log.info("Step 3: Registration form filled and submitted");
 
         // Step 4: Click the submit popup button
         registrationPage.clickSubmitPopup();
 
-        // Step 5: Save the registration email to Excel
+        // Step 5: Verify registration succeeded — URL should change or success indicator visible
+        Thread.sleep(3000);
+        String postSubmitUrl = driver.getCurrentUrl();
+        Assert.assertFalse(postSubmitUrl.contains("yuva_register"),
+                "After successful registration, should NOT remain on registration form. URL: " + postSubmitUrl);
+        log.info("Step 4: Registration submission confirmed (URL changed from form)");
+
+        // Step 6: Save the registration email to Excel
         registeredEmail = registrationPage.getEmail();
         registrationPage.saveEmailToExcel();
+        Assert.assertNotNull(registeredEmail, "Registered email should be saved");
         log.info("✅ Registration completed. Email: {}", registeredEmail);
     }
 

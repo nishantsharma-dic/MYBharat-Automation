@@ -74,10 +74,14 @@ public class BaseTest {
     /** Public accessor for listeners/utilities to get the current thread's driver */
     public static final ThreadLocal<WebDriver> driverTL = driverThreadLocal;
 
+    @org.testng.annotations.Parameters({"browser"})
     @BeforeTest(alwaysRun = true)
-    public void setUp() {
+    public void setUp(@org.testng.annotations.Optional("") String browserParam) {
         config = new ConfigReader();
-        String browserName = System.getProperty("browser", config.getProperty("browser"));
+        // Priority: TestNG XML parameter > System property > config file
+        String browserName = (browserParam != null && !browserParam.isEmpty())
+                ? browserParam
+                : System.getProperty("browser", config.getProperty("browser"));
         log.info("Starting browser: {} | Environment: {} | Thread: {}",
                 browserName, config.getEnv(), Thread.currentThread().getName());
 

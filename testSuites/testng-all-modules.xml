@@ -8,6 +8,10 @@
         <listener class-name="com.mybharat.listeners.TestListeners"/>
     </listeners>
 
+    <!-- ================================================================== -->
+    <!-- POSITIVE FLOW TESTS                                                 -->
+    <!-- ================================================================== -->
+
     <test name="Youth Flow" preserve-order="true">
         <classes>
             <class name="com.mybharat.tests.youth.RegistrationTest"/>
@@ -19,6 +23,7 @@
             <class name="com.mybharat.tests.youth.QuizAttemptTest"/>
             <class name="com.mybharat.tests.youth.QuizCertificateVerificationTest"/>
             <class name="com.mybharat.tests.blog.BlogTest"/>
+            <class name="com.mybharat.tests.negative.BlogNegativeTest"/>
         </classes>
     </test>
 
@@ -26,6 +31,34 @@
         <classes>
             <class name="com.mybharat.tests.org.RegisterMembersForYouthClubTest"/>
             <class name="com.mybharat.tests.org.CreateYouthClubTest"/>
+        </classes>
+    </test>
+
+    <!-- ================================================================== -->
+    <!-- NEGATIVE TEST CASES                                                 -->
+    <!-- ================================================================== -->
+
+    <test name="Registration Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.RegistrationNegativeTest"/>
+        </classes>
+    </test>
+
+    <test name="Login Negative Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.negative.LoginNegativeTest"/>
+        </classes>
+    </test>
+
+    <!-- Blog Negative Tests run in the Youth Flow test block since they need auth -->
+
+    <!-- ================================================================== -->
+    <!-- RESPONSIVE / VIEWPORT TESTS                                         -->
+    <!-- ================================================================== -->
+
+    <test name="Responsive Layout Tests" preserve-order="true">
+        <classes>
+            <class name="com.mybharat.tests.responsive.ResponsiveTest"/>
         </classes>
     </test>
 

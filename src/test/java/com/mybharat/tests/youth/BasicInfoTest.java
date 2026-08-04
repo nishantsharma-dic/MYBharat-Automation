@@ -2,6 +2,7 @@ package com.mybharat.tests.youth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -52,6 +53,12 @@ public class BasicInfoTest extends BaseTest {
         log.info("Starting: Basic Info — Update Details + Extract Email");
 
         profilePage.navigateToBasicInfo();
+
+        // Assert: URL should still contain profile
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.contains("youth-profile") || currentUrl.contains("profile"),
+                "Should be on profile page after navigating to Basic Info. URL: " + currentUrl);
+
         profilePage.fillBasicInfoAndSave();
         profilePage.extractEmailFromProfile();
 
