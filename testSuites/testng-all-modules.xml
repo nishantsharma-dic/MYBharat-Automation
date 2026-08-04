@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
-<suite name="MYBharat All Modules" parallel="tests" thread-count="2" verbose="1"
+<suite name="MYBharat All Modules" parallel="false" verbose="1"
        group-by-instances="true" preserve-order="true">
 
     <listeners>
