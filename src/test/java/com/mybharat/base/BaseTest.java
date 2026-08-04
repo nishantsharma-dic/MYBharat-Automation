@@ -183,11 +183,10 @@ public class BaseTest {
                     "--disable-backgrounding-occluded-windows"
                 );
 
-                // When running via self-hosted runner (ciMode), use new headless
-                // so Chrome doesn't steal focus from user's active work
-                if (Boolean.parseBoolean(System.getProperty("ciMode", "false"))) {
-                    options.addArguments("--headless=new");
-                }
+                // Note: We intentionally do NOT use headless mode for CI runs because
+                // the Youth Club Ionic app (web.mybharat.gov.in) doesn't render properly
+                // in headless Chrome. The --disable-backgrounding-occluded-windows flag
+                // prevents Chrome from stealing focus while running in the background.
 
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
