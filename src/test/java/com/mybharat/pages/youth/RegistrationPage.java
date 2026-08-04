@@ -22,11 +22,11 @@ import com.mybharat.utils.ConfigReader;
  *
  * Purpose: Handles the complete new user registration flow — from entering email and
  *          verifying OTP to filling personal/education/location details and submitting.
- *          Uses JavaFaker for randomized test data and Maildrop API for OTP retrieval.
+ *          Uses JavaFaker for randomized test data and Yopmail for OTP retrieval.
  *
  * Flow:
- *   1. enterEmailAndRequestOTP() — enters generated @maildrop.cc email, clicks Get OTP
- *   2. fetchAndVerifyOTP()       — opens Maildrop API in new tab, extracts OTP, enters and verifies
+ *   1. enterEmailAndRequestOTP() — enters generated @yopmail.com email, clicks Get OTP
+ *   2. fetchAndVerifyOTP()       — opens Yopmail in new tab, extracts OTP, enters and verifies
  *   3. fillRegistrationForm()    — fills all form fields (name, DOB, gender, state, district,
  *                                  address, education, institution, sport, consent checkboxes)
  *   4. submitForm()              — clicks the Register/Submit button
@@ -39,11 +39,11 @@ import com.mybharat.utils.ConfigReader;
  *   - clickSubmitPopup()  — handles the confirmation popup with multiple locator fallbacks
  *
  * Data Generation:
- *   - Email: {randomName}@maildrop.cc (via JavaFaker)
+ *   - Email: {randomName}@yopmail.com (via JavaFaker)
  *   - Mobile: random 10-digit number starting with 9
  *   - Name, DOB, address: randomized via JavaFaker
  *
- * Dependencies: BasePage, ConfigReader, JavaFaker, Apache POI (Excel), Maildrop API
+ * Dependencies: BasePage, ConfigReader, JavaFaker, Apache POI (Excel), Yopmail (browser)
  * Developer: Nishant Sharma (QA Team)
  *
  * @see RegistrationTest
@@ -228,17 +228,10 @@ public class RegistrationPage extends BasePage {
     }
 
     /**
-     * Open Maildrop API in new tab, fetch OTP, come back and verify.
+     * Open Yopmail in new tab, fetch OTP, come back and verify.
      */
     public void fetchAndVerifyOTP() throws InterruptedException {
-        // Fetch OTP via Maildrop API (no browser tab needed — much more reliable on CI)
-        String mailbox = email.split("@")[0];
-        String otp;
-        try {
-            otp = fetchOTPViaAPI(mailbox);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch OTP for " + email + ": " + e.getMessage(), e);
-        }
+        String otp = fetchOTPFromYopmail();
         System.out.println("Email: " + email + " | OTP: " + otp);
 
         // Enter OTP and verify
@@ -286,8 +279,13 @@ public class RegistrationPage extends BasePage {
         // Personal details
         waitForVisible(firstNameInput);
         scrollToElement(firstNameInput);
-        safeType(firstNameInput, faker.name().firstName());
-        safeType(lastNameInput, faker.name().lastName());
+        // Ensure min 4 chars, alphabets only, never blank
+        String fName = faker.name().firstName().replaceAll("[^a-zA-Z]", "");
+        if (fName.length() < 4) fName = fName + "test";
+        safeType(firstNameInput, fName);
+        String lName = faker.name().lastName().replaceAll("[^a-zA-Z]", "");
+        if (lName.length() < 4) lName = lName + "user";
+        safeType(lastNameInput, lName);
 
         // Date of birth
         String day = String.valueOf(faker.number().numberBetween(1, 28));
@@ -483,61 +481,116 @@ public class RegistrationPage extends BasePage {
         String name = faker.name().fullName()
                 .replace(" ", "")
                 .replace("'", "")
-                .replace(".", "");
-        return name + "@maildrop.cc";
+                .replace(".", "")
+                .toLowerCase();
+        return name + "@yopmail.com";
     }
 
     /**
-     * Fetch OTP from Maildrop.cc GraphQL API (no browser needed).
-     * Polls the inbox for a new message containing the OTP.
+     * Fetch OTP from Yopmail by opening it in a new browser tab.
+     * Navigates to yopmail, enters the email prefix, reads OTP from the inbox iframe.
      */
-    private String fetchOTPViaAPI(String mailbox) throws Exception {
-        org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
-                org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+    private String fetchOTPFromYopmail() throws InterruptedException {
+        String mailbox = email.split("@")[0];
+        System.out.println("Fetching OTP from Yopmail for: " + mailbox);
 
-        // Poll for new email (max 60 seconds)
-        for (int attempt = 1; attempt <= 15; attempt++) {
-            Thread.sleep(4000);
+        // Open Yopmail in new tab
+        driver.switchTo().newWindow(WindowType.TAB);
+        driver.get(config.getDummyEmailUrl());
+        Thread.sleep(2000);
 
-            org.apache.hc.client5.http.classic.methods.HttpPost listReq =
-                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
-            listReq.setHeader("Content-Type", "application/json");
-            listReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
-                    "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
-            String listResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
-                    client.execute(listReq).getEntity());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-            com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
-            if (inbox.size() == 0) continue;
+        // Enter email prefix in Yopmail search
+        WebElement inbox = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[@id='login']")));
+        inbox.clear();
+        inbox.sendKeys(mailbox);
 
-            // Get the newest message
-            String msgId = inbox.get(0).get("id").asText();
+        // Click Go button
+        driver.findElement(By.cssSelector(".material-icons-outlined.f36")).click();
+        Thread.sleep(3000);
 
-            org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
-                    new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
-            msgReq.setHeader("Content-Type", "application/json");
-            msgReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
-                    "{\"query\":\"{ message(mailbox:\\\"" + mailbox + "\\\", id:\\\"" + msgId + "\\\") { id html } }\"}"));
-            String msgResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
-                    client.execute(msgReq).getEntity());
+        // Refresh inbox (OTP email may take a few seconds)
+        String otp = null;
+        for (int attempt = 1; attempt <= 10; attempt++) {
+            try {
+                driver.findElement(By.xpath("//button[@id='refresh']")).click();
+                Thread.sleep(3000);
 
-            String html = mapper.readTree(msgResp).path("data").path("message").path("html").asText();
-
-            // Extract OTP from <strong>XXXXXX</strong> or " is XXXXXX."
-            java.util.regex.Matcher m = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(html);
-            if (m.find()) {
-                client.close();
-                return m.group(1);
-            }
-            // Fallback pattern: "is XXXXXX."
-            java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("is\\s+(\\d{6})").matcher(html);
-            if (m2.find()) {
-                client.close();
-                return m2.group(1);
+                // Switch to mail iframe and extract OTP
+                driver.switchTo().frame("ifmail");
+                otp = extractOTPFromYopmail();
+                driver.switchTo().defaultContent();
+                if (otp != null) break;
+            } catch (Exception e) {
+                driver.switchTo().defaultContent();
+                System.out.println("  Attempt " + attempt + "/10 — OTP not found yet, retrying...");
+                Thread.sleep(3000);
             }
         }
-        client.close();
-        throw new RuntimeException("Failed to fetch OTP from Maildrop API for: " + mailbox);
+
+        if (otp == null) {
+            // Close Yopmail tab before throwing
+            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+            driver.close();
+            driver.switchTo().window(tabs.get(0));
+            throw new RuntimeException("Failed to fetch OTP from Yopmail for: " + email);
+        }
+
+        System.out.println("OTP extracted from Yopmail: " + otp);
+
+        // Close Yopmail tab and switch back to registration tab
+        ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+        driver.close();
+        driver.switchTo().window(tabs.get(0));
+        Thread.sleep(500);
+
+        return otp;
+    }
+
+    /**
+     * Extract OTP from Yopmail mail body (called while inside iframe context).
+     */
+    private String extractOTPFromYopmail() {
+        try {
+            // Try finding the OTP paragraph first
+            WebElement otpElement = driver.findElement(
+                    By.xpath("//p[contains(text(),'OTP') or contains(text(),'otp') or contains(text(),'one-time password') or contains(text(),'One Time Password')]"));
+            String otpText = otpElement.getText();
+
+            // Pattern: "Your OTP is XXXXXX. This..."
+            if (otpText.contains(" is ") && otpText.contains(". This")) {
+                return otpText.split("\\. This")[0].trim().split(" is ")[1].trim();
+            }
+            // Generic 4-6 digit extraction
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\d{4,6}").matcher(otpText);
+            if (matcher.find()) return matcher.group();
+        } catch (Exception e) {
+            // Fallback: search entire body for 4-6 digit number
+        }
+
+        // Broader search in the mail body
+        try {
+            WebElement body = driver.findElement(By.tagName("body"));
+            String bodyText = body.getText();
+
+            // Try <strong>XXXXXX</strong> pattern in page source
+            String pageSource = driver.getPageSource();
+            java.util.regex.Matcher strongMatcher = java.util.regex.Pattern.compile("<strong>(\\d{4,6})</strong>").matcher(pageSource);
+            if (strongMatcher.find()) return strongMatcher.group(1);
+
+            // Try "is XXXXXX" pattern
+            java.util.regex.Matcher isMatcher = java.util.regex.Pattern.compile("is\\s+(\\d{4,6})").matcher(bodyText);
+            if (isMatcher.find()) return isMatcher.group(1);
+
+            // Last resort: any 6-digit number in body
+            java.util.regex.Matcher digitMatcher = java.util.regex.Pattern.compile("\\b(\\d{6})\\b").matcher(bodyText);
+            if (digitMatcher.find()) return digitMatcher.group(1);
+        } catch (Exception e) {
+            // No OTP found
+        }
+
+        return null;
     }
 }
