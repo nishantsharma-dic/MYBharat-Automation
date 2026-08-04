@@ -57,7 +57,7 @@ public class OTPHelper {
 
         try { Thread.sleep(3000); } catch (InterruptedException e) { /* skip */ }
 
-        for (int attempt = 1; attempt <= 8; attempt++) {
+        for (int attempt = 1; attempt <= 3; attempt++) {
             try {
                 org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
                         org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
@@ -75,7 +75,7 @@ public class OTPHelper {
                 com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
 
                 if (inbox.size() <= prevCount) {
-                    log.info("  Maildrop attempt {}/8 — no new email (count={})", attempt, inbox.size());
+                    log.info("  Maildrop attempt {}/3 — no new email (count={})", attempt, inbox.size());
                     client.close();
                     Thread.sleep(4000);
                     continue;
@@ -109,12 +109,12 @@ public class OTPHelper {
                 log.warn("  OTP pattern not found in email HTML");
                 Thread.sleep(4000);
             } catch (Exception e) {
-                log.warn("  Maildrop API error (attempt {}/8): {}", attempt, e.getMessage());
+                log.warn("  Maildrop API error (attempt {}/3): {}", attempt, e.getMessage());
                 try { Thread.sleep(4000); } catch (InterruptedException ie) { /* skip */ }
             }
         }
 
-        log.warn("  Maildrop failed after 8 attempts — caller should use Yopmail fallback");
+        log.warn("  Maildrop failed after 3 attempts — caller should use Yopmail fallback");
         return null;
     }
 
