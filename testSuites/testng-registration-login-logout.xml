@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  MYBharat Registration → Login → Logout Suite
+  
+  Flow: Registration → Logout → Login
+  
+  Run: mvn test -Denv=prod -Dbrowser=chrome -Dsurefire.suiteXmlFiles=testSuites/testng-registration-login-logout.xml
+-->
+<suite name="MYBharat Registration Login Logout Suite" parallel="false" verbose="1">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Step 1: Registration - Register new user -->
+    <test name="User Registration" parallel="classes" thread-count="1">
+        <parameter name="browser" value="${browser}"/>
+        <classes>
+            <class name="com.mybharat.tests.youth.RegistrationTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 2: Logout - Logout current user -->
+    <test name="User Logout" parallel="classes" thread-count="1">
+        <parameter name="browser" value="${browser}"/>
+        <classes>
+            <class name="com.mybharat.tests.youth.LogoutTest"/>
+        </classes>
+    </test>
+
+    <!-- Step 3: Login - Login with registered user -->
+    <test name="User Login" parallel="classes" thread-count="1">
+        <parameter name="browser" value="${browser}"/>
+        <classes>
+            <class name="com.mybharat.tests.youth.LoginTest"/>
+        </classes>
+    </test>
+
+</suite>

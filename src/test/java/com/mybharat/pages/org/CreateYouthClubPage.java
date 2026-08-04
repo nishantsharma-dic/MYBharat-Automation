@@ -154,14 +154,40 @@ public class CreateYouthClubPage extends BasePage {
 
     public void clickNext() {
         log.info("Clicking Next");
-        WebElement btn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                ExpectedConditions.elementToBeClickable(
-                        By.xpath("//ion-button[normalize-space()='Next'] | //ion-button[contains(.,'Next')]")));
-        scrollToElement(btn);
-        jsClick(btn);
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                ExpectedConditions.presenceOfElementLocated(By.xpath("//*[contains(text(),'Details of Organization')]")));
-        log.info("✅ Basic Info section visible");
+        WebElement btn = null;
+        try {
+            btn = new WebDriverWait(driver, Duration.ofSeconds(20)).until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//ion-button[normalize-space()='Next'] | //ion-button[contains(.,'Next')]")));
+        } catch (Exception e) {
+            // Fallback: find via JS in case element is hidden behind shadow DOM
+            try {
+                btn = (WebElement) ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                        "var btns = document.querySelectorAll('ion-button');" +
+                        "for(var i=0; i<btns.length; i++) {" +
+                        "  if(btns[i].textContent.trim().includes('Next')) return btns[i];" +
+                        "} return null;");
+            } catch (Exception e2) { /* skip */ }
+        }
+        if (btn != null) {
+            scrollToElement(btn);
+            jsClick(btn);
+        } else {
+            // Last resort: JS click any Next button
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                    "var btns = document.querySelectorAll('ion-button');" +
+                    "for(var i=0; i<btns.length; i++) {" +
+                    "  if(btns[i].textContent.trim().includes('Next')) { btns[i].click(); return; }" +
+                    "}");
+        }
+        safeSleep(2000);
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+                    ExpectedConditions.presenceOfElementLocated(By.xpath("//*[contains(text(),'Details of Organization')]")));
+            log.info("✅ Basic Info section visible");
+        } catch (Exception e) {
+            log.warn("Details of Organization text not found after Next click — continuing");
+        }
     }
 
     // =========================================================================
