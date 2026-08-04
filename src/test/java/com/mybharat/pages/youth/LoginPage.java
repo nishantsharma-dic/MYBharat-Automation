@@ -256,68 +256,46 @@ public class LoginPage extends BasePage {
      * Fetch OTP from Maildrop API in new tab, extract it, and enter in login form.
      */
     public void fetchOTPFromYopmail() throws InterruptedException {
-        log.info("Fetching OTP from Maildrop API for: {}", loginEmail);
+        log.info("Fetching OTP for login: {}", loginEmail);
 
-        // Fetch OTP via Maildrop GraphQL API (no browser tab needed)
         String mailbox = loginEmail.split("@")[0];
         String otp = null;
 
-        try {
-            org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
-                    org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        // Strategy 1: Maildrop API (quick — 30s)
+        otp = com.mybharat.utils.OTPHelper.fetchOTPFromMaildrop(mailbox);
 
-            // Poll for new email (max 60 seconds)
-            for (int attempt = 1; attempt <= 15; attempt++) {
-                Thread.sleep(4000);
+        // Strategy 2: Yopmail fallback (if Maildrop fails)
+        if (otp == null) {
+            log.warn("Maildrop failed for login OTP, trying Yopmail fallback...");
 
-                org.apache.hc.client5.http.classic.methods.HttpPost listReq =
-                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
-                listReq.setHeader("Content-Type", "application/json");
-                listReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
-                        "{\"query\":\"{ inbox(mailbox:\\\"" + mailbox + "\\\") { id } }\"}"));
-                String listResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
-                        client.execute(listReq).getEntity());
+            // Re-enter email as @yopmail.com and resend OTP
+            String yopmailEmail = mailbox + "@yopmail.com";
+            try {
+                WebElement emailField = new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.visibilityOfElementLocated(
+                                By.xpath("//input[@id='otp_login_header']")));
+                emailField.clear();
+                emailField.sendKeys(yopmailEmail);
+                Thread.sleep(500);
 
-                com.fasterxml.jackson.databind.JsonNode inbox = mapper.readTree(listResp).path("data").path("inbox");
-                if (inbox.size() == 0) continue;
+                // Click Login button again to resend OTP
+                try { loginBtn.click(); } catch (Exception e) { jsClick(loginBtn); }
+                Thread.sleep(2000);
+                log.info("Re-requested OTP with Yopmail: {}", yopmailEmail);
 
-                // Get the newest message
-                String msgId = inbox.get(0).get("id").asText();
-
-                org.apache.hc.client5.http.classic.methods.HttpPost msgReq =
-                        new org.apache.hc.client5.http.classic.methods.HttpPost("https://api.maildrop.cc/graphql");
-                msgReq.setHeader("Content-Type", "application/json");
-                msgReq.setEntity(new org.apache.hc.core5.http.io.entity.StringEntity(
-                        "{\"query\":\"{ message(mailbox:\\\"" + mailbox + "\\\", id:\\\"" + msgId + "\\\") { id html } }\"}"));
-                String msgResp = org.apache.hc.core5.http.io.entity.EntityUtils.toString(
-                        client.execute(msgReq).getEntity());
-
-                String html = mapper.readTree(msgResp).path("data").path("message").path("html").asText();
-
-                // Extract OTP from <strong>XXXXXX</strong>
-                java.util.regex.Matcher m = java.util.regex.Pattern.compile("<strong>(\\d{6})</strong>").matcher(html);
-                if (m.find()) {
-                    otp = m.group(1);
-                    break;
+                otp = com.mybharat.utils.OTPHelper.fetchOTPFromYopmail(driver, mailbox);
+                if (otp != null) {
+                    loginEmail = yopmailEmail; // Update stored email
                 }
-                // Fallback pattern
-                java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("is\\s+(\\d{6})").matcher(html);
-                if (m2.find()) {
-                    otp = m2.group(1);
-                    break;
-                }
+            } catch (Exception e) {
+                log.error("Yopmail fallback for login failed: {}", e.getMessage());
             }
-            client.close();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch OTP from Maildrop API for: " + loginEmail, e);
         }
 
         if (otp == null) {
-            throw new RuntimeException("OTP not received for: " + loginEmail);
+            throw new RuntimeException("OTP not received from Maildrop or Yopmail for: " + loginEmail);
         }
 
-        log.info("Extracted OTP from Maildrop API: {}", otp);
         log.info("OTP extracted: {}", otp);
 
         // Enter OTP in the login form

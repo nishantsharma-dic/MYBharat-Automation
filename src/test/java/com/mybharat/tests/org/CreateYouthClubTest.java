@@ -362,21 +362,29 @@ public class CreateYouthClubTest extends BaseTest {
         safeSleep(2000);
         log.info("  OTP requested for creator: {} (prevCount={})", loginEmail, prevCount);
 
-        // Fetch OTP from Maildrop (wait for new message)
+        // Fetch OTP from Maildrop (wait for new message) — with Yopmail fallback
         String otp = fetchCreatorOTP(mailbox, prevCount);
 
-        // If OTP not received, try resending
+        // If Maildrop failed, try Yopmail fallback
         if (otp.isEmpty()) {
-            log.warn("  OTP not received, clicking Resend...");
+            log.warn("  Maildrop failed for creator, trying Yopmail fallback...");
+            String yopmailEmail = mailbox + "@yopmail.com";
             try {
-                WebElement resendBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
-                        .until(ExpectedConditions.elementToBeClickable(
-                                By.xpath("//*[contains(text(),'Resend') or contains(text(),'resend')]")));
-                ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", resendBtn);
-                safeSleep(5000);
-                otp = fetchCreatorOTP(mailbox, prevCount);
-            } catch (Exception resendEx) {
-                log.warn("  Resend button not found: {}", resendEx.getMessage());
+                WebElement freshEmailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                        By.xpath("(//input[@id='user_mobile'])[1]")));
+                freshEmailInput.clear();
+                freshEmailInput.sendKeys(yopmailEmail);
+                WebElement freshOtpBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("button.generate_otp")));
+                freshOtpBtn.click();
+                safeSleep(2000);
+                loginEmail = yopmailEmail;
+                log.info("  Re-requested OTP with Yopmail: {}", yopmailEmail);
+
+                String yopOtp = com.mybharat.utils.OTPHelper.fetchOTPFromYopmail(driver, mailbox);
+                if (yopOtp != null) otp = yopOtp;
+            } catch (Exception yopEx) {
+                log.error("  Yopmail fallback failed: {}", yopEx.getMessage());
             }
         }
 
