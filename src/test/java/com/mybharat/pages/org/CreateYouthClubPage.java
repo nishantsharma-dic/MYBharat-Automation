@@ -861,7 +861,7 @@ public class CreateYouthClubPage extends BasePage {
                 log.info("  Submit clicked via JS fallback (attempt {})", attempt);
             }
 
-            safeSleep(3000);
+            safeSleep(5000);
 
             // Check if submission went through (page navigated away from create-org)
             String currentUrl = driver.getCurrentUrl();
@@ -875,7 +875,7 @@ public class CreateYouthClubPage extends BasePage {
 
             // Still on create-org page — click might not have registered, retry
             log.warn("  Still on create-org after attempt {} — retrying", attempt);
-            safeSleep(2000);
+            safeSleep(3000);
         }
 
         // Final fallback: force click via shadow DOM (ion-button native button)
@@ -889,7 +889,7 @@ public class CreateYouthClubPage extends BasePage {
                     "    return;" +
                     "  }" +
                     "}");
-            safeSleep(3000);
+            safeSleep(10000); // Wait longer for server to process organization creation
             waitForPageLoad();
             log.info("✅ Submitted (shadow DOM fallback)");
         } catch (Exception e) {
@@ -898,9 +898,9 @@ public class CreateYouthClubPage extends BasePage {
     }
 
     public boolean isSubmissionSuccessful() {
-        // Wait for actual success indicator — multiple possible success messages
+        // Wait for actual success indicator — server may take up to 60s to process
         try {
-            return new WebDriverWait(driver, Duration.ofSeconds(30)).until(d -> {
+            return new WebDriverWait(driver, Duration.ofSeconds(60)).until(d -> {
                 String src = d.getPageSource().toLowerCase();
                 String url = d.getCurrentUrl().toLowerCase();
                 // Check for known success indicators
