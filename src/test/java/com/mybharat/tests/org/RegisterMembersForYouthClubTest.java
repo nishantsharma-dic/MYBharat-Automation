@@ -431,22 +431,31 @@ public class RegisterMembersForYouthClubTest {
             safeSleep(1000);
             log.info("[Member {}] OTP requested for: {} (prevCount={})", memberNum, email, prevInboxCount);
 
-            // Step 3: Fetch OTP — wait for NEW message (count > prevCount)
-            // If Maildrop doesn't deliver within 60s, click Resend OTP and try again
+            // Step 3: Fetch OTP — Maildrop (5 quick attempts) → Yopmail fallback
             String otp = null;
             try {
                 otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
             } catch (Exception e) {
-                log.warn("[Member {}] First OTP attempt failed, clicking Resend OTP...", memberNum);
+                log.warn("[Member {}] Maildrop failed, trying Yopmail fallback...", memberNum);
+                // Switch to @yopmail.com and use browser-based OTP reading
+                String yopmailEmail = email.split("@")[0] + "@yopmail.com";
                 try {
-                    WebElement resendBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
-                            .until(ExpectedConditions.elementToBeClickable(
-                                    By.xpath("//*[contains(text(),'Resend') or contains(text(),'resend')]")));
-                    ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", resendBtn);
+                    WebElement freshEmailInput = new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.visibilityOfElementLocated(
+                                    By.xpath("(//input[@id='user_mobile'])[1]")));
+                    freshEmailInput.clear();
+                    freshEmailInput.sendKeys(yopmailEmail);
+                    WebElement freshOtpBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.generate_otp")));
+                    freshOtpBtn.click();
                     safeSleep(2000);
-                    otp = fetchOTPFromMaildrop(driver, email, memberNum, prevInboxCount);
-                } catch (Exception e2) {
-                    throw new RuntimeException("OTP not received for member " + memberNum + " after resend: " + e2.getMessage());
+                    log.info("[Member {}] Re-requested OTP with Yopmail: {}", memberNum, yopmailEmail);
+                    otp = com.mybharat.utils.OTPHelper.fetchOTPFromYopmail(driver, email.split("@")[0]);
+                    if (otp == null) {
+                        throw new RuntimeException("Yopmail also failed for member " + memberNum);
+                    }
+                } catch (Exception yopEx) {
+                    throw new RuntimeException("OTP not received for member " + memberNum + " from Maildrop or Yopmail: " + yopEx.getMessage());
                 }
             }
             log.info("[Member {}] OTP fetched: {}", memberNum, otp);
@@ -525,7 +534,7 @@ public class RegisterMembersForYouthClubTest {
 
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        for (int attempt = 1; attempt <= 15; attempt++) {
+        for (int attempt = 1; attempt <= 5; attempt++) {
             try {
                 org.apache.hc.client5.http.impl.classic.CloseableHttpClient client =
                         org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
@@ -543,7 +552,7 @@ public class RegisterMembersForYouthClubTest {
                 int currentCount = inbox.size();
 
                 if (currentCount <= prevInboxCount) {
-                    log.info("[Member {}] Waiting for new email (attempt {}/15, count={}/{})",
+                    log.info("[Member {}] Waiting for new email (attempt {}/5, count={}/{})",
                             memberNum, attempt, currentCount, prevInboxCount);
                     client.close();
                     safeSleep(3000);
@@ -582,7 +591,7 @@ public class RegisterMembersForYouthClubTest {
                 safeSleep(3000);
             }
         }
-        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived after 60s + resend)");
+        throw new RuntimeException("Could not fetch OTP from Maildrop for member " + memberNum + " (email never arrived after 20s)");
     }
 
     // =========================================================================
