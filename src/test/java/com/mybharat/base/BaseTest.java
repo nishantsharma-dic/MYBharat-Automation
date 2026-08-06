@@ -190,10 +190,8 @@ public class BaseTest {
                     "--disable-backgrounding-occluded-windows"
                 );
 
-                // In CI mode, run headless unless force-headed (for Ionic app)
-                if (Boolean.parseBoolean(System.getProperty("ciMode", "false")) && !forceHeaded) {
-                    options.addArguments("--headless=new");
-                }
+                // Always run headed — headless breaks Ionic app + certificate downloads
+                // The backgrounding flags above prevent Chrome from stealing focus
 
                 options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
 
