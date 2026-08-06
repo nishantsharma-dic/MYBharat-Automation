@@ -374,33 +374,38 @@ public class CreateYouthClubTest extends BaseTest {
         safeSleep(2000);
         log.info("  OTP requested for creator: {} (prevCount={})", loginEmail, prevCount);
 
-        // Fetch OTP from Maildrop (wait for new message) — with Yopmail fallback
-        String otp = fetchCreatorOTP(mailbox, prevCount);
+        // Fetch OTP: Maildrop (3 quick attempts) → Yopmail browser fallback
+        String otp = com.mybharat.utils.OTPHelper.fetchOTPFromMaildrop(mailbox, prevCount);
 
-        // If Maildrop failed, try Yopmail fallback
-        if (otp.isEmpty()) {
-            log.warn("  Maildrop failed for creator, trying Yopmail fallback...");
+        if (otp == null) {
+            log.warn("  Maildrop failed (3 attempts), switching to Yopmail...");
+            // Navigate back to enter yopmail email
             String yopmailEmail = mailbox + "@yopmail.com";
             try {
-                WebElement freshEmailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                        By.xpath("(//input[@id='user_mobile'])[1]")));
+                // Click browser back or refresh to get email field back
+                driver.navigate().back();
+                safeSleep(2000);
+                
+                WebElement freshEmailInput = new WebDriverWait(driver, Duration.ofSeconds(15))
+                        .until(ExpectedConditions.visibilityOfElementLocated(
+                                By.xpath("(//input[@id='user_mobile'])[1]")));
                 freshEmailInput.clear();
                 freshEmailInput.sendKeys(yopmailEmail);
-                WebElement freshOtpBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                        By.cssSelector("button.generate_otp")));
+                
+                WebElement freshOtpBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.generate_otp")));
                 freshOtpBtn.click();
                 safeSleep(2000);
                 loginEmail = yopmailEmail;
                 log.info("  Re-requested OTP with Yopmail: {}", yopmailEmail);
 
-                String yopOtp = com.mybharat.utils.OTPHelper.fetchOTPFromYopmail(driver, mailbox);
-                if (yopOtp != null) otp = yopOtp;
+                otp = com.mybharat.utils.OTPHelper.fetchOTPFromYopmail(driver, mailbox);
             } catch (Exception yopEx) {
                 log.error("  Yopmail fallback failed: {}", yopEx.getMessage());
             }
         }
 
-        Assert.assertFalse(otp.isEmpty(), "[Step 1] Could not fetch OTP for creator: " + loginEmail);
+        Assert.assertFalse(otp == null || otp.isEmpty(), "[Step 1] Could not fetch OTP for creator: " + loginEmail);
         log.info("  Creator OTP: {}", otp);
 
         // Enter OTP and verify
