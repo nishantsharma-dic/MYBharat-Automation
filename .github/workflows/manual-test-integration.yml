@@ -18,6 +18,16 @@ on:
           - testSuites/testng-registration.xml
           - testSuites/testng-youth.xml
           - testSuites/testng-login.xml
+          - testSuites/testng-youthclub.xml
+          - testSuites/testng-blog.xml
+          - testSuites/testng-elp.xml
+          - testSuites/testng-negative.xml
+          - testSuites/testng-responsive.xml
+          - testSuites/testng-cross-browser.xml
+          - testSuites/testng-comprehensive.xml
+          - testSuites/testng-registration-logout-login.xml
+          - testSuites/testng-registration-public-profile.xml
+          - testSuites/testng-registration-quiz.xml
       browser:
         description: 'Browser to use'
         required: true
