@@ -424,10 +424,12 @@ public class QuizCreatorTest extends BaseTest {
         js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
         Thread.sleep(2000);
 
-        // Click Bulk Upload button
-        WebElement bulkBtn = wait.until(ExpectedConditions.elementToBeClickable(
+        // Click Bulk Upload button (use JS click to avoid header intercept)
+        WebElement bulkBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//button[contains(text(),'Bulk Upload')]")));
-        bulkBtn.click();
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", bulkBtn);
+        Thread.sleep(500);
+        js.executeScript("arguments[0].click();", bulkBtn);
         Thread.sleep(2000);
 
         // Find hidden file input and upload directly (no desktop popup)
@@ -889,12 +891,22 @@ public class QuizCreatorTest extends BaseTest {
 
     private void selectReactDropdownInModal(String fieldLabel, String optionText) {
         try {
-            // These are native <select> dropdowns inside fieldsets
-            WebElement fieldset = driver.findElement(By.xpath(
+            // Find the LAST fieldset with this label (the one in the modal, not page background)
+            java.util.List<WebElement> fieldsets = driver.findElements(By.xpath(
                     "//fieldset[./legend[contains(text(),'" + fieldLabel + "')]]"));
-            WebElement selectEl = fieldset.findElement(By.tagName("select"));
-            new org.openqa.selenium.support.ui.Select(selectEl).selectByVisibleText(optionText);
-            Thread.sleep(300);
+            WebElement fieldset = fieldsets.get(fieldsets.size() - 1); // Last one = in modal
+            
+            // Click the text input inside to open the dropdown
+            WebElement input = fieldset.findElement(By.xpath(".//input[@type='text']"));
+            input.click();
+            Thread.sleep(1500);
+            
+            // Click the matching option from the dropdown menu
+            WebElement option = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath(
+                            "//*[contains(@class,'option') and normalize-space(text())='" + optionText + "']")));
+            option.click();
+            Thread.sleep(500);
             log.info("  Selected {}: {}", fieldLabel, optionText);
         } catch (Exception e) {
             log.warn("  Could not select {} = {}: {}", fieldLabel, optionText, e.getMessage().split("\n")[0]);
