@@ -242,7 +242,9 @@ public class QuizCreatorTest extends BaseTest {
 
         // Quiz Type — Competitive (this re-renders some form fields!)
         WebElement competitiveLabel = driver.findElement(By.cssSelector("label[for='quizMode-1']"));
-        competitiveLabel.click();
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", competitiveLabel);
+        Thread.sleep(300);
+        js.executeScript("arguments[0].click();", competitiveLabel);
         Thread.sleep(2000); // Wait for form re-render
         log.info("Quiz Type: Competitive");
 
@@ -285,10 +287,16 @@ public class QuizCreatorTest extends BaseTest {
         fillField("input[placeholder='Enter the score']", String.valueOf(passingScore));
         log.info("Passing Score: {}", passingScore);
 
-        // Passing Score Type — Percentage
-        WebElement percentLabel = driver.findElement(By.xpath(
-                "//fieldset[.//legend[contains(text(),'Passing Score Type')]]//label[contains(text(),'Percentage')]"));
-        percentLabel.click();
+        // Passing Score Type — Percentage (use JS click to avoid header blocking)
+        try {
+            WebElement percentLabel = driver.findElement(By.xpath(
+                    "//label[contains(@for,'passingScoreType') and contains(text(),'Percentage')]"));
+            js.executeScript("arguments[0].scrollIntoView({block:'center'});", percentLabel);
+            Thread.sleep(300);
+            js.executeScript("arguments[0].click();", percentLabel);
+        } catch (Exception e) {
+            log.warn("Could not click Percentage label: {}", e.getMessage().split("\n")[0]);
+        }
 
         // Total Winners (random 5-50)
         int totalWinners = 5 + random.nextInt(46);
@@ -558,12 +566,12 @@ public class QuizCreatorTest extends BaseTest {
         selectReactDropdownInModal("Question Type", "Single Choice");
         Thread.sleep(500);
 
-        // Category — select "general_studies"
-        selectReactDropdownInModal("Category", "general_studies");
+        // Category — select "General Studies"
+        selectReactDropdownInModal("Category", "General Studies");
         Thread.sleep(500);
 
-        // Level — select "easy"
-        selectReactDropdownInModal("Level", "easy");
+        // Level — select "Easy"
+        selectReactDropdownInModal("Level", "Easy");
         Thread.sleep(500);
 
         // Language — select "English"
@@ -589,22 +597,33 @@ public class QuizCreatorTest extends BaseTest {
             Thread.sleep(300);
         }
 
-        // Mark Option 1 as Correct (click "Correct" radio for option 1)
+        // Mark Option 1 as Correct (click "Correct" radio for Option 1)
         try {
+            // Find the first "Correct" radio in "Option 1 - Is Correct" fieldset
             WebElement correctRadio = driver.findElement(By.xpath(
-                    "(//input[@type='radio' and @value='true'] | " +
-                    "//input[@type='radio'][following-sibling::*[contains(text(),'Correct')]])[1]"));
+                    "(//fieldset[contains(.//legend/text(),'Option 1 - Is Correct')]//input[@type='radio'])[1]"));
             js.executeScript("arguments[0].click();", correctRadio);
             log.info("Marked Option 1 as Correct");
         } catch (Exception e) {
-            // Try label click
+            // Try by label text
             try {
                 WebElement correctLabel = driver.findElement(By.xpath(
-                        "(//label[contains(text(),'Correct')])[1]"));
+                        "//fieldset[contains(.//legend,'Option 1')]//label[contains(text(),'Correct')][1]"));
                 correctLabel.click();
             } catch (Exception e2) {
-                log.warn("Could not mark correct answer: {}", e2.getMessage());
+                log.warn("Could not mark correct answer: {}", e2.getMessage().split("\n")[0]);
             }
+        }
+        Thread.sleep(500);
+
+        // Mark Option 2 as Incorrect
+        try {
+            WebElement incorrectRadio = driver.findElement(By.xpath(
+                    "(//fieldset[contains(.//legend/text(),'Option 2 - Is Correct')]//input[@type='radio'])[2]"));
+            js.executeScript("arguments[0].click();", incorrectRadio);
+            log.info("Marked Option 2 as Incorrect");
+        } catch (Exception e) {
+            log.warn("Could not mark Option 2: {}", e.getMessage().split("\n")[0]);
         }
         Thread.sleep(500);
 
@@ -815,21 +834,17 @@ public class QuizCreatorTest extends BaseTest {
 
     private void clickCheckboxByLabel(String labelText) {
         try {
-            WebElement label = driver.findElement(By.xpath(
-                    "//label[contains(text(),'" + labelText + "')] | " +
-                    "//*[contains(text(),'" + labelText + "')]/preceding-sibling::input | " +
-                    "//*[contains(text(),'" + labelText + "')]/../input"));
-            WebElement checkbox = null;
-            try {
-                checkbox = label.findElement(By.xpath("./preceding-sibling::input[@type='checkbox'] | ./following-sibling::input[@type='checkbox'] | ../input[@type='checkbox']"));
-            } catch (Exception e) {
-                checkbox = label;
-            }
+            WebElement checkbox = driver.findElement(By.xpath(
+                    "//input[@type='checkbox'][following-sibling::*[contains(text(),'" + labelText + "')] or " +
+                    "preceding-sibling::*[contains(text(),'" + labelText + "')]] | " +
+                    "//*[contains(text(),'" + labelText + "')]/..//input[@type='checkbox']"));
+            js.executeScript("arguments[0].scrollIntoView({block:'center'});", checkbox);
+            Thread.sleep(200);
             if (!checkbox.isSelected()) {
                 js.executeScript("arguments[0].click();", checkbox);
             }
         } catch (Exception e) {
-            log.warn("Checkbox '{}' not found: {}", labelText, e.getMessage());
+            log.warn("Checkbox '{}' not found: {}", labelText, e.getMessage().split("\n")[0]);
         }
     }
 
@@ -874,20 +889,11 @@ public class QuizCreatorTest extends BaseTest {
 
     private void selectReactDropdownInModal(String fieldLabel, String optionText) {
         try {
-            // Find the fieldset with the label, then click its input to open dropdown
+            // These are native <select> dropdowns inside fieldsets
             WebElement fieldset = driver.findElement(By.xpath(
                     "//fieldset[./legend[contains(text(),'" + fieldLabel + "')]]"));
-            WebElement dropdownInput = fieldset.findElement(By.xpath(".//input[@type='text']"));
-            dropdownInput.click();
-            Thread.sleep(800);
-            // Type to filter options
-            dropdownInput.sendKeys(optionText);
-            Thread.sleep(1000);
-            // Click first matching option
-            WebElement option = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
-                    ExpectedConditions.elementToBeClickable(By.xpath(
-                            "//*[contains(@class,'option') and contains(text(),'" + optionText + "')]")));
-            option.click();
+            WebElement selectEl = fieldset.findElement(By.tagName("select"));
+            new org.openqa.selenium.support.ui.Select(selectEl).selectByVisibleText(optionText);
             Thread.sleep(300);
             log.info("  Selected {}: {}", fieldLabel, optionText);
         } catch (Exception e) {
