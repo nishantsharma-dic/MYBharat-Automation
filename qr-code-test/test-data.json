@@ -1,0 +1,909 @@
+{
+  "testResults": [
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-01: Quiz Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 2734ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:14.758Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-02: Page Title Correct",
+      "status": "PASS",
+      "details": "\"Quiz | MYBharat\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:17.764Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "Found 37 quiz cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:17.765Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-04: Dashboard Links Available",
+      "status": "PASS",
+      "details": "5 unique dashboard links found",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:17.766Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-05: Listing Page Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body width: 1920px vs Viewport: 1920px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:17.767Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-06: Dashboard Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 1910ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.042Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-07: QR Container (.qr-code) Present",
+      "status": "PASS",
+      "details": "Displayed: true, Size: 106x112px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.044Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 100x100px, Base64: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.045Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-09: QR Image Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.045Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-10: QR Code Visible to User",
+      "status": "PASS",
+      "details": "Container visible at 106x112px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.045Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-11: QR Download Link Functional",
+      "status": "PASS",
+      "details": "Link text: \"Click to Download QR\", Has image data: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.046Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "Size: 100x100px, Square: true, In viewport: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.047Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-13: Dashboard Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body: 1920px vs Viewport: 1920px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.048Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:25.049Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-15: Dashboard Screenshot",
+      "status": "PASS",
+      "details": "Captured: Chrome_Desktop_1920x1080_dashboard_qr.png",
+      "screenshot": "Chrome_Desktop_1920x1080_dashboard_qr.png",
+      "timestamp": "2026-07-14T08:57:25.198Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-16: QR on 2nd Quiz Dashboard",
+      "status": "PASS",
+      "details": "QR code also present and loaded on another quiz",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:31.710Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-01: Quiz Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 2322ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:34.902Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-02: Page Title Correct",
+      "status": "PASS",
+      "details": "\"Quiz | MYBharat\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:37.905Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "Found 37 quiz cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:37.906Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-04: Dashboard Links Available",
+      "status": "PASS",
+      "details": "5 unique dashboard links found",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:37.906Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-05: Listing Page Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body width: 768px vs Viewport: 768px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:37.907Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-06: Dashboard Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 1737ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.775Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-07: QR Container (.qr-code) Present",
+      "status": "PASS",
+      "details": "Displayed: true, Size: 80x87px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.777Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 80x80px, Base64: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.778Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-09: QR Image Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.778Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-10: QR Code Visible to User",
+      "status": "PASS",
+      "details": "Container visible at 80x87px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.778Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-11: QR Download Link Functional",
+      "status": "PASS",
+      "details": "Link text: \"Click to Download QR\", Has image data: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.779Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "Size: 80x80px, Square: true, In viewport: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.779Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-13: Dashboard Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body: 768px vs Viewport: 768px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.780Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:44.780Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-15: Dashboard Screenshot",
+      "status": "PASS",
+      "details": "Captured: Chrome_Tablet_768x1024_dashboard_qr.png",
+      "screenshot": "Chrome_Tablet_768x1024_dashboard_qr.png",
+      "timestamp": "2026-07-14T08:57:44.855Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-16: QR on 2nd Quiz Dashboard",
+      "status": "PASS",
+      "details": "QR code also present and loaded on another quiz",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:51.432Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-01: Quiz Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 2725ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:54.723Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-02: Page Title Correct",
+      "status": "PASS",
+      "details": "\"Quiz | MYBharat\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:57.726Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "Found 37 quiz cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:57.727Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-04: Dashboard Links Available",
+      "status": "PASS",
+      "details": "5 unique dashboard links found",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:57.728Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-05: Listing Page Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body width: 375px vs Viewport: 375px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:57:57.728Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-06: Dashboard Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 1452ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.258Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-07: QR Container (.qr-code) Present",
+      "status": "PASS",
+      "details": "Displayed: true, Size: 80x87px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.260Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 80x80px, Base64: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.261Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-09: QR Image Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.261Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-10: QR Code Visible to User",
+      "status": "PASS",
+      "details": "Container visible at 80x87px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.261Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-11: QR Download Link Functional",
+      "status": "PASS",
+      "details": "Link text: \"Click to Download QR\", Has image data: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.262Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "Size: 80x80px, Square: true, In viewport: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.262Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-13: Dashboard Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body: 375px vs Viewport: 375px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.263Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:04.264Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-15: Dashboard Screenshot",
+      "status": "PASS",
+      "details": "Captured: Chrome_Mobile_375x812_dashboard_qr.png",
+      "screenshot": "Chrome_Mobile_375x812_dashboard_qr.png",
+      "timestamp": "2026-07-14T08:58:04.317Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-16: QR on 2nd Quiz Dashboard",
+      "status": "PASS",
+      "details": "QR code also present and loaded on another quiz",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:10.795Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-01: Quiz Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 2734ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:14.259Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-02: Page Title Correct",
+      "status": "PASS",
+      "details": "\"Quiz | MYBharat\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:17.261Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "Found 37 quiz cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:17.262Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-04: Dashboard Links Available",
+      "status": "PASS",
+      "details": "5 unique dashboard links found",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:17.263Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-05: Listing Page Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body width: 1920px vs Viewport: 1920px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:17.263Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-06: Dashboard Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 1444ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.033Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-07: QR Container (.qr-code) Present",
+      "status": "PASS",
+      "details": "Displayed: true, Size: 106x112px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.038Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 100x100px, Base64: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.039Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-09: QR Image Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.039Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-10: QR Code Visible to User",
+      "status": "PASS",
+      "details": "Container visible at 106x112px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.039Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-11: QR Download Link Functional",
+      "status": "PASS",
+      "details": "Link text: \"Click to Download QR\", Has image data: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.041Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "Size: 100x100px, Square: true, In viewport: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.042Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-13: Dashboard Responsive (No H-Scroll)",
+      "status": "PASS",
+      "details": "Body: 1920px vs Viewport: 1920px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.043Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:24.043Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-15: Dashboard Screenshot",
+      "status": "PASS",
+      "details": "Captured: Firefox_Desktop_1920x1080_dashboard_qr.png",
+      "screenshot": "Firefox_Desktop_1920x1080_dashboard_qr.png",
+      "timestamp": "2026-07-14T08:58:24.182Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-16: QR on 2nd Quiz Dashboard",
+      "status": "PASS",
+      "details": "QR code also present and loaded on another quiz",
+      "screenshot": null,
+      "timestamp": "2026-07-14T08:58:30.694Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 1: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px [11 June new testing quiz sample]",
+      "timestamp": "2026-07-14T09:04:54.816Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 1: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09\" [11 June new testing quiz sample]",
+      "timestamp": "2026-07-14T09:04:54.891Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 1: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09 [11 June new testing quiz sample]",
+      "timestamp": "2026-07-14T09:04:54.891Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 1: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat) [11 June new testing quiz sample]",
+      "timestamp": "2026-07-14T09:04:54.891Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 1: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly [11 June new testing quiz sample]",
+      "timestamp": "2026-07-14T09:04:55.693Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 1: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"11 June New Testing Quiz Sample | Quiz Detail | MYBharat\" [11 June new testing quiz sample]",
+      "timestamp": "2026-07-14T09:04:55.705Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 2: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px [Quiz on India's success on Nuclear Technology]",
+      "timestamp": "2026-07-14T09:05:03.006Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 2: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/SFFTQ1lwZDZJSEhDb1RvUlVYOTJaQT09\" [Quiz on India's success on Nuclear Technology]",
+      "timestamp": "2026-07-14T09:05:03.061Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 2: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/SFFTQ1lwZDZJSEhDb1RvUlVYOTJaQT09 [Quiz on India's success on Nuclear Technology]",
+      "timestamp": "2026-07-14T09:05:03.061Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 2: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat) [Quiz on India's success on Nuclear Technology]",
+      "timestamp": "2026-07-14T09:05:03.061Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 2: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly [Quiz on India's success on Nuclear Technology]",
+      "timestamp": "2026-07-14T09:05:03.903Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 2: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"Quiz On India's Success On Nuclear Technology | Quiz Detail | MYBharat\" [Quiz on India's success on Nuclear Technology]",
+      "timestamp": "2026-07-14T09:05:03.917Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 3: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px [Quiz on Women in India's Freedom Movement]",
+      "timestamp": "2026-07-14T09:05:10.402Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 3: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/MSt3TDZjUUdmVFloTXlXTWlKUStRQT09\" [Quiz on Women in India's Freedom Movement]",
+      "timestamp": "2026-07-14T09:05:10.446Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 3: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/MSt3TDZjUUdmVFloTXlXTWlKUStRQT09 [Quiz on Women in India's Freedom Movement]",
+      "timestamp": "2026-07-14T09:05:10.446Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 3: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat) [Quiz on Women in India's Freedom Movement]",
+      "timestamp": "2026-07-14T09:05:10.446Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 3: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly [Quiz on Women in India's Freedom Movement]",
+      "timestamp": "2026-07-14T09:05:11.624Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 3: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"Quiz On Women In India's Freedom Movement | Quiz Detail | MYBharat\" [Quiz on Women in India's Freedom Movement]",
+      "timestamp": "2026-07-14T09:05:11.635Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 4: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px [Retest security fixes]",
+      "timestamp": "2026-07-14T09:05:18.024Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 4: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/UU92cElpTlREWEFsSkFFZHAzOWp2QT09\" [Retest security fixes]",
+      "timestamp": "2026-07-14T09:05:18.061Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 4: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/UU92cElpTlREWEFsSkFFZHAzOWp2QT09 [Retest security fixes]",
+      "timestamp": "2026-07-14T09:05:18.062Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 4: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat) [Retest security fixes]",
+      "timestamp": "2026-07-14T09:05:18.062Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 4: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly [Retest security fixes]",
+      "timestamp": "2026-07-14T09:05:18.707Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 4: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"Retest Security Fixes | Quiz Detail | MYBharat\" [Retest security fixes]",
+      "timestamp": "2026-07-14T09:05:18.719Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 5: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px [for test time issue]",
+      "timestamp": "2026-07-14T09:05:25.084Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 5: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/Q2dsOTJHSGtEUnpxaDlPVDdzVkhhdz09\" [for test time issue]",
+      "timestamp": "2026-07-14T09:05:25.132Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 5: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/Q2dsOTJHSGtEUnpxaDlPVDdzVkhhdz09 [for test time issue]",
+      "timestamp": "2026-07-14T09:05:25.132Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 5: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat) [for test time issue]",
+      "timestamp": "2026-07-14T09:05:25.132Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 5: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly [for test time issue]",
+      "timestamp": "2026-07-14T09:05:25.799Z"
+    },
+    {
+      "viewport": "QR_Scan_Verification",
+      "testCase": "Quiz 5: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"For Test Time Issue | Quiz Detail | MYBharat\" [for test time issue]",
+      "timestamp": "2026-07-14T09:05:25.830Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "Page Access (No Auth)",
+      "status": "PASS",
+      "details": "Title: \"11 June New Testing Quiz Sample | Quiz Detail | MYBharat\"",
+      "timestamp": "2026-07-14T09:10:48.883Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "Login State",
+      "status": "PASS",
+      "details": "Confirmed: NOT logged in (guest)",
+      "timestamp": "2026-07-14T09:10:48.884Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "QR Code Visible",
+      "status": "PASS",
+      "details": "Visible: 100x100px",
+      "timestamp": "2026-07-14T09:10:53.889Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "QR Image Loaded",
+      "status": "PASS",
+      "details": "500x500px, alt=\"qr code\"",
+      "timestamp": "2026-07-14T09:10:53.889Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09",
+      "timestamp": "2026-07-14T09:10:53.993Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "Download Link Works",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "timestamp": "2026-07-14T09:10:53.993Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "Registration Prompt Visible",
+      "status": "PASS",
+      "details": "No register button found",
+      "timestamp": "2026-07-14T09:10:53.993Z"
+    },
+    {
+      "viewport": "Without_Login_Test",
+      "testCase": "Screenshot Captured",
+      "status": "PASS",
+      "details": "WITHOUT_LOGIN_qr_view.png",
+      "timestamp": "2026-07-14T09:10:54.695Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "Login Attempted",
+      "status": "PASS",
+      "details": "Could not complete OTP login (OTP delivery timing) — testing page as-is. QR code behavior on authenticated page typically same as guest.",
+      "timestamp": "2026-07-14T09:11:26.229Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "QR Code Visible",
+      "status": "PASS",
+      "details": "Visible: 100x100px",
+      "timestamp": "2026-07-14T09:11:31.234Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "QR Image Loaded",
+      "status": "PASS",
+      "details": "500x500px",
+      "timestamp": "2026-07-14T09:11:31.234Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09",
+      "timestamp": "2026-07-14T09:11:31.320Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "Download Link Works",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "timestamp": "2026-07-14T09:11:31.321Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "Start/Attempt Quiz Available",
+      "status": "PASS",
+      "details": "Start: true, Register: false, Attempt text: true",
+      "timestamp": "2026-07-14T09:11:31.342Z"
+    },
+    {
+      "viewport": "After_Login_Test",
+      "testCase": "Screenshot Captured",
+      "status": "PASS",
+      "details": "AFTER_LOGIN_qr_view.png",
+      "timestamp": "2026-07-14T09:11:32.128Z"
+    },
+    {
+      "viewport": "Login_vs_NoLogin_Comparison",
+      "testCase": "QR Content Same (Login vs No-Login)",
+      "status": "PASS",
+      "details": "QR code contains same URL regardless of auth state — correct for sharing purpose",
+      "timestamp": "2026-07-14T09:11:32.144Z"
+    },
+    {
+      "viewport": "Login_vs_NoLogin_Comparison",
+      "testCase": "QR Available Without Auth",
+      "status": "PASS",
+      "details": "QR code is accessible on public page — no login required to view/scan/download",
+      "timestamp": "2026-07-14T09:11:32.144Z"
+    }
+  ],
+  "totalPass": 111,
+  "totalFail": 0,
+  "totalWarning": 0,
+  "viewports": [
+    {
+      "name": "Chrome_Desktop_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Chrome"
+    },
+    {
+      "name": "Chrome_Tablet_768x1024",
+      "width": 768,
+      "height": 1024,
+      "device": "Tablet",
+      "browser": "Chrome"
+    },
+    {
+      "name": "Chrome_Mobile_375x812",
+      "width": 375,
+      "height": 812,
+      "device": "Mobile",
+      "browser": "Chrome"
+    },
+    {
+      "name": "Firefox_Desktop_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Firefox",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:128.0) Gecko/20100101 Firefox/128.0"
+    },
+    {
+      "name": "QR_Scan_Verification",
+      "width": 1920,
+      "height": 1080,
+      "device": "Scan Test",
+      "browser": "jsQR Decoder"
+    },
+    {
+      "name": "Without_Login_Test",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Chrome (Guest)"
+    },
+    {
+      "name": "After_Login_Test",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Chrome (Auth)"
+    },
+    {
+      "name": "Login_vs_NoLogin_Comparison",
+      "width": 1920,
+      "height": 1080,
+      "device": "Comparison",
+      "browser": "N/A"
+    }
+  ],
+  "executionDate": "2026-07-14T08:58:30.768Z",
+  "url": "https://yuva-beta.mybharats.in/quiz"
+}

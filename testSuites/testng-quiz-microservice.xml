@@ -1,0 +1,24 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Quiz Microservice - Production" parallel="false">
+
+    <listeners>
+        <listener class-name="com.mybharat.listeners.TestListeners"/>
+    </listeners>
+
+    <!-- Test 1: Creator Login + Create Quiz (RUNS FIRST) -->
+    <test name="Quiz Creator Flow">
+        <parameter name="browser" value="chrome"/>
+        <classes>
+            <class name="com.mybharat.tests.org.QuizCreatorTest"/>
+        </classes>
+    </test>
+
+    <!-- Test 2: Youth Login + Play Quiz (RUNS AFTER Creator) -->
+    <test name="Quiz Youth E2E">
+        <parameter name="browser" value="chrome"/>
+        <classes>
+            <class name="com.mybharat.tests.youth.QuizE2ETest"/>
+        </classes>
+    </test>
+
+</suite>

@@ -1,0 +1,860 @@
+{
+  "testResults": [
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-01: Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 4121ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:51.917Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-02: Page Title",
+      "status": "PASS",
+      "details": "Quiz | MYBharat",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:51.957Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "30 cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:51.958Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-04: Dashboard Links",
+      "status": "PASS",
+      "details": "5 links",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:51.959Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-05: Listing Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:51.959Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-06: Dashboard Load",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.767Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-07: QR Container Present",
+      "status": "PASS",
+      "details": "106x112px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.770Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 100x100px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.770Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-09: QR Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.770Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-10: QR Visible",
+      "status": "PASS",
+      "details": "Displayed correctly",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.770Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-11: QR Download Link",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.770Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "100x100px (expected ~100px for 1920px viewport)",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.770Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-13: Dashboard Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.771Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.771Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-15: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.851Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-16: QR Valid URL",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.851Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-17: QR Domain Correct",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:49:59.851Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-18: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:00.543Z"
+    },
+    {
+      "viewport": "Chrome_Desktop_1920x1080",
+      "testCase": "TC-19: QR on 2nd Quiz",
+      "status": "PASS",
+      "details": "Consistent across quizzes",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:15.393Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-01: Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 3529ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:22.803Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-02: Page Title",
+      "status": "PASS",
+      "details": "Quiz | MYBharat",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:22.804Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "30 cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:22.805Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-04: Dashboard Links",
+      "status": "PASS",
+      "details": "5 links",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:22.806Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-05: Listing Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:22.806Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-06: Dashboard Load",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.943Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-07: QR Container Present",
+      "status": "PASS",
+      "details": "80x87px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.945Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 80x80px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-09: QR Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-10: QR Visible",
+      "status": "PASS",
+      "details": "Displayed correctly",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-11: QR Download Link",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "80x80px (expected ~80px for 768px viewport)",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-13: Dashboard Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:29.946Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-15: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:30.001Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-16: QR Valid URL",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:30.001Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-17: QR Domain Correct",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:30.001Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-18: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:30.859Z"
+    },
+    {
+      "viewport": "Chrome_Tablet_768x1024",
+      "testCase": "TC-19: QR on 2nd Quiz",
+      "status": "PASS",
+      "details": "Consistent across quizzes",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:46.428Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-01: Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 3720ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:53.809Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-02: Page Title",
+      "status": "PASS",
+      "details": "Quiz | MYBharat",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:53.810Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "30 cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:53.810Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-04: Dashboard Links",
+      "status": "PASS",
+      "details": "5 links",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:53.811Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-05: Listing Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:50:53.811Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-06: Dashboard Load",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.706Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-07: QR Container Present",
+      "status": "PASS",
+      "details": "80x87px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 80x80px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-09: QR Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-10: QR Visible",
+      "status": "PASS",
+      "details": "Displayed correctly",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-11: QR Download Link",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "80x80px (expected ~80px for 375px viewport)",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-13: Dashboard Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.709Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-15: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.742Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-16: QR Valid URL",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.742Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-17: QR Domain Correct",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:01.742Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-18: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:02.457Z"
+    },
+    {
+      "viewport": "Chrome_Mobile_375x812",
+      "testCase": "TC-19: QR on 2nd Quiz",
+      "status": "PASS",
+      "details": "Consistent across quizzes",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:17.859Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-01: Listing Page Load",
+      "status": "PASS",
+      "details": "HTTP 200, Load: 3894ms",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:25.603Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-02: Page Title",
+      "status": "PASS",
+      "details": "Quiz | MYBharat",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:25.604Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-03: Quiz Cards Present",
+      "status": "PASS",
+      "details": "30 cards",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:25.605Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-04: Dashboard Links",
+      "status": "PASS",
+      "details": "5 links",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:25.606Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-05: Listing Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:25.606Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-06: Dashboard Load",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.057Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-07: QR Container Present",
+      "status": "PASS",
+      "details": "106x112px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.059Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-08: QR Image Rendered",
+      "status": "PASS",
+      "details": "500x500px, Display: 100x100px",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.059Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-09: QR Accessibility (alt)",
+      "status": "PASS",
+      "details": "alt=\"qr code\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.059Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-10: QR Visible",
+      "status": "PASS",
+      "details": "Displayed correctly",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.059Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-11: QR Download Link",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.060Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-12: QR Responsive Size",
+      "status": "PASS",
+      "details": "100x100px (expected ~100px for 1920px viewport)",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.060Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-13: Dashboard Responsive",
+      "status": "PASS",
+      "details": "No horizontal scroll",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.060Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-14: Download CTA Text",
+      "status": "PASS",
+      "details": "\"Click to Download QR\"",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.060Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-15: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.104Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-16: QR Valid URL",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.104Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-17: QR Domain Correct",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.104Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-18: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:33.781Z"
+    },
+    {
+      "viewport": "Firefox_Desktop_1920x1080",
+      "testCase": "TC-19: QR on 2nd Quiz",
+      "status": "PASS",
+      "details": "Consistent across quizzes",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:51:48.468Z"
+    },
+    {
+      "viewport": "Without_Login",
+      "testCase": "QR Visible (Guest)",
+      "status": "PASS",
+      "details": "Visible, Loaded: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:03.082Z"
+    },
+    {
+      "viewport": "Without_Login",
+      "testCase": "QR Scannable (Guest)",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:03.127Z"
+    },
+    {
+      "viewport": "Without_Login",
+      "testCase": "QR Download (Guest)",
+      "status": "PASS",
+      "details": "Download available without auth",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:03.127Z"
+    },
+    {
+      "viewport": "After_Login",
+      "testCase": "QR Visible (Auth)",
+      "status": "PASS",
+      "details": "Visible, Loaded: true",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:10.708Z"
+    },
+    {
+      "viewport": "After_Login",
+      "testCase": "QR Scannable (Auth)",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:10.751Z"
+    },
+    {
+      "viewport": "After_Login",
+      "testCase": "QR Download (Auth)",
+      "status": "PASS",
+      "details": "Download available",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:10.751Z"
+    },
+    {
+      "viewport": "Comparison",
+      "testCase": "QR Same Content",
+      "status": "PASS",
+      "details": "QR URL identical regardless of auth state",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:11.464Z"
+    },
+    {
+      "viewport": "Comparison",
+      "testCase": "Public Access Confirmed",
+      "status": "PASS",
+      "details": "QR code accessible without login on PROD",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:11.464Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 1: Scannable",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MGNkOUVxMHhkSjRKWjgzQjRmbkdiUT09 [Quiz on Nasha Mukti]",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:25.723Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 1: Valid URL",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:25.723Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 1: URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:26.412Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 2: Scannable",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/OGJqWXloKzl4dDF2cjBJVWVVUlBOQT09 [Ocean Science For Viksit Bharat Quiz]",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:33.573Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 2: Valid URL",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:33.573Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 2: URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:34.245Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 3: Scannable",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/MmRBYXF6Y1NjaVUwbnUxR3hYU242QT09 [Quiz on Major Milestone of Modern India]",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:41.166Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 3: Valid URL",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:41.166Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 3: URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:41.692Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 4: Scannable",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/R2JtSXgxdkwyRVk0OEVqb1Y5MmlsZz09 [Quiz on Constitution of India]",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:48.997Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 4: Valid URL",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:48.997Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 4: URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:49.747Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 5: Scannable",
+      "status": "PASS",
+      "details": "https://mybharat.gov.in/quiz/quiz_dashboard/SCtCVXVkTUFsVnNmVERlVlJKYnMwZz09 [Quiz on Women in India's Freedom Movement]",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:56.810Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 5: Valid URL",
+      "status": "PASS",
+      "details": "mybharat.gov.in",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:56.810Z"
+    },
+    {
+      "viewport": "QR_Scan_PROD",
+      "testCase": "Quiz 5: URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200",
+      "screenshot": null,
+      "timestamp": "2026-07-14T10:52:57.801Z"
+    }
+  ],
+  "totalPass": 99,
+  "totalFail": 0,
+  "totalWarning": 0,
+  "viewports": [
+    {
+      "name": "Chrome_Desktop_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Chrome"
+    },
+    {
+      "name": "Chrome_Tablet_768x1024",
+      "width": 768,
+      "height": 1024,
+      "device": "Tablet",
+      "browser": "Chrome"
+    },
+    {
+      "name": "Chrome_Mobile_375x812",
+      "width": 375,
+      "height": 812,
+      "device": "Mobile",
+      "browser": "Chrome"
+    },
+    {
+      "name": "Firefox_Desktop_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Firefox",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:128.0) Gecko/20100101 Firefox/128.0"
+    },
+    {
+      "name": "Without_Login",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Chrome (Guest)"
+    },
+    {
+      "name": "After_Login",
+      "width": 1920,
+      "height": 1080,
+      "device": "Desktop",
+      "browser": "Chrome (Auth)"
+    },
+    {
+      "name": "Comparison",
+      "width": 1920,
+      "height": 1080,
+      "device": "Comparison",
+      "browser": "N/A"
+    },
+    {
+      "name": "QR_Scan_PROD",
+      "width": 1920,
+      "height": 1080,
+      "device": "Scan Test",
+      "browser": "jsQR Decoder"
+    }
+  ],
+  "environment": "PRODUCTION",
+  "url": "https://mybharat.gov.in/quiz"
+}

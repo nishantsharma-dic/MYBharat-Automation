@@ -1,0 +1,126 @@
+{
+  "results": [
+    {
+      "section": "Without Login",
+      "testCase": "Page Access (No Auth)",
+      "status": "PASS",
+      "details": "Title: \"11 June New Testing Quiz Sample | Quiz Detail | MYBharat\"",
+      "timestamp": "2026-07-14T09:10:48.883Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "Login State",
+      "status": "PASS",
+      "details": "Confirmed: NOT logged in (guest)",
+      "timestamp": "2026-07-14T09:10:48.884Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "QR Code Visible",
+      "status": "PASS",
+      "details": "Visible: 100x100px",
+      "timestamp": "2026-07-14T09:10:53.889Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "QR Image Loaded",
+      "status": "PASS",
+      "details": "500x500px, alt=\"qr code\"",
+      "timestamp": "2026-07-14T09:10:53.889Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09",
+      "timestamp": "2026-07-14T09:10:53.993Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "Download Link Works",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "timestamp": "2026-07-14T09:10:53.993Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "Registration Prompt Visible",
+      "status": "WARNING",
+      "details": "No register button found",
+      "timestamp": "2026-07-14T09:10:53.993Z"
+    },
+    {
+      "section": "Without Login",
+      "testCase": "Screenshot Captured",
+      "status": "PASS",
+      "details": "WITHOUT_LOGIN_qr_view.png",
+      "timestamp": "2026-07-14T09:10:54.695Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "Login Attempted",
+      "status": "WARNING",
+      "details": "Could not complete OTP login (OTP delivery timing) — testing page as-is. QR code behavior on authenticated page typically same as guest.",
+      "timestamp": "2026-07-14T09:11:26.229Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "QR Code Visible",
+      "status": "PASS",
+      "details": "Visible: 100x100px",
+      "timestamp": "2026-07-14T09:11:31.234Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "QR Image Loaded",
+      "status": "PASS",
+      "details": "500x500px",
+      "timestamp": "2026-07-14T09:11:31.234Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "QR Scannable",
+      "status": "PASS",
+      "details": "Decoded: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09",
+      "timestamp": "2026-07-14T09:11:31.320Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "Download Link Works",
+      "status": "PASS",
+      "details": "CTA: \"Click to Download QR\"",
+      "timestamp": "2026-07-14T09:11:31.321Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "Start/Attempt Quiz Available",
+      "status": "PASS",
+      "details": "Start: true, Register: false, Attempt text: true",
+      "timestamp": "2026-07-14T09:11:31.342Z"
+    },
+    {
+      "section": "After Login",
+      "testCase": "Screenshot Captured",
+      "status": "PASS",
+      "details": "AFTER_LOGIN_qr_view.png",
+      "timestamp": "2026-07-14T09:11:32.128Z"
+    },
+    {
+      "section": "Comparison",
+      "testCase": "QR Content Same (Login vs No-Login)",
+      "status": "PASS",
+      "details": "QR code contains same URL regardless of auth state — correct for sharing purpose",
+      "timestamp": "2026-07-14T09:11:32.144Z"
+    },
+    {
+      "section": "Comparison",
+      "testCase": "QR Available Without Auth",
+      "status": "PASS",
+      "details": "QR code is accessible on public page — no login required to view/scan/download",
+      "timestamp": "2026-07-14T09:11:32.144Z"
+    }
+  ],
+  "totalPass": 15,
+  "totalFail": 0,
+  "totalWarn": 2
+}

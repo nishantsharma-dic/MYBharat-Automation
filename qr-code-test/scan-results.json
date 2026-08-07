@@ -1,0 +1,217 @@
+{
+  "scanResults": [
+    {
+      "testCase": "Quiz 1: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px",
+      "quizName": "11 June new testing quiz sample",
+      "timestamp": "2026-07-14T09:04:54.816Z"
+    },
+    {
+      "testCase": "Quiz 1: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09\"",
+      "quizName": "11 June new testing quiz sample",
+      "timestamp": "2026-07-14T09:04:54.891Z"
+    },
+    {
+      "testCase": "Quiz 1: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/U3A4VnZ3ZWRuY05yN1pmamRYYXh3QT09",
+      "quizName": "11 June new testing quiz sample",
+      "timestamp": "2026-07-14T09:04:54.891Z"
+    },
+    {
+      "testCase": "Quiz 1: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat)",
+      "quizName": "11 June new testing quiz sample",
+      "timestamp": "2026-07-14T09:04:54.891Z"
+    },
+    {
+      "testCase": "Quiz 1: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly",
+      "quizName": "11 June new testing quiz sample",
+      "timestamp": "2026-07-14T09:04:55.693Z"
+    },
+    {
+      "testCase": "Quiz 1: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"11 June New Testing Quiz Sample | Quiz Detail | MYBharat\"",
+      "quizName": "11 June new testing quiz sample",
+      "timestamp": "2026-07-14T09:04:55.705Z"
+    },
+    {
+      "testCase": "Quiz 2: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px",
+      "quizName": "Quiz on India's success on Nuclear Technology",
+      "timestamp": "2026-07-14T09:05:03.006Z"
+    },
+    {
+      "testCase": "Quiz 2: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/SFFTQ1lwZDZJSEhDb1RvUlVYOTJaQT09\"",
+      "quizName": "Quiz on India's success on Nuclear Technology",
+      "timestamp": "2026-07-14T09:05:03.061Z"
+    },
+    {
+      "testCase": "Quiz 2: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/SFFTQ1lwZDZJSEhDb1RvUlVYOTJaQT09",
+      "quizName": "Quiz on India's success on Nuclear Technology",
+      "timestamp": "2026-07-14T09:05:03.061Z"
+    },
+    {
+      "testCase": "Quiz 2: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat)",
+      "quizName": "Quiz on India's success on Nuclear Technology",
+      "timestamp": "2026-07-14T09:05:03.061Z"
+    },
+    {
+      "testCase": "Quiz 2: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly",
+      "quizName": "Quiz on India's success on Nuclear Technology",
+      "timestamp": "2026-07-14T09:05:03.903Z"
+    },
+    {
+      "testCase": "Quiz 2: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"Quiz On India's Success On Nuclear Technology | Quiz Detail | MYBharat\"",
+      "quizName": "Quiz on India's success on Nuclear Technology",
+      "timestamp": "2026-07-14T09:05:03.917Z"
+    },
+    {
+      "testCase": "Quiz 3: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px",
+      "quizName": "Quiz on Women in India's Freedom Movement",
+      "timestamp": "2026-07-14T09:05:10.402Z"
+    },
+    {
+      "testCase": "Quiz 3: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/MSt3TDZjUUdmVFloTXlXTWlKUStRQT09\"",
+      "quizName": "Quiz on Women in India's Freedom Movement",
+      "timestamp": "2026-07-14T09:05:10.446Z"
+    },
+    {
+      "testCase": "Quiz 3: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/MSt3TDZjUUdmVFloTXlXTWlKUStRQT09",
+      "quizName": "Quiz on Women in India's Freedom Movement",
+      "timestamp": "2026-07-14T09:05:10.446Z"
+    },
+    {
+      "testCase": "Quiz 3: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat)",
+      "quizName": "Quiz on Women in India's Freedom Movement",
+      "timestamp": "2026-07-14T09:05:10.446Z"
+    },
+    {
+      "testCase": "Quiz 3: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly",
+      "quizName": "Quiz on Women in India's Freedom Movement",
+      "timestamp": "2026-07-14T09:05:11.624Z"
+    },
+    {
+      "testCase": "Quiz 3: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"Quiz On Women In India's Freedom Movement | Quiz Detail | MYBharat\"",
+      "quizName": "Quiz on Women in India's Freedom Movement",
+      "timestamp": "2026-07-14T09:05:11.635Z"
+    },
+    {
+      "testCase": "Quiz 4: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px",
+      "quizName": "Retest security fixes",
+      "timestamp": "2026-07-14T09:05:18.024Z"
+    },
+    {
+      "testCase": "Quiz 4: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/UU92cElpTlREWEFsSkFFZHAzOWp2QT09\"",
+      "quizName": "Retest security fixes",
+      "timestamp": "2026-07-14T09:05:18.061Z"
+    },
+    {
+      "testCase": "Quiz 4: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/UU92cElpTlREWEFsSkFFZHAzOWp2QT09",
+      "quizName": "Retest security fixes",
+      "timestamp": "2026-07-14T09:05:18.062Z"
+    },
+    {
+      "testCase": "Quiz 4: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat)",
+      "quizName": "Retest security fixes",
+      "timestamp": "2026-07-14T09:05:18.062Z"
+    },
+    {
+      "testCase": "Quiz 4: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly",
+      "quizName": "Retest security fixes",
+      "timestamp": "2026-07-14T09:05:18.707Z"
+    },
+    {
+      "testCase": "Quiz 4: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"Retest Security Fixes | Quiz Detail | MYBharat\"",
+      "quizName": "Retest security fixes",
+      "timestamp": "2026-07-14T09:05:18.719Z"
+    },
+    {
+      "testCase": "Quiz 5: QR Image Present",
+      "status": "PASS",
+      "details": "Base64: true, Size: 500x500px",
+      "quizName": "for test time issue",
+      "timestamp": "2026-07-14T09:05:25.084Z"
+    },
+    {
+      "testCase": "Quiz 5: QR Scannable",
+      "status": "PASS",
+      "details": "Decoded successfully! Content: \"https://yuva-beta.mybharats.in/quiz/quiz_dashboard/Q2dsOTJHSGtEUnpxaDlPVDdzVkhhdz09\"",
+      "quizName": "for test time issue",
+      "timestamp": "2026-07-14T09:05:25.132Z"
+    },
+    {
+      "testCase": "Quiz 5: QR Contains Valid URL",
+      "status": "PASS",
+      "details": "URL: https://yuva-beta.mybharats.in/quiz/quiz_dashboard/Q2dsOTJHSGtEUnpxaDlPVDdzVkhhdz09",
+      "quizName": "for test time issue",
+      "timestamp": "2026-07-14T09:05:25.132Z"
+    },
+    {
+      "testCase": "Quiz 5: QR URL Domain Correct",
+      "status": "PASS",
+      "details": "Domain: yuva-beta.mybharats.in (matches MY Bharat)",
+      "quizName": "for test time issue",
+      "timestamp": "2026-07-14T09:05:25.132Z"
+    },
+    {
+      "testCase": "Quiz 5: Scanned URL Accessible",
+      "status": "PASS",
+      "details": "HTTP 200 — page loads correctly",
+      "quizName": "for test time issue",
+      "timestamp": "2026-07-14T09:05:25.799Z"
+    },
+    {
+      "testCase": "Quiz 5: Scanned URL Shows Quiz Content",
+      "status": "PASS",
+      "details": "Page title: \"For Test Time Issue | Quiz Detail | MYBharat\"",
+      "quizName": "for test time issue",
+      "timestamp": "2026-07-14T09:05:25.830Z"
+    }
+  ],
+  "scanPass": 30,
+  "scanFail": 0,
+  "scanWarn": 0
+}

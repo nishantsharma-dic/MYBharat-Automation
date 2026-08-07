@@ -1,0 +1,11 @@
+{
+  "name": "mybharat-states-page-test",
+  "version": "1.0.0",
+  "description": "Comprehensive test for mybharat.gov.in/states (Rajasthan page)",
+  "scripts": {
+    "test": "node test-states-page.js"
+  },
+  "dependencies": {
+    "playwright": "1.60.0"
+  }
+}
