@@ -28,6 +28,7 @@ on:
           - testSuites/testng-registration-logout-login.xml
           - testSuites/testng-registration-public-profile.xml
           - testSuites/testng-registration-quiz.xml
+          - testSuites/testng-quiz-deep-test.xml
       browser:
         description: 'Browser to use'
         required: true
