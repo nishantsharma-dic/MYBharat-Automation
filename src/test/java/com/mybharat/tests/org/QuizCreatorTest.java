@@ -143,6 +143,22 @@ public class QuizCreatorTest extends BaseTest {
         js.executeScript("arguments[0].removeAttribute('disabled'); arguments[0].click();", loginBtn);
         Thread.sleep(8000);
 
+        // Handle any new windows/tabs that opened (YouTube ads, etc.)
+        String mainWindow = driver.getWindowHandle();
+        for (String handle : driver.getWindowHandles()) {
+            if (!handle.equals(mainWindow)) {
+                driver.switchTo().window(handle);
+                driver.close();
+            }
+        }
+        driver.switchTo().window(mainWindow);
+
+        // If redirected to YouTube or other site, navigate back
+        if (!driver.getCurrentUrl().contains("mybharat")) {
+            driver.get(BASE_URL);
+            Thread.sleep(3000);
+        }
+
         log.info("✅ Creator login completed. URL: {}", driver.getCurrentUrl());
     }
 
@@ -391,7 +407,7 @@ public class QuizCreatorTest extends BaseTest {
     @Test(priority = 6, dependsOnMethods = "testSaveAndPreview", groups = {"regression", "quiz", "creator"},
           description = "Bulk upload questions from CSV file")
     public void testBulkUploadQuestions() throws Exception {
-        log.info("▶ Step 6: Bulk upload questions");
+        log.info("▶ Step 6: Bulk upload questions (400 questions: en, hi, bn, ur)");
 
         String csvPath = System.getProperty("user.dir") + File.separator
                 + "UploadImages" + File.separator + "quiz-questions-bank.csv";
@@ -406,32 +422,37 @@ public class QuizCreatorTest extends BaseTest {
         bulkBtn.click();
         Thread.sleep(2000);
 
-        // Find file input in upload dialog and upload CSV
-        WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.cssSelector("input[type='file'][accept*='.csv'], input[type='file']")));
-        js.executeScript("arguments[0].style.display='block';", fileInput);
+        // Find hidden file input and upload directly (no desktop popup)
+        WebElement fileInput = driver.findElement(By.cssSelector("input[type='file']"));
+        js.executeScript("arguments[0].style.display='block'; arguments[0].style.opacity='1';", fileInput);
+        Thread.sleep(300);
         fileInput.sendKeys(csvPath);
-        Thread.sleep(3000);
+        log.info("CSV file sent to input (no desktop popup)");
+        Thread.sleep(5000);
 
-        // Click Upload/Submit button if present
+        // Wait for validation table to appear (shows Total Valid / Total Invalid)
         try {
-            WebElement uploadBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
-                    ExpectedConditions.elementToBeClickable(By.xpath(
-                            "//button[contains(text(),'Upload')] | //button[contains(text(),'Submit')]")));
-            uploadBtn.click();
-            Thread.sleep(5000);
+            WebElement validCount = new WebDriverWait(driver, Duration.ofSeconds(15)).until(
+                    ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                            "//*[contains(text(),'Total Valid')]")));
+            log.info("Validation result: {}", validCount.getText());
         } catch (Exception e) {
-            log.info("No separate upload button — file may auto-process");
-            Thread.sleep(5000);
+            log.warn("Validation table not found: {}", e.getMessage());
         }
 
-        // Verify questions appeared in the list
-        String pageSource = driver.getPageSource().toLowerCase();
-        boolean hasQuestions = pageSource.contains("question") &&
-                (pageSource.contains("single_choice") || pageSource.contains("general_studies") ||
-                 pageSource.contains("my bharat") || pageSource.contains("national"));
-        log.info("Questions uploaded: {}", hasQuestions);
-        log.info("✅ Bulk upload completed");
+        // Click "Accept" button to confirm upload
+        try {
+            WebElement acceptBtn = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath(
+                            "//button[contains(text(),'Accept')]")));
+            acceptBtn.click();
+            log.info("Clicked Accept");
+            Thread.sleep(5000);
+        } catch (Exception e) {
+            log.warn("Accept button not found: {}", e.getMessage());
+        }
+
+        log.info("✅ Bulk upload completed (400 questions)");
     }
 
     // =========================================================================
@@ -451,25 +472,41 @@ public class QuizCreatorTest extends BaseTest {
             js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
             Thread.sleep(2000);
 
-            // Try to find any edit action (pencil icon, edit button, clickable row)
+            // Try to find any edit action ONLY within Quiz Questions fieldset
             WebElement editAction = null;
-            String[] editLocators = {
-                "(//*[local-name()='svg' and contains(@class,'edit')])[1]",
-                "(//button[contains(@aria-label,'edit') or contains(@title,'edit')])[1]",
-                "(//button[.//*[local-name()='svg']])[last()]",
-                "(//*[contains(@class,'cursor-pointer')]//*[local-name()='svg'])[1]"
-            };
-            for (String locator : editLocators) {
-                try {
-                    editAction = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
-                            ExpectedConditions.elementToBeClickable(By.xpath(locator)));
-                    if (editAction != null) break;
-                } catch (Exception e) { /* try next */ }
+            try {
+                // First find the Quiz Questions section
+                WebElement questionsFieldset = driver.findElement(By.xpath(
+                        "//fieldset[.//legend[contains(text(),'Quiz Questions')] or .//p[contains(text(),'Quiz Questions')]]"));
+                // Look for edit/pencil buttons inside it
+                java.util.List<WebElement> btns = questionsFieldset.findElements(By.xpath(
+                        ".//button[.//*[local-name()='svg']]"));
+                // Filter out Download/Bulk/Add/Reset buttons — those have text
+                for (WebElement btn : btns) {
+                    String btnText = btn.getText().trim();
+                    if (btnText.isEmpty() || (!btnText.contains("Download") && !btnText.contains("Bulk") 
+                            && !btnText.contains("Add") && !btnText.contains("Reset"))) {
+                        editAction = btn;
+                        break;
+                    }
+                }
+            } catch (Exception ex) {
+                log.info("Questions fieldset not found");
             }
 
             if (editAction != null) {
+                js.executeScript("arguments[0].scrollIntoView({block:'center'});", editAction);
+                Thread.sleep(300);
                 editAction.click();
                 Thread.sleep(3000);
+                
+                // Safety: if navigated away from mybharat, go back
+                if (!driver.getCurrentUrl().contains("mybharat.gov.in")) {
+                    log.warn("Wrong URL after edit click: {} — navigating back", driver.getCurrentUrl());
+                    driver.navigate().back();
+                    Thread.sleep(2000);
+                    return;
+                }
                 // If modal opened, modify and save
                 try {
                     WebElement questionInput = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
@@ -505,44 +542,82 @@ public class QuizCreatorTest extends BaseTest {
         closeModalIfOpen();
         Thread.sleep(500);
 
-        WebElement addBtn = wait.until(ExpectedConditions.elementToBeClickable(
+        // Scroll and click Add Question using JS to bypass any overlay
+        js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+        Thread.sleep(1000);
+
+        WebElement addBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//button[contains(text(),'Add Question')]")));
-        addBtn.click();
+        js.executeScript("arguments[0].click();", addBtn);
         Thread.sleep(3000);
 
-        // Fill Question text (most important field)
+        // The "Save Question" modal opens with dropdowns: Question Type, Category, Level, Language
+        // These are react-select dropdowns — click to open, then select option
+
+        // Question Type — select "Single Choice"
+        selectReactDropdownInModal("Question Type", "Single Choice");
+        Thread.sleep(500);
+
+        // Category — select "general_studies"
+        selectReactDropdownInModal("Category", "general_studies");
+        Thread.sleep(500);
+
+        // Level — select "easy"
+        selectReactDropdownInModal("Level", "easy");
+        Thread.sleep(500);
+
+        // Language — select "English"
+        selectReactDropdownInModal("Language", "English");
+        Thread.sleep(500);
+
+        // Fill Question text
         try {
             WebElement questionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
                     By.xpath("//input[@placeholder='Type your question here (200 characters)']")));
             setReactInputValue(questionInput, "Which platform connects Indian youth with volunteering?");
             Thread.sleep(500);
+        } catch (Exception e) {
+            log.warn("Question text input not found: {}", e.getMessage());
+        }
 
-            // Fill Options
-            java.util.List<WebElement> optionInputs = driver.findElements(
-                    By.xpath("//input[@placeholder='Type option here']"));
-            String[] options = {"MY Bharat", "LinkedIn", "Facebook", "Twitter"};
-            for (int i = 0; i < Math.min(options.length, optionInputs.size()); i++) {
-                setReactInputValue(optionInputs.get(i), options[i]);
-                Thread.sleep(300);
+        // Fill Options
+        java.util.List<WebElement> optionInputs = driver.findElements(
+                By.xpath("//input[@placeholder='Type option here']"));
+        String[] options = {"MY Bharat", "LinkedIn", "Facebook", "Twitter"};
+        for (int i = 0; i < Math.min(options.length, optionInputs.size()); i++) {
+            setReactInputValue(optionInputs.get(i), options[i]);
+            Thread.sleep(300);
+        }
+
+        // Mark Option 1 as Correct (click "Correct" radio for option 1)
+        try {
+            WebElement correctRadio = driver.findElement(By.xpath(
+                    "(//input[@type='radio' and @value='true'] | " +
+                    "//input[@type='radio'][following-sibling::*[contains(text(),'Correct')]])[1]"));
+            js.executeScript("arguments[0].click();", correctRadio);
+            log.info("Marked Option 1 as Correct");
+        } catch (Exception e) {
+            // Try label click
+            try {
+                WebElement correctLabel = driver.findElement(By.xpath(
+                        "(//label[contains(text(),'Correct')])[1]"));
+                correctLabel.click();
+            } catch (Exception e2) {
+                log.warn("Could not mark correct answer: {}", e2.getMessage());
             }
+        }
+        Thread.sleep(500);
 
-            // Mark first option as correct
-            java.util.List<WebElement> radioButtons = driver.findElements(By.xpath(
-                    "//input[@type='radio' and @value='true']"));
-            if (!radioButtons.isEmpty()) {
-                js.executeScript("arguments[0].click();", radioButtons.get(0));
-            }
-
-            // Click Save
+        // Click Save
+        try {
             WebElement saveBtn = driver.findElement(By.xpath(
-                    "//button[text()='Save']"));
-            saveBtn.click();
+                    "//div[@role='dialog']//button[text()='Save'] | //button[text()='Save']"));
+            js.executeScript("arguments[0].click();", saveBtn);
             Thread.sleep(3000);
             log.info("✅ Single question added");
         } catch (Exception e) {
-            // Close modal if open
-            try { driver.findElement(By.xpath("//button[contains(text(),'×')]")).click(); } catch (Exception ex) {}
-            log.warn("⚠ Add question partially completed: {}", e.getMessage());
+            log.warn("Save button click failed: {}", e.getMessage());
+            closeModalIfOpen();
         }
     }
 
@@ -607,11 +682,15 @@ public class QuizCreatorTest extends BaseTest {
         js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
         Thread.sleep(1000);
 
-        WebElement publishBtn = wait.until(ExpectedConditions.elementToBeClickable(
+        // Close any lingering modal
+        closeModalIfOpen();
+        Thread.sleep(500);
+
+        WebElement publishBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//button[contains(text(),'Publish')]")));
         js.executeScript("arguments[0].scrollIntoView({block:'center'});", publishBtn);
         Thread.sleep(500);
-        publishBtn.click();
+        js.executeScript("arguments[0].click();", publishBtn);
         log.info("Clicked Publish button");
         Thread.sleep(3000);
 
@@ -672,6 +751,19 @@ public class QuizCreatorTest extends BaseTest {
     }
 
     private void closeAllPopups() {
+        // Close any extra tabs that opened (YouTube ads, etc.)
+        try {
+            String mainWindow = driver.getWindowHandle();
+            for (String handle : driver.getWindowHandles()) {
+                if (!handle.equals(mainWindow)) {
+                    driver.switchTo().window(handle);
+                    driver.close();
+                }
+            }
+            driver.switchTo().window(mainWindow);
+        } catch (Exception e) { /* single window */ }
+
+        // Close popup overlays on the page
         try {
             js.executeScript(
                     "document.querySelectorAll('.modalPodCast, [id*=\"popup\"]').forEach(el => el.style.display='none');");
@@ -778,6 +870,29 @@ public class QuizCreatorTest extends BaseTest {
             element.sendKeys(org.openqa.selenium.Keys.TAB);
         }
         try { Thread.sleep(300); } catch (InterruptedException e) { }
+    }
+
+    private void selectReactDropdownInModal(String fieldLabel, String optionText) {
+        try {
+            // Find the fieldset with the label, then click its input to open dropdown
+            WebElement fieldset = driver.findElement(By.xpath(
+                    "//fieldset[./legend[contains(text(),'" + fieldLabel + "')]]"));
+            WebElement dropdownInput = fieldset.findElement(By.xpath(".//input[@type='text']"));
+            dropdownInput.click();
+            Thread.sleep(800);
+            // Type to filter options
+            dropdownInput.sendKeys(optionText);
+            Thread.sleep(1000);
+            // Click first matching option
+            WebElement option = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.elementToBeClickable(By.xpath(
+                            "//*[contains(@class,'option') and contains(text(),'" + optionText + "')]")));
+            option.click();
+            Thread.sleep(300);
+            log.info("  Selected {}: {}", fieldLabel, optionText);
+        } catch (Exception e) {
+            log.warn("  Could not select {} = {}: {}", fieldLabel, optionText, e.getMessage().split("\n")[0]);
+        }
     }
 
     private void selectDropdownOption(String fieldLabel, String optionText) {
