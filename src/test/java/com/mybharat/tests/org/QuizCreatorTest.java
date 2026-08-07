@@ -715,16 +715,24 @@ public class QuizCreatorTest extends BaseTest {
         log.info("Clicked Publish button");
         Thread.sleep(3000);
 
-        // Handle confirmation dialog if one appears
+        // Handle "Confirm Publish" dialog — click the red Publish button inside it
         try {
-            WebElement confirmBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+            // Wait for the confirmation dialog to appear
+            WebElement dialog = new WebDriverWait(driver, Duration.ofSeconds(10)).until(
+                    ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                            "//*[contains(text(),'Confirm Publish') or contains(text(),'Are you sure')]")));
+            log.info("Confirmation dialog appeared");
+            
+            // Click the Publish button INSIDE the dialog (not the page one)
+            WebElement confirmPublishBtn = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
                     ExpectedConditions.elementToBeClickable(By.xpath(
-                            "//button[contains(text(),'Confirm') or contains(text(),'Yes') or contains(text(),'OK') or contains(text(),'Publish')]")));
-            confirmBtn.click();
+                            "//div[contains(@class,'fixed') or contains(@class,'modal') or @role='dialog']" +
+                            "//button[contains(text(),'Publish') and not(contains(text(),'Confirm'))]")));
+            js.executeScript("arguments[0].click();", confirmPublishBtn);
+            log.info("Clicked Publish in confirmation dialog");
             Thread.sleep(5000);
-            log.info("Confirmed publish dialog");
         } catch (Exception e) {
-            log.info("No confirmation dialog appeared");
+            log.warn("Confirmation dialog handling: {}", e.getMessage().split("\n")[0]);
         }
 
         // Verify publish success — check for toast, URL change, or page content
